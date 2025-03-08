@@ -2,6 +2,14 @@
   "name": "ada-drop",
   "version": "0.1.0",
   "private": true,
+  "author": "Ben Elferink <ben.elferink@icloud.com> (https://github.com/BenElferink)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BenElferink/ada-drop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BenElferink/ada-drop/issues"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -9,17 +17,25 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@blockfrost/blockfrost-js": "^6.0.0",
+    "@odigos/ui-components": "^0.0.93",
+    "@odigos/ui-icons": "^0.0.14",
+    "@odigos/ui-theme": "^0.0.16",
+    "@odigos/ui-utils": "^0.0.44",
+    "axios": "^1.8.2",
+    "firebase": "^11.4.0",
+    "next": "15.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.1.7"
+    "styled-components": "^6.1.15"
   },
   "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.1.7",
-    "@eslint/eslintrc": "^3"
+    "eslint-config-next": "15.2.1",
+    "typescript": "^5"
   }
 }

@@ -1,0 +1,20 @@
+{
+  "short_name": "₳D₳ Drop",
+  "name": "₳D₳ Drop",
+  "description": "Airdrop tool for the Cardano Blockchain",
+  "icons": [
+    {
+      "src": "/cardano.svg",
+      "sizes": "16x16 24x24 32x32 64x64 192x192 512x512",
+      "type": "image/x-icon"
+    }
+  ],
+  "theme_color": "#FFFFFF",
+  "background_color": "#000000",
+  "display": "standalone",
+  "start_url": ".",
+  "developer": {
+    "name": "Ben Elferink",
+    "url": "https://github.com/BenElferink"
+  }
+}
