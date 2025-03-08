@@ -18,11 +18,29 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/api/(.*)',
+        source: '/(.*)',
         headers: [
-          { key: 'Access-Control-Allow-Credentials', value: 'true' },
-          { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Methods', value: 'OPTIONS,GET,POST' },
+          {
+            key: 'Content-Security-Policy',
+            value:
+              "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; script-src 'self' 'unsafe-eval'; connect-src 'self'; frame-src 'self'; worker-src 'self';",
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
         ],
       },
     ]
