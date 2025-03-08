@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import api from '@/utils/api'
-import poolPm from '@/utils/poolPm'
+import poolPm from '@/utils/pool-pm'
 import Theme from '@odigos/ui-theme'
 import { NOTIFICATION_TYPE } from '@odigos/ui-utils'
 import { Header as Container, Status, Text, Tooltip } from '@odigos/ui-components'
