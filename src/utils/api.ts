@@ -6,7 +6,7 @@ class Api {
   baseUrl: string
 
   constructor() {
-    this.baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000/api' : 'https://adadrop.app/api'
+    this.baseUrl = '/api'
   }
 
   private getQueryStringFromQueryOptions = (options: Record<string, any> = {}): string => {
