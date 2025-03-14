@@ -15,6 +15,10 @@ export const ADA = {
 }
 
 export const TITLE = `${ADA.SYMBOL}D${ADA.SYMBOL} Drop`
+export const LIGHT_ADA_COLOR = '#3cc8c8'
 
 // https://github.com/BenElferink/badfoxmc-labs/commit/afc5eebbf9fb0c01445e5a701c0a6828f44523b6
 export const DATA_START_TIME = 1739611211000
+export const HISTORIC_DATA_WARNING = `Some historical airdrops (prior to ${new Date(DATA_START_TIME).toLocaleDateString(
+  'en-US'
+)}) may have missing data`

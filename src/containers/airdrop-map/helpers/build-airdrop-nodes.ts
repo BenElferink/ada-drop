@@ -1,5 +1,4 @@
 import type { Node } from '@xyflow/react'
-import { DATA_START_TIME } from '@/constants'
 import { mapToNodeData } from './map-to-node-data'
 import { resolveEdgedNode } from './resolve-edged-node'
 import { NOTIFICATION_TYPE } from '@odigos/ui-kit/types'
@@ -35,7 +34,7 @@ export const buildAirdropNodes = ({ dataFlowHeight, dataFlowWidth, airdrops, onS
           timestamp,
           airdropId: id,
           stakeKey,
-          status: !recipients?.length ? NOTIFICATION_TYPE.ERROR : timestamp < DATA_START_TIME ? NOTIFICATION_TYPE.WARNING : undefined,
+          status: !recipients?.length ? NOTIFICATION_TYPE.WARNING : undefined,
           iconSrc: formatIpfsReference(thumb).url,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           subTitle: truncateStringInMiddle(stakeKey, 15),

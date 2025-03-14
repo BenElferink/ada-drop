@@ -1,6 +1,6 @@
 import React from 'react'
 import { TITLE } from '@/constants'
-import { CardanoLogo } from './cardano-logo'
+import { CardanoLogo } from '@/icons'
 import { useChainLoad, useEpochInfo } from '@/hooks'
 import { NOTIFICATION_TYPE } from '@odigos/ui-kit/types'
 import { ToggleDarkMode } from '@odigos/ui-kit/containers'

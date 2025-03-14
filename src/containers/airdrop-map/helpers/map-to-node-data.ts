@@ -1,4 +1,4 @@
-import { CardanoLogo } from '@/components'
+import { CardanoLogo } from '@/icons'
 import { NODE_COLUMN_TYPES } from '@/@types'
 import type { BaseNodeProps } from '../nodes/base-node'
 import type { NodePositions } from './get-node-positions'

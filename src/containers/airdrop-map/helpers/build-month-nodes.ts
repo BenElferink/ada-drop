@@ -1,8 +1,6 @@
 import type { Node } from '@xyflow/react'
-import { DATA_START_TIME } from '@/constants'
 import { mapToNodeData } from './map-to-node-data'
 import { resolveEdgedNode } from './resolve-edged-node'
-import { NOTIFICATION_TYPE } from '@odigos/ui-kit/types'
 import { resolveHeaderNode } from './resolve-header-node'
 import { resolveScrollNode } from './resolve-scroll-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
@@ -32,7 +30,6 @@ export const buildMonthNodes = ({ dataFlowHeight, dataFlowWidth, months, onScrol
         mapToNodeData({
           type: NODE_COLUMN_TYPES.ACTIVE_MONTHS,
           timestamp,
-          status: timestamp < DATA_START_TIME ? NOTIFICATION_TYPE.WARNING : undefined,
           iconSrc: '/cardano.svg',
           title: label,
           subTitle: `Airdrops: ${airdropCount}`,
