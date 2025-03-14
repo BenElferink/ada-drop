@@ -5,8 +5,8 @@ import { resolveScrollNode } from './resolve-scroll-node'
 import { resolveEdgedNode } from './resolve-edged-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
 import { getNodePositions, isInPosition } from './get-node-positions'
+import { formatIpfsReference, truncateStringInMiddle } from '@/functions'
 import { type AirdropTransaction, NODE_COLUMN_TYPES, type OnScroll } from '@/@types'
-import { formatIpfsReference, getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
 
 interface Params {
   dataFlowHeight: number
