@@ -5,12 +5,13 @@ import { resolveHeaderNode } from './resolve-header-node'
 import { resolveScrollNode } from './resolve-scroll-node'
 import { resolveHiddenNode } from './resolve-edged-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
-import { NODE_COLUMN_TYPES, type OnScroll } from '@/@types'
+import { type AirdropTransaction, NODE_COLUMN_TYPES, type OnScroll } from '@/@types'
+import { formatIpfsReference, getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
 
 interface Params {
   dataFlowHeight: number
   dataFlowWidth: number
-  transactions: []
+  transactions: AirdropTransaction[]
   onScroll: OnScroll
 }
 
@@ -25,12 +26,12 @@ export const buildTransactionNodes = ({ dataFlowHeight, dataFlowWidth, transacti
   // Init Airdrops
 
   if (!!transactions.length) {
-    const items = transactions.map(({}) =>
+    const items = transactions.map(({ airdropId, thumb, tokenAmount, tokenName, txHash, recipientCount }) =>
       mapToNodeData({
-        airdropId: '',
-        iconSrc: '/cardano.svg',
-        title: '',
-        subTitle: '',
+        airdropId,
+        iconSrc: formatIpfsReference(thumb).url,
+        title: `${recipientCount} Recipients, ${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
+        subTitle: truncateStringInMiddle(txHash, 15),
         withClick: false,
       })
     )

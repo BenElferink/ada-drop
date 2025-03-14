@@ -5,8 +5,8 @@ import { resolveHeaderNode } from './resolve-header-node'
 import { resolveScrollNode } from './resolve-scroll-node'
 import { resolveHiddenNode } from './resolve-edged-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
-import { formatIpfsReference, truncateStringInMiddle } from '@/functions'
 import { type Airdrop, NODE_COLUMN_TYPES, type OnScroll } from '@/@types'
+import { formatIpfsReference, getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
 
 interface Params {
   dataFlowHeight: number
@@ -30,10 +30,7 @@ export const buildAirdropNodes = ({ dataFlowHeight, dataFlowWidth, airdrops, onS
       mapToNodeData({
         airdropId: id,
         iconSrc: formatIpfsReference(thumb).url,
-        title: `${tokenAmount.display.toLocaleString('en-US', {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 0,
-        })} ${tokenName.ticker || tokenName.display || tokenName.onChain}`,
+        title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
         subTitle: truncateStringInMiddle(stakeKey, 15),
         withClick: true,
       })

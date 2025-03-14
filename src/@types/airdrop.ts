@@ -1,5 +1,5 @@
-import type { StakeKey, TokenId } from './common'
 import type { TokenAmount, TokenName } from './token'
+import type { StakeKey, TokenId, TransactionId } from './common'
 
 export interface TokenSelectionSettings {
   tokenId: TokenId
@@ -10,8 +10,8 @@ export interface TokenSelectionSettings {
 
 export interface Airdrop extends TokenSelectionSettings {
   id: string
-  stakeKey: StakeKey
   timestamp: number
+  stakeKey: StakeKey
   recipients?: {
     stakeKey: StakeKey
     txHash: string
@@ -22,5 +22,17 @@ export interface Airdrop extends TokenSelectionSettings {
 export interface AirdropMonth {
   label: string
   airdropCount: number
-  airdropIds: string[]
+}
+
+export interface AirdropTransaction extends TokenSelectionSettings {
+  timestamp: number
+  airdropId: string
+  txHash: TransactionId
+  recipientCount: number
+}
+
+export interface AirdropRicipent extends TokenSelectionSettings {
+  timestamp: number
+  airdropId: string
+  stakeKey: StakeKey
 }

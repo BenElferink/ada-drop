@@ -30,7 +30,7 @@ export const buildMonthNodes = ({ dataFlowHeight, dataFlowWidth, months, onScrol
         airdropId: '',
         iconSrc: '/cardano.svg',
         title: label,
-        subTitle: `${airdropCount} airdrops`,
+        subTitle: `Airdrops: ${airdropCount}`,
         withClick: false,
       })
     )

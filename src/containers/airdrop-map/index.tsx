@@ -1,9 +1,9 @@
 import React, { FC, useCallback, useEffect, type CSSProperties } from 'react'
-import { useAirdrops } from '@/hooks'
 import styled from 'styled-components'
 import { DataFlow } from './data-flow'
 import { NODE_COLUMN_TYPES, NODE_TYPES } from '@/@types'
 import { useContainerSize } from '@odigos/ui-kit/hooks'
+import { useAirdrops, UseAirdropsExtended } from '@/hooks'
 import { buildMonthNodes } from './helpers/build-month-nodes'
 import { buildAirdropNodes } from './helpers/build-airdrop-nodes'
 import { buildRecipientNodes } from './helpers/build-recipient-nodes'
@@ -21,7 +21,8 @@ const Container = styled.div<{ $heightToRemove: AirdropMapProps['heightToRemove'
 `
 
 export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
-  const { airdrops, months } = useAirdrops()
+  const { airdrops } = useAirdrops()
+  const { months, transactions, recipients } = UseAirdropsExtended()
   const { containerRef, containerHeight, containerWidth } = useContainerSize()
 
   const [nodes, setNodes, onNodesChange] = useNodesState([] as Node[])
@@ -84,23 +85,23 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
     const payload = buildTransactionNodes({
       dataFlowHeight: containerHeight,
       dataFlowWidth: containerWidth,
-      transactions: [],
+      transactions,
       onScroll: ({ scrollTop }) => handleNodesScrolled(payload, scrollTop),
     })
 
     handleNodesChanged(payload, NODE_COLUMN_TYPES.TRANSACTIONS)
-  }, [containerHeight, containerWidth, handleNodesScrolled, handleNodesChanged])
+  }, [containerHeight, containerWidth, transactions, handleNodesScrolled, handleNodesChanged])
 
   useEffect(() => {
     const payload = buildRecipientNodes({
       dataFlowHeight: containerHeight,
       dataFlowWidth: containerWidth,
-      recipients: [],
+      recipients,
       onScroll: ({ scrollTop }) => handleNodesScrolled(payload, scrollTop),
     })
 
     handleNodesChanged(payload, NODE_COLUMN_TYPES.RECIPIENTS)
-  }, [containerHeight, containerWidth, handleNodesScrolled, handleNodesChanged])
+  }, [containerHeight, containerWidth, recipients, handleNodesScrolled, handleNodesChanged])
 
   useEffect(() => {
     // const payload = buildEdges({
