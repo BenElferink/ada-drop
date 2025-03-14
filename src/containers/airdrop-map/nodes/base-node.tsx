@@ -1,12 +1,12 @@
 import React, { memo } from 'react'
 import styled from 'styled-components'
+import { DATA_START_TIME } from '@/constants'
 import { DataTab, Tooltip } from '@odigos/ui-kit/components'
 import type { Node, NodeProps, XYPosition } from '@xyflow/react'
 import { NOTIFICATION_TYPE, type SVG } from '@odigos/ui-kit/types'
 import { NODE_TYPES, type StakeKey, type TransactionId } from '@/@types'
 import { ErrorTriangleIcon, WarningTriangleIcon } from '@odigos/ui-kit/icons'
 import nodeConfig from '../helpers/node-config'
-import { DATA_START_TIME } from '@/constants'
 
 export type BaseNodeProps = NodeProps<
   Node<
@@ -19,8 +19,9 @@ export type BaseNodeProps = NodeProps<
       iconSrcs?: string[]
       withClick?: boolean
       position: XYPosition
-      airdropId: string
+      airdropId?: string
       txHash?: TransactionId
+      timestamp: number
       stakeKey?: StakeKey
     },
     NODE_TYPES.BASE

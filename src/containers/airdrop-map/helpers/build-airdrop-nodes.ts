@@ -32,6 +32,7 @@ export const buildAirdropNodes = ({ dataFlowHeight, dataFlowWidth, airdrops, onS
       .map(({ id, thumb, tokenAmount, tokenName, stakeKey, recipients, timestamp }, idx) =>
         mapToNodeData({
           type: NODE_COLUMN_TYPES.AIRDROPS,
+          timestamp,
           airdropId: id,
           stakeKey,
           status: !recipients?.length ? NOTIFICATION_TYPE.ERROR : timestamp < DATA_START_TIME ? NOTIFICATION_TYPE.WARNING : undefined,

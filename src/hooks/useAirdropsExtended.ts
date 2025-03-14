@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useAirdropStore } from '@/store'
-import { formatTokenAmountFromChain, resolveMonthName } from '@/functions'
+import { formatTokenAmountFromChain, getTimeStampLabel } from '@/functions'
 import type { Airdrop, AirdropMonth, AirdropRicipent, AirdropTransaction } from '@/@types'
 
 interface UseAirdropsExtended {
@@ -15,12 +15,15 @@ const mapAirdrops = (data: Airdrop[]) => {
   const recipientMap = new Map<string, AirdropRicipent>()
 
   for (const item of data) {
-    const date = new Date(item.timestamp)
-    const monthLabel = `${date.getFullYear()} ${resolveMonthName(date.getMonth())}`
+    const { label: monthLabel, startOfmonth } = getTimeStampLabel(item.timestamp)
 
     // Update AirdropMonth
     if (!monthMap.has(monthLabel)) {
-      monthMap.set(monthLabel, { label: monthLabel, airdropCount: 1 })
+      monthMap.set(monthLabel, {
+        label: monthLabel,
+        airdropCount: 1,
+        timestamp: startOfmonth,
+      })
     } else {
       monthMap.get(monthLabel)!.airdropCount++
     }
@@ -71,7 +74,7 @@ const mapAirdrops = (data: Airdrop[]) => {
   }
 
   return {
-    m: Array.from(monthMap.values()),
+    m: Array.from(monthMap.values()).sort((a, b) => b.timestamp - a.timestamp),
     t: Array.from(transactionMap.values()).sort((a, b) => b.timestamp - a.timestamp),
     r: Array.from(recipientMap.values()).sort((a, b) => b.timestamp - a.timestamp),
   }

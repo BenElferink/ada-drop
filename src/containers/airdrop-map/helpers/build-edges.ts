@@ -3,6 +3,7 @@ import type { Edge, Node } from '@xyflow/react'
 import { isInPosition } from './get-node-positions'
 import type { DefaultTheme } from 'styled-components'
 import type { EdgedNodeProps } from '../nodes/edged-node'
+import { getTimeStampLabel } from '@/functions'
 
 interface Params {
   dataFlowHeight: number
@@ -33,11 +34,28 @@ export const buildEdges = ({ dataFlowHeight, nodes, theme }: Params) => {
 
   nodes.forEach(({ id: nodeId, type: nodeType, position, data }) => {
     const columnType = nodeId.split('$')[0] as NODE_COLUMN_TYPES
-    const { airdropId, txHash } = data as EdgedNodeProps['data']
+    const { airdropId, txHash, timestamp } = data as EdgedNodeProps['data']
+
+    if (columnType === NODE_COLUMN_TYPES.ACTIVE_MONTHS && nodeType === NODE_TYPES.EDGED && isInPosition(position, dataFlowHeight)) {
+      nodes
+        .filter(
+          (node) =>
+            node.id.includes(`${NODE_COLUMN_TYPES.AIRDROPS}$${NODE_TYPES.EDGED}`) &&
+            isInPosition(node.position, dataFlowHeight) &&
+            getTimeStampLabel(node.data.timestamp as number).startOfmonth === timestamp
+        )
+        .forEach(({ id }) => {
+          const edgeId = `${nodeId}-to-${id}`
+          if (!edgeSet.has(edgeId)) edgeSet.add(edgeId)
+        })
+    }
 
     if (columnType === NODE_COLUMN_TYPES.AIRDROPS && nodeType === NODE_TYPES.EDGED && isInPosition(position, dataFlowHeight)) {
       nodes
-        .filter((node) => node.id.includes(`${NODE_COLUMN_TYPES.TRANSACTIONS}$${NODE_TYPES.EDGED}-${airdropId}`))
+        .filter(
+          (node) =>
+            node.id.includes(`${NODE_COLUMN_TYPES.TRANSACTIONS}$${NODE_TYPES.EDGED}-${airdropId}`) && isInPosition(node.position, dataFlowHeight)
+        )
         .forEach(({ id }) => {
           const edgeId = `${nodeId}-to-${id}`
           if (!edgeSet.has(edgeId)) edgeSet.add(edgeId)
@@ -46,7 +64,11 @@ export const buildEdges = ({ dataFlowHeight, nodes, theme }: Params) => {
 
     if (columnType === NODE_COLUMN_TYPES.TRANSACTIONS && nodeType === NODE_TYPES.EDGED && isInPosition(position, dataFlowHeight)) {
       nodes
-        .filter((node) => node.id.includes(`${NODE_COLUMN_TYPES.RECIPIENTS}$${NODE_TYPES.EDGED}-${airdropId}-${txHash}`))
+        .filter(
+          (node) =>
+            node.id.includes(`${NODE_COLUMN_TYPES.RECIPIENTS}$${NODE_TYPES.EDGED}-${airdropId}-${txHash}`) &&
+            isInPosition(node.position, dataFlowHeight)
+        )
         .forEach(({ id }) => {
           const edgeId = `${nodeId}-to-${id}`
           if (!edgeSet.has(edgeId)) edgeSet.add(edgeId)
@@ -57,7 +79,7 @@ export const buildEdges = ({ dataFlowHeight, nodes, theme }: Params) => {
   return Array.from(edgeSet).map((edgeId) =>
     createEdge(edgeId, {
       theme,
-      animated: true,
+      animated: (edgeId.split('-to-')[0].split('$')[0] as NODE_COLUMN_TYPES) !== NODE_COLUMN_TYPES.ACTIVE_MONTHS,
     })
   )
 }

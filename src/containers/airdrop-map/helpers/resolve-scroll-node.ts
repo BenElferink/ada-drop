@@ -23,8 +23,8 @@ export const resolveScrollNode = (
     },
     data: {
       dataFlowHeight,
-      items: items.map((data, idx) => ({
-        id: `${type}$${NODE_TYPES.SCROLL}-${NODE_TYPES.BASE}-${idx}`,
+      items: items.map((data) => ({
+        id: `${type}$${NODE_TYPES.SCROLL}-${NODE_TYPES.BASE}-${data.airdropId}-${data.txHash}-${data.stakeKey}-${data.timestamp}`,
         data,
       })),
       onScroll,

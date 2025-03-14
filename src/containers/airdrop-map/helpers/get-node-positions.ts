@@ -1,7 +1,6 @@
 import nodeConfig from './node-config'
 import { NODE_COLUMN_TYPES } from '@/@types'
 import type { XYPosition } from '@xyflow/react'
-import { getValueForRange } from '@odigos/ui-kit/functions'
 
 const { nodeWidth, nodeHeight, nodePadding } = nodeConfig
 
@@ -28,17 +27,11 @@ export const getNodePositions = ({ dataFlowWidth }: Params) => {
       y: getY,
     },
     [NODE_COLUMN_TYPES.AIRDROPS]: {
-      x: getValueForRange(dataFlowWidth, [
-        [0, 1600, endX / 3.5],
-        [1600, null, endX / 4],
-      ]),
+      x: (endX - startX) * 0.33,
       y: getY,
     },
     [NODE_COLUMN_TYPES.TRANSACTIONS]: {
-      x: getValueForRange(dataFlowWidth, [
-        [0, 1600, endX / 1.55],
-        [1600, null, endX / 1.6],
-      ]),
+      x: (endX - startX) * 0.66,
       y: getY,
     },
     [NODE_COLUMN_TYPES.RECIPIENTS]: {

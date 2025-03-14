@@ -6,7 +6,7 @@ import nodeConfig from './node-config'
 
 export const resolveEdgedNode = (positions: NodePositions, type: NODE_COLUMN_TYPES, idx: number, data: BaseNodeProps['data']) => {
   return {
-    id: `${type}$${NODE_TYPES.EDGED}-${data.airdropId}-${data.txHash}-${data.stakeKey}`,
+    id: `${type}$${NODE_TYPES.EDGED}-${data.airdropId}-${data.txHash}-${data.stakeKey}-${data.timestamp}`,
     type: NODE_TYPES.EDGED,
     extent: 'parent' as Node['extent'],
     parentId: `${type}$${NODE_TYPES.SCROLL}`,

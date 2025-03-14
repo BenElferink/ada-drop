@@ -32,6 +32,7 @@ export const buildRecipientNodes = ({ dataFlowHeight, dataFlowWidth, recipients,
       .map(({ airdropId, thumb, txHash, tokenAmount, tokenName, stakeKey, timestamp }, idx) =>
         mapToNodeData({
           type: NODE_COLUMN_TYPES.RECIPIENTS,
+          timestamp,
           airdropId,
           txHash,
           stakeKey,

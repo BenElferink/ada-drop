@@ -32,6 +32,7 @@ export const buildTransactionNodes = ({ dataFlowHeight, dataFlowWidth, transacti
       .map(({ airdropId, thumb, txHash, recipientCount, timestamp }, idx) =>
         mapToNodeData({
           type: NODE_COLUMN_TYPES.TRANSACTIONS,
+          timestamp,
           airdropId,
           txHash,
           status: timestamp < DATA_START_TIME ? NOTIFICATION_TYPE.WARNING : undefined,

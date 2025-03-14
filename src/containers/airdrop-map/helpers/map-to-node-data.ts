@@ -6,6 +6,7 @@ import nodeConfig from './node-config'
 
 export const mapToNodeData = ({
   type,
+  timestamp,
   airdropId,
   txHash,
   stakeKey,
@@ -17,13 +18,14 @@ export const mapToNodeData = ({
   withClick,
   positions,
   idx,
-}: Pick<BaseNodeProps['data'], 'airdropId' | 'txHash' | 'stakeKey' | 'title' | 'subTitle' | 'withClick' | 'status' | 'faded'> & {
+}: Pick<BaseNodeProps['data'], 'timestamp' | 'airdropId' | 'txHash' | 'stakeKey' | 'title' | 'subTitle' | 'withClick' | 'status' | 'faded'> & {
   type: NODE_COLUMN_TYPES
   iconSrc: string
   positions: NodePositions
   idx: number
 }) => {
   return {
+    timestamp,
     airdropId,
     txHash,
     stakeKey,

@@ -20,6 +20,7 @@ export interface Airdrop extends TokenSelectionSettings {
 }
 
 export interface AirdropMonth {
+  timestamp: number
   label: string
   airdropCount: number
 }
