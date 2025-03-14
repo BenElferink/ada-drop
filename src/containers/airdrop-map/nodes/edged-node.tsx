@@ -3,15 +3,9 @@ import styled from 'styled-components'
 import { NODE_TYPES } from '@/@types'
 import { Handle, type Node, type NodeProps, Position } from '@xyflow/react'
 import nodeConfig from '../helpers/node-config'
+import { BaseNodeProps } from './base-node'
 
-export type EdgedNodeProps = NodeProps<
-  Node<
-    {
-      [key: string]: void
-    },
-    NODE_TYPES.EDGED
-  >
->
+export type EdgedNodeProps = NodeProps<Node<BaseNodeProps['data'], NODE_TYPES.EDGED>>
 
 const Container = styled.div`
   width: ${nodeConfig.nodeWidth}px;

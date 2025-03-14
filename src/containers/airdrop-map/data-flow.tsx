@@ -1,6 +1,7 @@
 import React from 'react'
 import '@xyflow/react/dist/style.css'
 import styled from 'styled-components'
+import { useClickNode } from '@/hooks'
 import BaseNode from './nodes/base-node'
 import EdgedNode from './nodes/edged-node'
 import FrameNode from './nodes/frame-node'
@@ -55,6 +56,8 @@ const edgeTypes = {
 }
 
 export const DataFlow: React.FC<DataFlowProps> = ({ nodes, edges, onNodesChange, onEdgesChange }) => {
+  const { onClickNode } = useClickNode()
+
   return (
     <FlowWrapper>
       <ReactFlow
@@ -64,7 +67,7 @@ export const DataFlow: React.FC<DataFlowProps> = ({ nodes, edges, onNodesChange,
         nodeTypes={nodeTypes}
         edges={edges}
         edgeTypes={edgeTypes}
-        onNodeClick={(event, node) => console.log('click node', node, event)}
+        onNodeClick={onClickNode}
         onNodesChange={(changes) => setTimeout(() => onNodesChange(changes))} // Timeout to prevent "ResizeObserver loop completed with undelivered notifications" error log
         onEdgesChange={(changes) => setTimeout(() => onEdgesChange(changes))} // Timeout to prevent "ResizeObserver loop completed with undelivered notifications" error log
       >

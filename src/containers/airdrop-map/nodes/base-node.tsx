@@ -10,12 +10,14 @@ import nodeConfig from '../helpers/node-config'
 export type BaseNodeProps = NodeProps<
   Node<
     {
+      airdropId: string
       status?: NOTIFICATION_TYPE
       faded?: boolean
       title: string
       subTitle: string
       icons?: SVG[]
       iconSrcs?: string[]
+      withClick?: boolean
     },
     NODE_TYPES.BASE
   >
@@ -27,7 +29,7 @@ const Container = styled.div`
 `
 
 const BaseNode: React.FC<BaseNodeProps> = memo(({ data }) => {
-  const { status, faded, title, subTitle, icons, iconSrcs } = data
+  const { status, faded, title, subTitle, icons, iconSrcs, withClick } = data
 
   return (
     <Container className='nowheel nodrag'>
@@ -38,7 +40,7 @@ const BaseNode: React.FC<BaseNodeProps> = memo(({ data }) => {
         iconSrcs={iconSrcs}
         status={status}
         faded={faded}
-        onClick={() => {}}
+        onClick={withClick ? () => {} : undefined}
         renderActions={() =>
           status === NOTIFICATION_TYPE.ERROR ? (
             <ErrorTriangleIcon size={20} />

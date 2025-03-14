@@ -9,7 +9,7 @@ export interface TokenSelectionSettings {
 }
 
 export interface Airdrop extends TokenSelectionSettings {
-  id?: string
+  id: string
   stakeKey: StakeKey
   timestamp: number
   recipients?: {
@@ -17,4 +17,10 @@ export interface Airdrop extends TokenSelectionSettings {
     txHash: string
     quantity: number
   }[]
+}
+
+export interface AirdropMonth {
+  label: string
+  airdropCount: number
+  airdropIds: string[]
 }

@@ -1,7 +1,8 @@
 import React, { memo, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { NODE_TYPES } from '@/@types'
+import { useClickNode } from '@/hooks'
 import type { Node, NodeProps } from '@xyflow/react'
+import { NODE_TYPES, type OnScroll } from '@/@types'
 import BaseNode, { type BaseNodeProps } from './base-node'
 import nodeConfig from '../helpers/node-config'
 
@@ -10,7 +11,7 @@ export type ScrollNodeProps = NodeProps<
     {
       dataFlowHeight: number
       items: BaseNodeProps[]
-      onScroll: (params: { clientHeight: number; scrollHeight: number; scrollTop: number }) => void
+      onScroll: OnScroll
     },
     NODE_TYPES.SCROLL
   >
@@ -47,8 +48,9 @@ const Overlay = styled.div<{ $hide?: boolean }>`
   pointer-events: none;
 `
 
-const ScrollNode: React.FC<ScrollNodeProps> = memo(({ data, ...rest }) => {
+const ScrollNode: React.FC<ScrollNodeProps> = memo(({ data }) => {
   const { dataFlowHeight, items, onScroll } = data
+  const { onClickNode } = useClickNode()
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [isBottomOfList, setIsBottomOfList] = useState(false)
@@ -72,17 +74,26 @@ const ScrollNode: React.FC<ScrollNodeProps> = memo(({ data, ...rest }) => {
 
   return (
     <Container ref={containerRef} $dataFlowHeight={dataFlowHeight} className='nowheel nodrag'>
-      {items.map((item) => (
-        <BaseNodeWrapper
-          key={item.id}
-          onClick={(e) => {
-            e.stopPropagation()
-            console.log('click node in scroll', item, e)
-          }}
-        >
-          <BaseNode {...rest} type={NODE_TYPES.BASE} id={item.id} data={item.data} />
-        </BaseNodeWrapper>
-      ))}
+      {items.map((n) => {
+        const { id, data, ...rest } = n
+
+        return (
+          <BaseNodeWrapper
+            key={id}
+            onClick={
+              data.withClick
+                ? (e) => {
+                    e.stopPropagation()
+                    // @ts-expect-error - node changing type
+                    onClickNode(e, n)
+                  }
+                : undefined
+            }
+          >
+            <BaseNode {...rest} type={NODE_TYPES.BASE} id={id} data={data} />
+          </BaseNodeWrapper>
+        )
+      })}
 
       <Overlay $hide={isBottomOfList} />
     </Container>
