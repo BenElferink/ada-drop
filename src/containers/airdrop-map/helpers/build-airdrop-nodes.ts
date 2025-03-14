@@ -2,7 +2,7 @@ import type { Node } from '@xyflow/react'
 import { mapToNodeData } from './map-to-node-data'
 import { resolveHeaderNode } from './resolve-header-node'
 import { resolveScrollNode } from './resolve-scroll-node'
-import { resolveHiddenNode } from './resolve-edged-node'
+import { resolveEdgedNode } from './resolve-edged-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
 import { getNodePositions, isInPosition } from './get-node-positions'
 import { type Airdrop, NODE_COLUMN_TYPES, type OnScroll } from '@/@types'
@@ -42,7 +42,7 @@ export const buildAirdropNodes = ({ dataFlowHeight, dataFlowWidth, airdrops, onS
       .filter(({ position }) => isInPosition(position, dataFlowHeight, true))
 
     nodes.push(resolveScrollNode(positions, NODE_COLUMN_TYPES.AIRDROPS, dataFlowHeight, items, onScroll))
-    items.forEach((data, idx) => nodes.push(resolveHiddenNode(positions, NODE_COLUMN_TYPES.AIRDROPS, idx, data)))
+    items.forEach((data, idx) => nodes.push(resolveEdgedNode(positions, NODE_COLUMN_TYPES.AIRDROPS, idx, data)))
   } else {
     nodes.push(resolveSkeletonNode(positions, NODE_COLUMN_TYPES.AIRDROPS, dataFlowHeight))
   }

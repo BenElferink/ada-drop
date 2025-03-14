@@ -1,16 +1,15 @@
 import React, { memo } from 'react'
 import styled from 'styled-components'
-import { NODE_TYPES } from '@/@types'
 import { DataTab } from '@odigos/ui-kit/components'
+import type { Node, NodeProps, XYPosition } from '@xyflow/react'
 import { NOTIFICATION_TYPE, type SVG } from '@odigos/ui-kit/types'
-import { Handle, type Node, type NodeProps, Position, XYPosition } from '@xyflow/react'
+import { NODE_TYPES, type StakeKey, type TransactionId } from '@/@types'
 import { ErrorTriangleIcon, WarningTriangleIcon } from '@odigos/ui-kit/icons'
 import nodeConfig from '../helpers/node-config'
 
 export type BaseNodeProps = NodeProps<
   Node<
     {
-      airdropId: string
       status?: NOTIFICATION_TYPE
       faded?: boolean
       title: string
@@ -19,6 +18,9 @@ export type BaseNodeProps = NodeProps<
       iconSrcs?: string[]
       withClick?: boolean
       position: XYPosition
+      airdropId: string
+      txHash?: TransactionId
+      stakeKey?: StakeKey
     },
     NODE_TYPES.BASE
   >
@@ -50,8 +52,6 @@ const BaseNode: React.FC<BaseNodeProps> = memo(({ data }) => {
           ) : null
         }
       />
-      <Handle type='target' position={Position.Left} style={{ visibility: 'hidden' }} />
-      <Handle type='source' position={Position.Right} style={{ visibility: 'hidden' }} />
     </Container>
   )
 })

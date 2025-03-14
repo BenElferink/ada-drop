@@ -26,10 +26,6 @@ const Container = styled.div<{ $dataFlowHeight: number }>`
   overflow-y: auto;
 `
 
-const BaseNodeWrapper = styled.div`
-  margin: ${nodeConfig.nodePadding} 0;
-`
-
 const Overlay = styled.div<{ $hide?: boolean }>`
   position: fixed;
   bottom: 0;
@@ -78,7 +74,7 @@ const ScrollNode: React.FC<ScrollNodeProps> = memo(({ data }) => {
         const { id, data, ...rest } = n
 
         return (
-          <BaseNodeWrapper
+          <div
             key={id}
             onClick={
               data.withClick
@@ -91,7 +87,7 @@ const ScrollNode: React.FC<ScrollNodeProps> = memo(({ data }) => {
             }
           >
             <BaseNode {...rest} type={NODE_TYPES.BASE} id={id} data={data} />
-          </BaseNodeWrapper>
+          </div>
         )
       })}
 

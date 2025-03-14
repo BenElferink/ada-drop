@@ -1,14 +1,16 @@
 import React, { FC, useCallback, useEffect, type CSSProperties } from 'react'
 import styled from 'styled-components'
 import { DataFlow } from './data-flow'
-import { NODE_COLUMN_TYPES, NODE_TYPES } from '@/@types'
+import Theme from '@odigos/ui-kit/theme'
 import { useContainerSize } from '@odigos/ui-kit/hooks'
+import { NODE_COLUMN_TYPES, NODE_TYPES } from '@/@types'
 import { useAirdrops, UseAirdropsExtended } from '@/hooks'
 import { buildMonthNodes } from './helpers/build-month-nodes'
 import { buildAirdropNodes } from './helpers/build-airdrop-nodes'
 import { buildRecipientNodes } from './helpers/build-recipient-nodes'
 import { buildTransactionNodes } from './helpers/build-transactions-nodes'
 import { applyNodeChanges, type Edge, type Node, useEdgesState, useNodesState } from '@xyflow/react'
+import { buildEdges } from './helpers/build-edges'
 
 interface AirdropMapProps {
   heightToRemove: CSSProperties['height']
@@ -21,6 +23,7 @@ const Container = styled.div<{ $heightToRemove: AirdropMapProps['heightToRemove'
 `
 
 export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
+  const theme = Theme.useTheme()
   const { airdrops } = useAirdrops()
   const { months, transactions, recipients } = UseAirdropsExtended()
   const { containerRef, containerHeight, containerWidth } = useContainerSize()
@@ -104,49 +107,18 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
   }, [containerHeight, containerWidth, recipients, handleNodesScrolled, handleNodesChanged])
 
   useEffect(() => {
-    // const payload = buildEdges({
-    //   dataFlowHeight: containerHeight,
-    //   nodes,
-    //   theme,
-    // })
-
-    const payload: typeof edges = []
+    const payload = buildEdges({
+      dataFlowHeight: containerHeight,
+      nodes,
+      theme,
+    })
 
     setEdges(payload)
-  }, [setEdges])
+  }, [containerHeight, nodes, theme, setEdges])
 
   return (
     <Container ref={containerRef} $heightToRemove={heightToRemove}>
       <DataFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} />
     </Container>
   )
-
-  // return (
-  //   <>
-  //     {!airdrops.length ? (
-  //       <CenterThis style={{ height: '50vh' }}>
-  //         <FadeLoader scale={1.5} />
-  //       </CenterThis>
-  //     ) : (
-  //       <DataFlow nodes={[]} edges={[]} onNodesChange={() => {}} onEdgesChange={() => {}} />
-  //       // Object.entries(airdropTimeline).map(([year, months]) =>
-  //       //   Object.entries(months).map(([month, drops]) => (
-  //       //     <div key={`year-${year}-month-${month}`} className='my-2'>
-  //       //       <div>
-  //       //         {resolveMonthName(month)} - {year}
-  //       //       </div>
-
-  //       //       <div>
-  //       //         {drops.map((drop) => (
-  //       //           <div key={`drop-${drop.id}`}>
-  //       //             {drop.tokenName.display}: {drop.tokenAmount.display}
-  //       //           </div>
-  //       //         ))}
-  //       //       </div>
-  //       //     </div>
-  //       //   ))
-  //       // )
-  //     )}
-  //   </>
-  // )
 }

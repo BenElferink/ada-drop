@@ -29,29 +29,35 @@ const createEdge = (
 }
 
 export const buildEdges = ({ dataFlowHeight, nodes, theme }: Params) => {
-  const edges: Edge[] = []
+  const edgeSet = new Set<string>() // Track unique edge IDs
 
-  // const actionNodeId = nodes.find(({ id: nodeId }) =>
-  //   [`${ENTITY_TYPES.ACTION}-${NODE_TYPES.FRAME}`, `${ENTITY_TYPES.ACTION}-${NODE_TYPES.ADD}`].includes(nodeId)
-  // )?.id
-
-  nodes.forEach(({ type: nodeType, id: nodeId, position, data }) => {
+  nodes.forEach(({ id: nodeId, type: nodeType, position, data }) => {
     const columnType = nodeId.split('$')[0] as NODE_COLUMN_TYPES
+    const { airdropId, txHash } = data as EdgedNodeProps['data']
 
     if (columnType === NODE_COLUMN_TYPES.AIRDROPS && nodeType === NODE_TYPES.EDGED && isInPosition(position, dataFlowHeight)) {
-      const {} = data as EdgedNodeProps['data']
-      // const transactionNodeIds = nodes.filter(({ id: nodeId }) => nodeId.includes(`${NODE_COLUMN_TYPES.TRANSACTIONS}$${NODE_TYPES.EDGED}`))
-
-      edges.push(
-        createEdge(`${nodeId}-to-${'TODO:TX_ID_HERE'}`, {
-          theme,
-          animated: false,
-          isMultiTarget: true,
-          label: '',
+      nodes
+        .filter((node) => node.id.includes(`${NODE_COLUMN_TYPES.TRANSACTIONS}$${NODE_TYPES.EDGED}-${airdropId}`))
+        .forEach(({ id }) => {
+          const edgeId = `${nodeId}-to-${id}`
+          if (!edgeSet.has(edgeId)) edgeSet.add(edgeId)
         })
-      )
+    }
+
+    if (columnType === NODE_COLUMN_TYPES.TRANSACTIONS && nodeType === NODE_TYPES.EDGED && isInPosition(position, dataFlowHeight)) {
+      nodes
+        .filter((node) => node.id.includes(`${NODE_COLUMN_TYPES.RECIPIENTS}$${NODE_TYPES.EDGED}-${airdropId}-${txHash}`))
+        .forEach(({ id }) => {
+          const edgeId = `${nodeId}-to-${id}`
+          if (!edgeSet.has(edgeId)) edgeSet.add(edgeId)
+        })
     }
   })
 
-  return edges
+  return Array.from(edgeSet).map((edgeId) =>
+    createEdge(edgeId, {
+      theme,
+      animated: true,
+    })
+  )
 }

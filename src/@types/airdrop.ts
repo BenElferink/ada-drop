@@ -34,5 +34,6 @@ export interface AirdropTransaction extends TokenSelectionSettings {
 export interface AirdropRicipent extends TokenSelectionSettings {
   timestamp: number
   airdropId: string
+  txHash: TransactionId
   stakeKey: StakeKey
 }

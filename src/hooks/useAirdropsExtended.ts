@@ -53,6 +53,7 @@ const mapAirdrops = (data: Airdrop[]) => {
           airdropId: item.id,
           stakeKey: recipient.stakeKey,
           thumb: item.thumb,
+          txHash: recipient.txHash,
           tokenId: item.tokenId,
           tokenName: item.tokenName,
           tokenAmount: {
