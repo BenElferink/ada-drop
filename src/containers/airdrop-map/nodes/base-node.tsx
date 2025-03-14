@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { NODE_TYPES } from '@/@types'
 import { DataTab } from '@odigos/ui-kit/components'
 import { NOTIFICATION_TYPE, type SVG } from '@odigos/ui-kit/types'
-import { Handle, type Node, type NodeProps, Position } from '@xyflow/react'
+import { Handle, type Node, type NodeProps, Position, XYPosition } from '@xyflow/react'
 import { ErrorTriangleIcon, WarningTriangleIcon } from '@odigos/ui-kit/icons'
 import nodeConfig from '../helpers/node-config'
 
@@ -18,6 +18,7 @@ export type BaseNodeProps = NodeProps<
       icons?: SVG[]
       iconSrcs?: string[]
       withClick?: boolean
+      position: XYPosition
     },
     NODE_TYPES.BASE
   >

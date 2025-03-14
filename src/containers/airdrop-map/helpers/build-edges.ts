@@ -1,8 +1,8 @@
 import { EDGE_TYPES, NODE_COLUMN_TYPES, NODE_TYPES } from '@/@types'
-import nodeConfig from './node-config'
-import { EdgedNodeProps } from '../nodes/edged-node'
+import type { Edge, Node } from '@xyflow/react'
+import { isInPosition } from './get-node-positions'
 import type { DefaultTheme } from 'styled-components'
-import type { Edge, Node, XYPosition } from '@xyflow/react'
+import type { EdgedNodeProps } from '../nodes/edged-node'
 
 interface Params {
   dataFlowHeight: number
@@ -26,14 +26,6 @@ const createEdge = (
     data: { label, isMultiTarget, isError },
     style: { stroke: isError ? theme?.colors.dark_red : theme?.colors.border },
   }
-}
-
-const isInPosition = (position: XYPosition, dataFlowHeight: number) => {
-  const { nodeHeight, nodePadding } = nodeConfig
-  const topLimit = -nodeHeight / 2 + nodePadding
-  const bottomLimit = Math.floor(dataFlowHeight / nodeHeight) * nodeHeight - (nodeHeight / 2 + nodePadding)
-
-  return position.y >= topLimit && position.y <= bottomLimit
 }
 
 export const buildEdges = ({ dataFlowHeight, nodes, theme }: Params) => {

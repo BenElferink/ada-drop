@@ -1,10 +1,10 @@
 import type { Node } from '@xyflow/react'
 import { mapToNodeData } from './map-to-node-data'
-import { getNodePositions } from './get-node-positions'
 import { resolveHeaderNode } from './resolve-header-node'
 import { resolveScrollNode } from './resolve-scroll-node'
 import { resolveHiddenNode } from './resolve-edged-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
+import { getNodePositions, isInPosition } from './get-node-positions'
 import { type AirdropMonth, NODE_COLUMN_TYPES, type OnScroll } from '@/@types'
 
 interface Params {
@@ -25,15 +25,20 @@ export const buildMonthNodes = ({ dataFlowHeight, dataFlowWidth, months, onScrol
   // Init Airdrops
 
   if (!!months.length) {
-    const items = months.map(({ label, airdropCount }) =>
-      mapToNodeData({
-        airdropId: '',
-        iconSrc: '/cardano.svg',
-        title: label,
-        subTitle: `Airdrops: ${airdropCount}`,
-        withClick: false,
-      })
-    )
+    const items = months
+      .map(({ label, airdropCount }, idx) =>
+        mapToNodeData({
+          type: NODE_COLUMN_TYPES.ACTIVE_MONTHS,
+          airdropId: '',
+          iconSrc: '/cardano.svg',
+          title: label,
+          subTitle: `Airdrops: ${airdropCount}`,
+          withClick: false,
+          positions,
+          idx,
+        })
+      )
+      .filter(({ position }) => isInPosition(position, dataFlowHeight, true))
 
     nodes.push(resolveScrollNode(positions, NODE_COLUMN_TYPES.ACTIVE_MONTHS, dataFlowHeight, items, onScroll))
     items.forEach((data, idx) => nodes.push(resolveHiddenNode(positions, NODE_COLUMN_TYPES.ACTIVE_MONTHS, idx, data)))

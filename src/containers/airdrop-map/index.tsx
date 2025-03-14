@@ -39,11 +39,11 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
   )
 
   const handleNodesScrolled = useCallback(
-    (currNodes: Node[], yOffset: number) => {
+    (currNodes: Node[], key: NODE_COLUMN_TYPES, yOffset: number) => {
       setNodes((prevNodes) =>
         applyNodeChanges(
           currNodes
-            .filter((node) => node.extent === 'parent' && node.parentId?.includes(`-${NODE_TYPES.SCROLL}`))
+            .filter((node) => node.extent === 'parent' && node.parentId?.includes(`${key}$${NODE_TYPES.SCROLL}`))
             .map((node) => ({
               id: node.id,
               type: 'position',
@@ -64,7 +64,7 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
       dataFlowHeight: containerHeight,
       dataFlowWidth: containerWidth,
       airdrops,
-      onScroll: ({ scrollTop }) => handleNodesScrolled(payload, scrollTop),
+      onScroll: ({ scrollTop }) => handleNodesScrolled(payload, NODE_COLUMN_TYPES.AIRDROPS, scrollTop),
     })
 
     handleNodesChanged(payload, NODE_COLUMN_TYPES.AIRDROPS)
@@ -75,7 +75,7 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
       dataFlowHeight: containerHeight,
       dataFlowWidth: containerWidth,
       months,
-      onScroll: ({ scrollTop }) => handleNodesScrolled(payload, scrollTop),
+      onScroll: ({ scrollTop }) => handleNodesScrolled(payload, NODE_COLUMN_TYPES.ACTIVE_MONTHS, scrollTop),
     })
 
     handleNodesChanged(payload, NODE_COLUMN_TYPES.ACTIVE_MONTHS)
@@ -86,7 +86,7 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
       dataFlowHeight: containerHeight,
       dataFlowWidth: containerWidth,
       transactions,
-      onScroll: ({ scrollTop }) => handleNodesScrolled(payload, scrollTop),
+      onScroll: ({ scrollTop }) => handleNodesScrolled(payload, NODE_COLUMN_TYPES.TRANSACTIONS, scrollTop),
     })
 
     handleNodesChanged(payload, NODE_COLUMN_TYPES.TRANSACTIONS)
@@ -97,7 +97,7 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
       dataFlowHeight: containerHeight,
       dataFlowWidth: containerWidth,
       recipients,
-      onScroll: ({ scrollTop }) => handleNodesScrolled(payload, scrollTop),
+      onScroll: ({ scrollTop }) => handleNodesScrolled(payload, NODE_COLUMN_TYPES.RECIPIENTS, scrollTop),
     })
 
     handleNodesChanged(payload, NODE_COLUMN_TYPES.RECIPIENTS)

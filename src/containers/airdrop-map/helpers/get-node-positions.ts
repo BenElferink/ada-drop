@@ -1,8 +1,9 @@
 import nodeConfig from './node-config'
 import { NODE_COLUMN_TYPES } from '@/@types'
+import type { XYPosition } from '@xyflow/react'
 import { getValueForRange } from '@odigos/ui-kit/functions'
 
-const { nodeWidth, nodeHeight } = nodeConfig
+const { nodeWidth, nodeHeight, nodePadding } = nodeConfig
 
 interface Params {
   dataFlowWidth: number
@@ -47,4 +48,13 @@ export const getNodePositions = ({ dataFlowWidth }: Params) => {
   }
 
   return positions
+}
+
+export const isInPosition = (position: XYPosition, dataFlowHeight: number, withScroll?: boolean) => {
+  const topLimit = -nodeHeight / 2 + nodePadding
+  let bottomLimit = Math.floor(dataFlowHeight / nodeHeight) * nodeHeight - (nodeHeight / 2 + nodePadding)
+
+  if (withScroll) bottomLimit += 555
+
+  return position.y >= topLimit && position.y <= bottomLimit
 }
