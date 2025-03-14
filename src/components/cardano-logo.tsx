@@ -1,9 +1,10 @@
 import React from 'react'
-import type { SVG } from '@odigos/ui-icons'
-import Theme from '@odigos/ui-theme'
+import Theme from '@odigos/ui-kit/theme'
+import { useDarkMode } from '@odigos/ui-kit/store'
+import type { SVG } from '@odigos/ui-kit/types'
 
-const CardanoLogo: SVG = ({ size = 16, fill: f, rotate = 0, onClick }) => {
-  const { darkMode } = Theme.useDarkMode()
+export const CardanoLogo: SVG = ({ size = 16, fill: f, rotate = 0, onClick }) => {
+  const { darkMode } = useDarkMode()
   const theme = Theme.useTheme()
   const lightColor = '#3cc8c8'
   const darkColor = theme.colors.majestic_blue
@@ -25,5 +26,3 @@ const CardanoLogo: SVG = ({ size = 16, fill: f, rotate = 0, onClick }) => {
     </svg>
   )
 }
-
-export default CardanoLogo

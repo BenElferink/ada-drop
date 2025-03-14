@@ -1,8 +1,9 @@
 'use client'
 
 import styled from 'styled-components'
-import Header from '@/components/header'
-import { FlexColumn } from '@odigos/ui-components'
+import { Header } from '@/components'
+import { AirdropMap } from '@/containers'
+import { FlexColumn } from '@odigos/ui-kit/components'
 
 const PageContainer = styled(FlexColumn)`
   width: 100%;
@@ -15,6 +16,7 @@ const Page = () => {
   return (
     <PageContainer>
       <Header />
+      <AirdropMap />
     </PageContainer>
   )
 }

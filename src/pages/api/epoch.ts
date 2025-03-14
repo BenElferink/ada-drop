@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import type { EpochInfo } from '@/@types'
 import blockfrost from '@/utils/blockfrost'
 import { firestore } from '@/utils/firebase'
 
@@ -9,15 +10,7 @@ export const config = {
   },
 }
 
-export interface EpochResponse {
-  epoch: number
-  startTime: number
-  endTime: number
-  nowTime: number
-  percent: number
-}
-
-const handler = async (req: NextApiRequest, res: NextApiResponse<EpochResponse>) => {
+const handler = async (req: NextApiRequest, res: NextApiResponse<EpochInfo>) => {
   const { method } = req
 
   try {

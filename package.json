@@ -11,6 +11,7 @@
     "url": "https://github.com/BenElferink/ada-drop/issues"
   },
   "scripts": {
+    "predev": "rm -rf .next",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
@@ -18,16 +19,14 @@
   },
   "dependencies": {
     "@blockfrost/blockfrost-js": "^6.0.0",
-    "@odigos/ui-components": "^0.0.93",
-    "@odigos/ui-icons": "^0.0.14",
-    "@odigos/ui-theme": "^0.0.16",
-    "@odigos/ui-utils": "^0.0.44",
-    "axios": "^1.8.2",
+    "@odigos/ui-kit": "^0.0.7",
+    "axios": "^1.8.3",
     "firebase": "^11.4.0",
-    "next": "15.2.1",
+    "next": "15.2.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "styled-components": "^6.1.15"
+    "styled-components": "^6.1.15",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -35,7 +34,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.2.1",
+    "eslint-config-next": "15.2.2",
     "typescript": "^5"
   }
 }

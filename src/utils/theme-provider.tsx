@@ -1,9 +1,9 @@
 'use client'
 
 import React, { type FC, type PropsWithChildren, useState } from 'react'
-import Theme from '@odigos/ui-theme'
 import { useServerInsertedHTML } from 'next/navigation'
 import { ServerStyleSheet, StyleSheetManager } from 'styled-components'
+import Theme from '@odigos/ui-kit/theme'
 
 const StyledComponentsRegistry: FC<PropsWithChildren> = ({ children }) => {
   // Only create stylesheet once with lazy initial state
