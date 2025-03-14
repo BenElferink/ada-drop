@@ -16,7 +16,7 @@ const Page = () => {
   return (
     <PageContainer>
       <Header />
-      <AirdropMap />
+      <AirdropMap heightToRemove='80px' />
     </PageContainer>
   )
 }

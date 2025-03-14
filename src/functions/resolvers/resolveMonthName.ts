@@ -1,12 +1,10 @@
-type ResolveMonthName = (monthIndex: number | string) => string
-
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
-export const resolveMonthName: ResolveMonthName = (monthIndex) => {
+export const resolveMonthName = (monthIndex: number | string) => {
   const num = Number(monthIndex)
 
-  if (isNaN(num) || num < 0 || num > 11) {
-    return monthIndex.toString()
+  if (isNaN(num)) {
+    return monthIndex
   }
 
   return monthNames[num]
