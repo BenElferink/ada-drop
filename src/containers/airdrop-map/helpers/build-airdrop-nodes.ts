@@ -31,6 +31,7 @@ export const buildAirdropNodes = ({ dataFlowHeight, dataFlowWidth, airdrops, onS
         mapToNodeData({
           type: NODE_COLUMN_TYPES.AIRDROPS,
           airdropId: id,
+          stakeKey,
           iconSrc: formatIpfsReference(thumb).url,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           subTitle: truncateStringInMiddle(stakeKey, 15),

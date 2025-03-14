@@ -27,15 +27,16 @@ export const buildTransactionNodes = ({ dataFlowHeight, dataFlowWidth, transacti
 
   if (!!transactions.length) {
     const items = transactions
-      .map(({ airdropId, thumb, tokenAmount, tokenName, txHash, recipientCount }, idx) =>
+      .map(({ airdropId, thumb, txHash, recipientCount }, idx) =>
         mapToNodeData({
           type: NODE_COLUMN_TYPES.TRANSACTIONS,
           airdropId,
           txHash,
           iconSrc: formatIpfsReference(thumb).url,
-          title: `${recipientCount} Recipients, ${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
+          // title: `${recipientCount} Recipients, ${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
+          title: `${recipientCount} Recipients`,
           subTitle: truncateStringInMiddle(txHash, 15),
-          withClick: false,
+          withClick: true,
           positions,
           idx,
         })

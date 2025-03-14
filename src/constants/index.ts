@@ -15,3 +15,6 @@ export const ADA = {
 }
 
 export const TITLE = `${ADA.SYMBOL}D${ADA.SYMBOL} Drop`
+
+// https://github.com/BenElferink/badfoxmc-labs/commit/afc5eebbf9fb0c01445e5a701c0a6828f44523b6
+export const DATA_START_TIME = 1739611211000
