@@ -1,8 +1,10 @@
 import type { Node } from '@xyflow/react'
+import { DATA_START_TIME } from '@/constants'
 import { mapToNodeData } from './map-to-node-data'
+import { resolveEdgedNode } from './resolve-edged-node'
+import { NOTIFICATION_TYPE } from '@odigos/ui-kit/types'
 import { resolveHeaderNode } from './resolve-header-node'
 import { resolveScrollNode } from './resolve-scroll-node'
-import { resolveEdgedNode } from './resolve-edged-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
 import { getNodePositions, isInPosition } from './get-node-positions'
 import { type AirdropRicipent, NODE_COLUMN_TYPES, type OnScroll } from '@/@types'
@@ -27,12 +29,13 @@ export const buildRecipientNodes = ({ dataFlowHeight, dataFlowWidth, recipients,
 
   if (!!recipients.length) {
     const items = recipients
-      .map(({ airdropId, thumb, txHash, tokenAmount, tokenName, stakeKey }, idx) =>
+      .map(({ airdropId, thumb, txHash, tokenAmount, tokenName, stakeKey, timestamp }, idx) =>
         mapToNodeData({
           type: NODE_COLUMN_TYPES.RECIPIENTS,
           airdropId,
           txHash,
           stakeKey,
+          status: timestamp < DATA_START_TIME ? NOTIFICATION_TYPE.WARNING : undefined,
           iconSrc: formatIpfsReference(thumb).url,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           subTitle: truncateStringInMiddle(stakeKey, 15),

@@ -9,13 +9,15 @@ export const mapToNodeData = ({
   airdropId,
   txHash,
   stakeKey,
+  status,
+  faded,
   iconSrc,
   title,
   subTitle,
   withClick,
   positions,
   idx,
-}: Pick<BaseNodeProps['data'], 'airdropId' | 'txHash' | 'stakeKey' | 'title' | 'subTitle' | 'withClick'> & {
+}: Pick<BaseNodeProps['data'], 'airdropId' | 'txHash' | 'stakeKey' | 'title' | 'subTitle' | 'withClick' | 'status' | 'faded'> & {
   type: NODE_COLUMN_TYPES
   iconSrc: string
   positions: NodePositions
@@ -25,8 +27,8 @@ export const mapToNodeData = ({
     airdropId,
     txHash,
     stakeKey,
-    status: undefined,
-    faded: undefined,
+    status,
+    faded,
     title,
     subTitle,
     icons: !iconSrc ? [CardanoLogo] : undefined,

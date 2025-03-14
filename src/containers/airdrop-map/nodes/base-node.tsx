@@ -1,11 +1,12 @@
 import React, { memo } from 'react'
 import styled from 'styled-components'
-import { DataTab } from '@odigos/ui-kit/components'
+import { DataTab, Tooltip } from '@odigos/ui-kit/components'
 import type { Node, NodeProps, XYPosition } from '@xyflow/react'
 import { NOTIFICATION_TYPE, type SVG } from '@odigos/ui-kit/types'
 import { NODE_TYPES, type StakeKey, type TransactionId } from '@/@types'
 import { ErrorTriangleIcon, WarningTriangleIcon } from '@odigos/ui-kit/icons'
 import nodeConfig from '../helpers/node-config'
+import { DATA_START_TIME } from '@/constants'
 
 export type BaseNodeProps = NodeProps<
   Node<
@@ -46,9 +47,15 @@ const BaseNode: React.FC<BaseNodeProps> = memo(({ data }) => {
         onClick={withClick ? () => {} : undefined}
         renderActions={() =>
           status === NOTIFICATION_TYPE.ERROR ? (
-            <ErrorTriangleIcon size={20} />
+            <Tooltip text='Failed to collect data for historical airdrop'>
+              <ErrorTriangleIcon size={20} />
+            </Tooltip>
           ) : status === NOTIFICATION_TYPE.WARNING ? (
-            <WarningTriangleIcon size={20} />
+            <Tooltip
+              text={`Historical airdrops (prior to ${new Date(DATA_START_TIME).toLocaleDateString('en-US')}) may have innacurate data displayed`}
+            >
+              <WarningTriangleIcon size={20} />
+            </Tooltip>
           ) : null
         }
       />
