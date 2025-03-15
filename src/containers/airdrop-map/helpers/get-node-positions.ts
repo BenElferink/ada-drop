@@ -1,6 +1,6 @@
 import nodeConfig from './node-config'
-import { NODE_COLUMN_TYPES } from '@/@types'
 import type { XYPosition } from '@xyflow/react'
+import { NODE_COLUMN_TYPES, type OnScrollParams } from '@/@types'
 
 const { nodeWidth, nodeHeight, nodePadding } = nodeConfig
 
@@ -43,11 +43,17 @@ export const getNodePositions = ({ dataFlowWidth }: Params) => {
   return positions
 }
 
-export const isInPosition = (position: XYPosition, dataFlowHeight: number, withScroll?: boolean) => {
+export const isInPosition = (position: XYPosition, dataFlowHeight: number, withScroll?: boolean, scrollParams?: OnScrollParams) => {
   const topLimit = -nodeHeight / 2 + nodePadding
   let bottomLimit = Math.floor(dataFlowHeight / nodeHeight) * nodeHeight - (nodeHeight / 2 + nodePadding)
 
-  if (withScroll) bottomLimit += 555
+  // init with more space to allow scrolling (not for edges)
+  if (withScroll) bottomLimit += scrollParams?.clientHeight || 1000
+
+  // add more nodes to the bottom limit if the scroll is at the bottom
+  if (withScroll && !!scrollParams && bottomLimit + scrollParams.scrollTop >= scrollParams.scrollHeight) {
+    bottomLimit += scrollParams.scrollHeight
+  }
 
   return position.y >= topLimit && position.y <= bottomLimit
 }

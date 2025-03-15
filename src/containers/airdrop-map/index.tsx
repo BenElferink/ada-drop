@@ -3,12 +3,12 @@ import styled from 'styled-components'
 import { DataFlow } from './data-flow'
 import Theme from '@odigos/ui-kit/theme'
 import { useContainerSize } from '@odigos/ui-kit/hooks'
-import { NODE_COLUMN_TYPES, NODE_TYPES } from '@/@types'
 import { useAirdrops, UseAirdropsExtended } from '@/hooks'
 import { buildMonthNodes } from './helpers/build-month-nodes'
 import { buildAirdropNodes } from './helpers/build-airdrop-nodes'
 import { buildRecipientNodes } from './helpers/build-recipient-nodes'
 import { buildTransactionNodes } from './helpers/build-transactions-nodes'
+import { NODE_COLUMN_TYPES, NODE_TYPES, type OnScrollParams } from '@/@types'
 import { applyNodeChanges, type Edge, type Node, useEdgesState, useNodesState } from '@xyflow/react'
 import { buildEdges } from './helpers/build-edges'
 
@@ -42,9 +42,14 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
   )
 
   const handleNodesScrolled = useCallback(
-    (currNodes: Node[], key: NODE_COLUMN_TYPES, yOffset: number) => {
-      setNodes((prevNodes) =>
-        applyNodeChanges(
+    (currNodes: Node[], newNodes: Node[], key: NODE_COLUMN_TYPES, onScrollParams: OnScrollParams) => {
+      const { scrollTop: yOffset } = onScrollParams
+
+      const hasNew = !!newNodes.find(({ id: newId }) => !currNodes.find(({ id: oldId }) => oldId === newId))
+      if (hasNew) return handleNodesChanged(newNodes, key)
+
+      setNodes((prevNodes) => {
+        const changed = applyNodeChanges(
           currNodes
             .filter((node) => node.extent === 'parent' && node.parentId?.includes(`${key}$${NODE_TYPES.SCROLL}`))
             .map((node) => ({
@@ -57,53 +62,75 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
             })),
           prevNodes
         )
-      )
+
+        return changed
+      })
     },
-    [setNodes]
+    [setNodes, handleNodesChanged]
   )
 
   useEffect(() => {
-    const payload = buildAirdropNodes({
-      dataFlowHeight: containerHeight,
-      dataFlowWidth: containerWidth,
-      airdrops,
-      onScroll: ({ scrollTop }) => handleNodesScrolled(payload, NODE_COLUMN_TYPES.AIRDROPS, scrollTop),
-    })
+    const build = (scrollParams?: OnScrollParams) => {
+      const payload = buildAirdropNodes({
+        dataFlowHeight: containerHeight,
+        dataFlowWidth: containerWidth,
+        airdrops,
+        onScroll: (params) => handleNodesScrolled(payload, build(params), NODE_COLUMN_TYPES.AIRDROPS, params),
+        scrollParams,
+      })
 
-    handleNodesChanged(payload, NODE_COLUMN_TYPES.AIRDROPS)
+      return payload
+    }
+
+    handleNodesChanged(build(), NODE_COLUMN_TYPES.AIRDROPS)
   }, [containerHeight, containerWidth, airdrops, handleNodesScrolled, handleNodesChanged])
 
   useEffect(() => {
-    const payload = buildMonthNodes({
-      dataFlowHeight: containerHeight,
-      dataFlowWidth: containerWidth,
-      months,
-      onScroll: ({ scrollTop }) => handleNodesScrolled(payload, NODE_COLUMN_TYPES.ACTIVE_MONTHS, scrollTop),
-    })
+    const build = (scrollParams?: OnScrollParams) => {
+      const payload = buildMonthNodes({
+        dataFlowHeight: containerHeight,
+        dataFlowWidth: containerWidth,
+        months,
+        onScroll: (params) => handleNodesScrolled(payload, build(params), NODE_COLUMN_TYPES.ACTIVE_MONTHS, params),
+        scrollParams,
+      })
 
-    handleNodesChanged(payload, NODE_COLUMN_TYPES.ACTIVE_MONTHS)
+      return payload
+    }
+
+    handleNodesChanged(build(), NODE_COLUMN_TYPES.ACTIVE_MONTHS)
   }, [containerHeight, containerWidth, months, handleNodesScrolled, handleNodesChanged])
 
   useEffect(() => {
-    const payload = buildTransactionNodes({
-      dataFlowHeight: containerHeight,
-      dataFlowWidth: containerWidth,
-      transactions,
-      onScroll: ({ scrollTop }) => handleNodesScrolled(payload, NODE_COLUMN_TYPES.TRANSACTIONS, scrollTop),
-    })
+    const build = (scrollParams?: OnScrollParams) => {
+      const payload = buildTransactionNodes({
+        dataFlowHeight: containerHeight,
+        dataFlowWidth: containerWidth,
+        transactions,
+        onScroll: (params) => handleNodesScrolled(payload, build(params), NODE_COLUMN_TYPES.TRANSACTIONS, params),
+        scrollParams,
+      })
 
-    handleNodesChanged(payload, NODE_COLUMN_TYPES.TRANSACTIONS)
+      return payload
+    }
+
+    handleNodesChanged(build(), NODE_COLUMN_TYPES.TRANSACTIONS)
   }, [containerHeight, containerWidth, transactions, handleNodesScrolled, handleNodesChanged])
 
   useEffect(() => {
-    const payload = buildRecipientNodes({
-      dataFlowHeight: containerHeight,
-      dataFlowWidth: containerWidth,
-      recipients,
-      onScroll: ({ scrollTop }) => handleNodesScrolled(payload, NODE_COLUMN_TYPES.RECIPIENTS, scrollTop),
-    })
+    const build = (scrollParams?: OnScrollParams) => {
+      const payload = buildRecipientNodes({
+        dataFlowHeight: containerHeight,
+        dataFlowWidth: containerWidth,
+        recipients,
+        onScroll: (params) => handleNodesScrolled(payload, build(params), NODE_COLUMN_TYPES.RECIPIENTS, params),
+        scrollParams,
+      })
 
-    handleNodesChanged(payload, NODE_COLUMN_TYPES.RECIPIENTS)
+      return payload
+    }
+
+    handleNodesChanged(build(), NODE_COLUMN_TYPES.RECIPIENTS)
   }, [containerHeight, containerWidth, recipients, handleNodesScrolled, handleNodesChanged])
 
   useEffect(() => {

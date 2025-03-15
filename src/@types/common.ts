@@ -9,4 +9,5 @@ export type TokenId = string
 export type PoolId = string
 export type TransactionId = string
 
-export type OnScroll = (params: { clientHeight: number; scrollHeight: number; scrollTop: number }) => void
+export type OnScrollParams = { isTop: boolean; isBottom: boolean; clientHeight: number; scrollHeight: number; scrollTop: number }
+export type OnScroll = (params: OnScrollParams) => void

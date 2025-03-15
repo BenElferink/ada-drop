@@ -6,16 +6,17 @@ import { resolveScrollNode } from './resolve-scroll-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
 import { getNodePositions, isInPosition } from './get-node-positions'
 import { formatIpfsReference, truncateStringInMiddle } from '@/functions'
-import { type AirdropTransaction, NODE_COLUMN_TYPES, type OnScroll } from '@/@types'
+import { type AirdropTransaction, NODE_COLUMN_TYPES, type OnScroll, type OnScrollParams } from '@/@types'
 
 interface Params {
   dataFlowHeight: number
   dataFlowWidth: number
   transactions: AirdropTransaction[]
   onScroll: OnScroll
+  scrollParams?: OnScrollParams
 }
 
-export const buildTransactionNodes = ({ dataFlowHeight, dataFlowWidth, transactions, onScroll }: Params) => {
+export const buildTransactionNodes = ({ dataFlowHeight, dataFlowWidth, transactions, onScroll, scrollParams }: Params) => {
   const positions = getNodePositions({ dataFlowWidth })
   const nodes: Node[] = []
 
@@ -42,7 +43,7 @@ export const buildTransactionNodes = ({ dataFlowHeight, dataFlowWidth, transacti
           idx,
         })
       )
-      .filter(({ position }) => isInPosition(position, dataFlowHeight, true))
+      .filter(({ position }) => isInPosition(position, dataFlowHeight, true, scrollParams))
 
     nodes.push(resolveScrollNode(positions, NODE_COLUMN_TYPES.TRANSACTIONS, dataFlowHeight, items, onScroll))
     items.forEach((data, idx) => nodes.push(resolveEdgedNode(positions, NODE_COLUMN_TYPES.TRANSACTIONS, idx, data)))

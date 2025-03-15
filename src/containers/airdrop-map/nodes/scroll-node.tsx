@@ -56,9 +56,12 @@ const ScrollNode: React.FC<ScrollNodeProps> = memo(({ data }) => {
       e.stopPropagation()
 
       const { clientHeight, scrollHeight, scrollTop } = e.target as HTMLDivElement
-      if (!!onScroll) onScroll({ clientHeight, scrollHeight, scrollTop })
-
+      const isTop = scrollTop === 0
       const isBottom = scrollHeight - scrollTop <= clientHeight
+
+      if (!!onScroll) onScroll({ isTop, isBottom, clientHeight, scrollHeight, scrollTop })
+
+      // to remove overlay
       setIsBottomOfList(isBottom)
     }
 
