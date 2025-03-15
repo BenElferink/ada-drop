@@ -31,7 +31,7 @@ export const buildMonthNodes = ({ dataFlowHeight, dataFlowWidth, months, onScrol
         mapToNodeData({
           type: NODE_COLUMN_TYPES.ACTIVE_MONTHS,
           timestamp,
-          iconSrc: '/cardano.svg',
+          iconSrc: '',
           title: label,
           subTitle: `Airdrops: ${airdropCount}`,
           withClick: false,
