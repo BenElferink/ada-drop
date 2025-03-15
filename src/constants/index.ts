@@ -19,6 +19,10 @@ export const LIGHT_ADA_COLOR = '#3cc8c8'
 
 // https://github.com/BenElferink/badfoxmc-labs/commit/afc5eebbf9fb0c01445e5a701c0a6828f44523b6
 export const DATA_START_TIME = 1739611211000
-export const HISTORIC_DATA_WARNING = `Some historical airdrops (prior to ${new Date(DATA_START_TIME).toLocaleDateString(
-  'en-US'
-)}) may have missing data`
+export const HISTORIC_DATA_MESSAGES = {
+  TITLE: `Historic data (prior to ${new Date(DATA_START_TIME).toLocaleDateString('en-US')})`,
+  DESCRIPTION:
+    'Some historic data may have missing or innacurate data displayed. This however does not affect the processing of the airdrop, only the visual representation.',
+  MISSING_DATA: 'Missing data for historic airdrop',
+  INNACURATE_DATA: 'Innacurate data for historic airdrop',
+}

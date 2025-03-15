@@ -1,11 +1,11 @@
 import React, { memo } from 'react'
 import styled from 'styled-components'
 import { NODE_TYPES } from '@/@types'
-import Theme from '@odigos/ui-kit/theme'
+import { HISTORIC_DATA_MESSAGES } from '@/constants'
 import type { Node, NodeProps } from '@xyflow/react'
-import { getStatusIcon } from '@odigos/ui-kit/functions'
-import type { NOTIFICATION_TYPE, SVG } from '@odigos/ui-kit/types'
-import { FlexRow, IconTitleBadge } from '@odigos/ui-kit/components'
+import { WarningTriangleIcon } from '@odigos/ui-kit/icons'
+import { NOTIFICATION_TYPE, SVG } from '@odigos/ui-kit/types'
+import { FlexRow, IconTitleBadge, Tooltip } from '@odigos/ui-kit/components'
 import nodeConfig from '../helpers/node-config'
 
 export type HeaderNodeProps = NodeProps<
@@ -33,14 +33,17 @@ const Container = styled(FlexRow)`
 `
 
 const HeaderNode: React.FC<HeaderNodeProps> = memo(({ data }) => {
-  const theme = Theme.useTheme()
   const { icon, title, badge, isFetching, status } = data
-  const StatusIcon = status && getStatusIcon(status, theme)
 
   return (
     <Container className='nowheel nodrag'>
       <IconTitleBadge icon={icon} title={title} badge={badge} loading={isFetching} />
-      {StatusIcon && <StatusIcon />}
+
+      {status === NOTIFICATION_TYPE.WARNING ? (
+        <Tooltip titleIcon={WarningTriangleIcon} title={HISTORIC_DATA_MESSAGES.TITLE} text={HISTORIC_DATA_MESSAGES.DESCRIPTION}>
+          <WarningTriangleIcon size={20} />
+        </Tooltip>
+      ) : null}
     </Container>
   )
 })

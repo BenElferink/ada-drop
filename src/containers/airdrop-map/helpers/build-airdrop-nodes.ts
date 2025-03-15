@@ -8,6 +8,7 @@ import { resolveSkeletonNode } from './resolve-skeleton-node'
 import { getNodePositions, isInPosition } from './get-node-positions'
 import { type Airdrop, NODE_COLUMN_TYPES, type OnScroll } from '@/@types'
 import { formatIpfsReference, getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
+import { DATA_START_TIME } from '@/constants'
 
 interface Params {
   dataFlowHeight: number
@@ -34,7 +35,7 @@ export const buildAirdropNodes = ({ dataFlowHeight, dataFlowWidth, airdrops, onS
           timestamp,
           airdropId: id,
           stakeKey,
-          status: !recipients?.length ? NOTIFICATION_TYPE.WARNING : undefined,
+          status: !recipients?.length ? NOTIFICATION_TYPE.ERROR : timestamp < DATA_START_TIME ? NOTIFICATION_TYPE.WARNING : undefined,
           iconSrc: formatIpfsReference(thumb).url,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           subTitle: truncateStringInMiddle(stakeKey, 15),
