@@ -1,10 +1,12 @@
 import type { MouseEvent } from 'react'
 import type { Node } from '@xyflow/react'
+import { useAirdropStore } from '@/store'
 import { NODE_COLUMN_TYPES } from '@/@types'
-import { getExplorerUrl } from '@/functions'
 import type { BaseNodeProps } from '@/containers/airdrop-map/nodes/base-node'
 
 const useClickNode = () => {
+  const { selectedAirdropId, setSelectedAirdropId } = useAirdropStore()
+
   const onClickNode: (event: MouseEvent, object: Node) => void = (_, { id: nodeId, data: { withClick, ...data } }) => {
     if (!withClick) return
 
@@ -14,20 +16,47 @@ const useClickNode = () => {
     if (!!airdropId) {
       switch (columnType) {
         case NODE_COLUMN_TYPES.AIRDROPS: {
-          if (!!stakeKey) window.open(getExplorerUrl('stakeKey', stakeKey), '_blank', 'noopener noreferrer')
-          else console.error('node does not have stakeKey', nodeId)
+          if (!stakeKey) {
+            console.error('node does not have stakeKey', nodeId)
+            break
+          }
+
+          if (!selectedAirdropId || selectedAirdropId !== airdropId) {
+            setSelectedAirdropId(airdropId)
+          } else {
+            setSelectedAirdropId('')
+            // window.open(getExplorerUrl('stakeKey', stakeKey), '_blank', 'noopener noreferrer')
+          }
           break
         }
 
         case NODE_COLUMN_TYPES.TRANSACTIONS: {
-          if (!!txHash) window.open(getExplorerUrl('tx', txHash), '_blank', 'noopener noreferrer')
-          else console.error('node does not have txHash', nodeId)
+          if (!txHash) {
+            console.error('node does not have txHash', nodeId)
+            break
+          }
+
+          if (!selectedAirdropId || selectedAirdropId !== airdropId) {
+            setSelectedAirdropId(airdropId)
+          } else {
+            setSelectedAirdropId('')
+            // window.open(getExplorerUrl('tx', txHash), '_blank', 'noopener noreferrer')
+          }
           break
         }
 
         case NODE_COLUMN_TYPES.RECIPIENTS: {
-          if (!!stakeKey) window.open(getExplorerUrl('stakeKey', stakeKey), '_blank', 'noopener noreferrer')
-          else console.error('node does not have stakeKey', nodeId)
+          if (!stakeKey) {
+            console.error('node does not have stakeKey', nodeId)
+            break
+          }
+
+          if (!selectedAirdropId || selectedAirdropId !== airdropId) {
+            setSelectedAirdropId(airdropId)
+          } else {
+            setSelectedAirdropId('')
+            // window.open(getExplorerUrl('stakeKey', stakeKey), '_blank', 'noopener noreferrer')
+          }
           break
         }
 

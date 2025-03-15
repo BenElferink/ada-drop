@@ -2,6 +2,7 @@ import React, { FC, useCallback, useEffect, type CSSProperties } from 'react'
 import styled from 'styled-components'
 import { DataFlow } from './data-flow'
 import Theme from '@odigos/ui-kit/theme'
+import { useAirdropStore } from '@/store'
 import { useContainerSize } from '@odigos/ui-kit/hooks'
 import { useAirdrops, UseAirdropsExtended } from '@/hooks'
 import { buildMonthNodes } from './helpers/build-month-nodes'
@@ -24,7 +25,9 @@ const Container = styled.div<{ $heightToRemove: AirdropMapProps['heightToRemove'
 
 export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
   const theme = Theme.useTheme()
+
   const { airdrops } = useAirdrops()
+  const { selectedAirdropId } = useAirdropStore()
   const { months, transactions, recipients } = UseAirdropsExtended()
   const { containerRef, containerHeight, containerWidth } = useContainerSize()
 
@@ -107,6 +110,7 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
         dataFlowHeight: containerHeight,
         dataFlowWidth: containerWidth,
         transactions,
+        selectedAirdropId,
         onScroll: (params) => handleNodesScrolled(payload, build(params), NODE_COLUMN_TYPES.TRANSACTIONS, params),
         scrollParams,
       })
@@ -115,7 +119,7 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
     }
 
     handleNodesChanged(build(), NODE_COLUMN_TYPES.TRANSACTIONS)
-  }, [containerHeight, containerWidth, transactions, handleNodesScrolled, handleNodesChanged])
+  }, [containerHeight, containerWidth, transactions, selectedAirdropId, handleNodesScrolled, handleNodesChanged])
 
   useEffect(() => {
     const build = (scrollParams?: OnScrollParams) => {
@@ -123,6 +127,7 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
         dataFlowHeight: containerHeight,
         dataFlowWidth: containerWidth,
         recipients,
+        selectedAirdropId,
         onScroll: (params) => handleNodesScrolled(payload, build(params), NODE_COLUMN_TYPES.RECIPIENTS, params),
         scrollParams,
       })
@@ -131,7 +136,7 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
     }
 
     handleNodesChanged(build(), NODE_COLUMN_TYPES.RECIPIENTS)
-  }, [containerHeight, containerWidth, recipients, handleNodesScrolled, handleNodesChanged])
+  }, [containerHeight, containerWidth, recipients, selectedAirdropId, handleNodesScrolled, handleNodesChanged])
 
   useEffect(() => {
     const payload = buildEdges({

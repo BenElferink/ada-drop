@@ -1,6 +1,8 @@
 import type { Node } from '@xyflow/react'
+import { DATA_START_TIME } from '@/constants'
 import { mapToNodeData } from './map-to-node-data'
 import { resolveEdgedNode } from './resolve-edged-node'
+import { NOTIFICATION_TYPE } from '@odigos/ui-kit/types'
 import { resolveHeaderNode } from './resolve-header-node'
 import { resolveScrollNode } from './resolve-scroll-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
@@ -12,11 +14,12 @@ interface Params {
   dataFlowHeight: number
   dataFlowWidth: number
   transactions: AirdropTransaction[]
+  selectedAirdropId: string
   onScroll: OnScroll
   scrollParams?: OnScrollParams
 }
 
-export const buildTransactionNodes = ({ dataFlowHeight, dataFlowWidth, transactions, onScroll, scrollParams }: Params) => {
+export const buildTransactionNodes = ({ dataFlowHeight, dataFlowWidth, transactions, selectedAirdropId, onScroll, scrollParams }: Params) => {
   const positions = getNodePositions({ dataFlowWidth })
   const nodes: Node[] = []
 
@@ -27,13 +30,14 @@ export const buildTransactionNodes = ({ dataFlowHeight, dataFlowWidth, transacti
   // Init Airdrops
 
   if (!!transactions.length) {
-    const items = transactions
+    const items = (!!selectedAirdropId ? transactions.filter(({ airdropId }) => airdropId === selectedAirdropId) : transactions)
       .map(({ airdropId, thumb, txHash, recipientCount, timestamp }, idx) =>
         mapToNodeData({
           type: NODE_COLUMN_TYPES.TRANSACTIONS,
           timestamp,
           airdropId,
           txHash,
+          status: timestamp < DATA_START_TIME ? NOTIFICATION_TYPE.WARNING : undefined,
           iconSrc: formatIpfsReference(thumb).url,
           // title: `${recipientCount} Recipients, ${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           title: `${recipientCount} Recipients`,
