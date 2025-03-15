@@ -8,17 +8,17 @@ import { resolveSkeletonNode } from './resolve-skeleton-node'
 import { getNodePositions, isInPosition } from './get-node-positions'
 import { type Airdrop, NODE_COLUMN_TYPES, type OnScroll, type OnScrollParams } from '@/@types'
 import { formatIpfsReference, getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
-import { DATA_START_TIME } from '@/constants'
 
 interface Params {
   dataFlowHeight: number
   dataFlowWidth: number
   airdrops: Airdrop[]
+  selectedAirdropId: string
   onScroll: OnScroll
   scrollParams?: OnScrollParams
 }
 
-export const buildAirdropNodes = ({ dataFlowHeight, dataFlowWidth, airdrops, onScroll, scrollParams }: Params) => {
+export const buildAirdropNodes = ({ dataFlowHeight, dataFlowWidth, airdrops, selectedAirdropId, onScroll, scrollParams }: Params) => {
   const positions = getNodePositions({ dataFlowWidth })
   const nodes: Node[] = []
 
@@ -29,14 +29,14 @@ export const buildAirdropNodes = ({ dataFlowHeight, dataFlowWidth, airdrops, onS
   // Init Airdrops
 
   if (!!airdrops.length) {
-    const items = airdrops
+    const items = (!!selectedAirdropId ? airdrops.filter(({ id }) => id === selectedAirdropId) : airdrops)
       .map(({ id, thumb, tokenAmount, tokenName, stakeKey, recipients, timestamp }, idx) =>
         mapToNodeData({
           type: NODE_COLUMN_TYPES.AIRDROPS,
           timestamp,
           airdropId: id,
           stakeKey,
-          status: !recipients?.length ? NOTIFICATION_TYPE.ERROR : timestamp < DATA_START_TIME ? NOTIFICATION_TYPE.WARNING : undefined,
+          status: !recipients?.length ? NOTIFICATION_TYPE.WARNING : undefined,
           iconSrc: formatIpfsReference(thumb).url,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           subTitle: truncateStringInMiddle(stakeKey, 15),

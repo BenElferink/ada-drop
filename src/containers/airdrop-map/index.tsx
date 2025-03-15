@@ -78,6 +78,7 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
         dataFlowHeight: containerHeight,
         dataFlowWidth: containerWidth,
         airdrops,
+        selectedAirdropId,
         onScroll: (params) => handleNodesScrolled(payload, build(params), NODE_COLUMN_TYPES.AIRDROPS, params),
         scrollParams,
       })
@@ -86,7 +87,7 @@ export const AirdropMap: FC<AirdropMapProps> = ({ heightToRemove }) => {
     }
 
     handleNodesChanged(build(), NODE_COLUMN_TYPES.AIRDROPS)
-  }, [containerHeight, containerWidth, airdrops, handleNodesScrolled, handleNodesChanged])
+  }, [containerHeight, containerWidth, airdrops, selectedAirdropId, handleNodesScrolled, handleNodesChanged])
 
   useEffect(() => {
     const build = (scrollParams?: OnScrollParams) => {
