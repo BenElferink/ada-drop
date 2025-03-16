@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@blockfrost/blockfrost-js": "^6.0.0",
-    "@odigos/ui-kit": "^0.0.7",
+    "@odigos/ui-kit": "^0.0.9",
     "@xyflow/react": "^12.4.4",
     "axios": "^1.8.3",
     "firebase": "^11.4.0",
