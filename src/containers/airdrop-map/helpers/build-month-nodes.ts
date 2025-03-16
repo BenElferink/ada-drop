@@ -1,5 +1,5 @@
 import type { Node } from '@xyflow/react'
-import { mapToNodeData } from './map-to-node-data'
+import { mapToNodeData } from '@/containers/data-flow/helpers/map-to-node-data'
 import { resolveEdgedNode } from '@/containers/data-flow/helpers/resolve-edged-node'
 import { resolveHeaderNode } from '@/containers/data-flow/helpers/resolve-header-node'
 import { resolveScrollNode } from '@/containers/data-flow/helpers/resolve-scroll-node'

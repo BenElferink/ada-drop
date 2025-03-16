@@ -5,11 +5,12 @@ import { resolveEdgedNode } from '@/containers/data-flow/helpers/resolve-edged-n
 import { resolveHeaderNode } from '@/containers/data-flow/helpers/resolve-header-node'
 import { resolveScrollNode } from '@/containers/data-flow/helpers/resolve-scroll-node'
 import { resolveSkeletonNode } from '@/containers/data-flow/helpers/resolve-skeleton-node'
-import { getNodePositions, isInPosition } from '@/containers/data-flow/helpers/get-node-positions'
 import { type Airdrop, NODE_COLUMN_TYPES, type OnScroll, type OnScrollParams } from '@/@types'
+import { getNodePositions, isInPosition } from '@/containers/data-flow/helpers/get-node-positions'
 import { formatIpfsReference, getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
 
 interface Params {
+  isMobile?: boolean
   dataFlowHeight: number
   dataFlowWidth: number
   airdrops: Airdrop[]
@@ -18,8 +19,8 @@ interface Params {
   scrollParams?: OnScrollParams
 }
 
-export const buildAirdropNodes = ({ dataFlowHeight, dataFlowWidth, airdrops, selectedAirdropId, onScroll, scrollParams }: Params) => {
-  const positions = getNodePositions({ dataFlowWidth })
+export const buildAirdropNodes = ({ isMobile, dataFlowHeight, dataFlowWidth, airdrops, selectedAirdropId, onScroll, scrollParams }: Params) => {
+  const positions = getNodePositions({ isMobile, dataFlowWidth })
   const nodes: Node[] = []
 
   // Init Columns
@@ -40,7 +41,7 @@ export const buildAirdropNodes = ({ dataFlowHeight, dataFlowWidth, airdrops, sel
           iconSrc: formatIpfsReference(thumb).url,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           subTitle: truncateStringInMiddle(stakeKey, 15),
-          withClick: true,
+          withClick: false,
           positions,
           idx,
         })

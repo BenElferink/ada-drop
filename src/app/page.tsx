@@ -5,6 +5,7 @@ import { useMobile } from '@/hooks'
 import { AirdropMap } from '@/containers'
 import { Header, HeaderMobile } from '@/components'
 import { FlexColumn } from '@odigos/ui-kit/components'
+import { AirdropMapMobile } from '@/containers/airdrop-map-mobile'
 
 const PageContainer = styled(FlexColumn)`
   width: 100%;
@@ -20,7 +21,7 @@ const Page = () => {
     return (
       <PageContainer>
         <HeaderMobile />
-        <AirdropMap heightToRemove='88px' />
+        <AirdropMapMobile heightToRemove='88px' />
       </PageContainer>
     )
   }

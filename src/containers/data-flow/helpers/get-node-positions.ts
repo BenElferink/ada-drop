@@ -5,6 +5,7 @@ import { NODE_COLUMN_TYPES, type OnScrollParams } from '@/@types'
 const { nodeWidth, nodeHeight, nodePadding } = nodeConfig
 
 interface Params {
+  isMobile?: boolean
   dataFlowWidth: number
 }
 
@@ -16,9 +17,35 @@ export type NodePositions = Record<
   }
 >
 
-export const getNodePositions = ({ dataFlowWidth }: Params) => {
+export const getNodePositions = ({ isMobile, dataFlowWidth }: Params) => {
+  if (isMobile) {
+    const startX = dataFlowWidth < nodeWidth ? 0 : dataFlowWidth / 2 - nodeWidth / 2
+    const getY = (idx?: number) => nodeHeight * ((idx || 0) + 1)
+
+    const positions: NodePositions = {
+      [NODE_COLUMN_TYPES.ACTIVE_MONTHS]: {
+        x: 0,
+        y: () => 0,
+      },
+      [NODE_COLUMN_TYPES.AIRDROPS]: {
+        x: startX,
+        y: getY,
+      },
+      [NODE_COLUMN_TYPES.TRANSACTIONS]: {
+        x: 0,
+        y: () => 0,
+      },
+      [NODE_COLUMN_TYPES.RECIPIENTS]: {
+        x: 0,
+        y: () => 0,
+      },
+    }
+
+    return positions
+  }
+
   const startX = 24
-  const endX = (dataFlowWidth <= 1300 ? 1300 : dataFlowWidth) - nodeWidth - startX
+  const endX = (dataFlowWidth < 1300 ? 1300 : dataFlowWidth) - nodeWidth - startX
   const getY = (idx?: number) => nodeHeight * ((idx || 0) + 1)
 
   const positions: NodePositions = {
