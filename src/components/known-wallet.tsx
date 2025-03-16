@@ -1,16 +1,16 @@
 import React, { type FC } from 'react'
 import { ImageControlled, Tooltip } from '@odigos/ui-kit/components'
 
+interface KnownWalletProps {
+  wallet?: string
+}
+
 interface KnownWallet {
   wallets: string[]
   name: string
   description: string
   icon: string
   // website: string
-}
-
-interface KnownWalletProps {
-  wallet?: string
 }
 
 const data: KnownWallet[] = [
