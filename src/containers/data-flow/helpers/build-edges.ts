@@ -1,9 +1,9 @@
 import { EDGE_TYPES, NODE_COLUMN_TYPES, NODE_TYPES } from '@/@types'
 import type { Edge, Node } from '@xyflow/react'
 import { getTimeStampLabel } from '@/functions'
+import { isInPosition } from './get-node-positions'
 import type { DefaultTheme } from 'styled-components'
-import type { EdgedNodeProps } from '@/containers/data-flow/nodes/edged-node'
-import { isInPosition } from '@/containers/data-flow/helpers/get-node-positions'
+import type { EdgedNodeProps } from '../nodes/edged-node'
 
 interface Params {
   dataFlowHeight: number

@@ -1,10 +1,10 @@
 import type { Node } from '@xyflow/react'
-import { mapToNodeData } from '@/containers/data-flow/helpers/map-to-node-data'
-import { resolveEdgedNode } from '@/containers/data-flow/helpers/resolve-edged-node'
-import { resolveHeaderNode } from '@/containers/data-flow/helpers/resolve-header-node'
-import { resolveScrollNode } from '@/containers/data-flow/helpers/resolve-scroll-node'
-import { resolveSkeletonNode } from '@/containers/data-flow/helpers/resolve-skeleton-node'
-import { getNodePositions, isInPosition } from '@/containers/data-flow/helpers/get-node-positions'
+import { mapToNodeData } from './map-to-node-data'
+import { resolveEdgedNode } from './resolve-edged-node'
+import { resolveHeaderNode } from './resolve-header-node'
+import { resolveScrollNode } from './resolve-scroll-node'
+import { resolveSkeletonNode } from './resolve-skeleton-node'
+import { getNodePositions, isInPosition } from './get-node-positions'
 import { type AirdropMonth, NODE_COLUMN_TYPES, type OnScroll, type OnScrollParams } from '@/@types'
 
 interface Params {

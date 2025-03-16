@@ -1,13 +1,13 @@
 import type { Node } from '@xyflow/react'
+import { mapToNodeData } from './map-to-node-data'
+import { resolveEdgedNode } from './resolve-edged-node'
 import { NOTIFICATION_TYPE } from '@odigos/ui-kit/types'
-import { mapToNodeData } from '@/containers/data-flow/helpers/map-to-node-data'
-import { resolveEdgedNode } from '@/containers/data-flow/helpers/resolve-edged-node'
-import { resolveHeaderNode } from '@/containers/data-flow/helpers/resolve-header-node'
-import { resolveScrollNode } from '@/containers/data-flow/helpers/resolve-scroll-node'
-import { resolveSkeletonNode } from '@/containers/data-flow/helpers/resolve-skeleton-node'
+import { resolveHeaderNode } from './resolve-header-node'
+import { resolveScrollNode } from './resolve-scroll-node'
+import { resolveSkeletonNode } from './resolve-skeleton-node'
+import { getNodePositions, isInPosition } from './get-node-positions'
 import { type Airdrop, NODE_COLUMN_TYPES, type OnScroll, type OnScrollParams } from '@/@types'
-import { formatIpfsReference, getTimeStampLabel, getTokenName, prettyNumber } from '@/functions'
-import { getNodePositions, isInPosition } from '@/containers/data-flow/helpers/get-node-positions'
+import { formatIpfsReference, getTimeStampLabel, getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
 
 interface Params {
   isMobile?: boolean
@@ -40,8 +40,8 @@ export const buildAirdropNodes = ({ isMobile, dataFlowHeight, dataFlowWidth, air
           status: !recipients?.length ? NOTIFICATION_TYPE.WARNING : undefined,
           iconSrc: formatIpfsReference(thumb).url,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
-          subTitle: `${recipients?.length || 0} Recipients • ${getTimeStampLabel(timestamp).label}`,
-          withClick: false,
+          subTitle: isMobile ? `${recipients?.length || 0} Recipients • ${getTimeStampLabel(timestamp).label}` : truncateStringInMiddle(stakeKey, 15),
+          withClick: true,
           positions,
           idx,
         })

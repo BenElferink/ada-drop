@@ -4,9 +4,9 @@ import styled from 'styled-components'
 import { DataFlow } from '../data-flow'
 import { useAirdropStore } from '@/store'
 import { useContainerSize } from '@odigos/ui-kit/hooks'
-import { buildAirdropNodes } from './helpers/build-airdrop-nodes'
-import { NODE_COLUMN_TYPES, NODE_TYPES, type OnScrollParams } from '@/@types'
 import { applyNodeChanges, type Node, useNodesState } from '@xyflow/react'
+import { buildAirdropNodes } from '../data-flow/helpers/build-airdrop-nodes'
+import { NODE_COLUMN_TYPES, NODE_TYPES, type OnScrollParams } from '@/@types'
 
 interface AirdropMapMobileProps {
   heightToRemove: CSSProperties['height']

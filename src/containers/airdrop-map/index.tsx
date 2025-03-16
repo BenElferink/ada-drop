@@ -5,13 +5,13 @@ import Theme from '@odigos/ui-kit/theme'
 import { useAirdropStore } from '@/store'
 import { useContainerSize } from '@odigos/ui-kit/hooks'
 import { useAirdrops, UseAirdropsExtended } from '@/hooks'
-import { buildMonthNodes } from './helpers/build-month-nodes'
-import { buildAirdropNodes } from './helpers/build-airdrop-nodes'
-import { buildRecipientNodes } from './helpers/build-recipient-nodes'
-import { buildTransactionNodes } from './helpers/build-transactions-nodes'
+import { buildEdges } from '../data-flow/helpers/build-edges'
+import { buildMonthNodes } from '../data-flow/helpers/build-month-nodes'
+import { buildAirdropNodes } from '../data-flow/helpers/build-airdrop-nodes'
 import { NODE_COLUMN_TYPES, NODE_TYPES, type OnScrollParams } from '@/@types'
+import { buildRecipientNodes } from '../data-flow/helpers/build-recipient-nodes'
+import { buildTransactionNodes } from '../data-flow/helpers/build-transactions-nodes'
 import { applyNodeChanges, type Edge, type Node, useEdgesState, useNodesState } from '@xyflow/react'
-import { buildEdges } from './helpers/build-edges'
 
 interface AirdropMapProps {
   heightToRemove: CSSProperties['height']
