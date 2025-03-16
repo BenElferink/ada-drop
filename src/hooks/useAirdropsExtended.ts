@@ -35,7 +35,7 @@ const mapAirdrops = (data: Airdrop[]) => {
       if (!transactionMap.has(txKey)) {
         transactionMap.set(txKey, {
           timestamp: item.timestamp,
-          airdropId: item.id,
+          airdropId: item.id as string,
           txHash: recipient.txHash,
           recipientCount: 1,
           thumb: item.thumb,
@@ -53,7 +53,7 @@ const mapAirdrops = (data: Airdrop[]) => {
       if (!recipientMap.has(recipientKey)) {
         recipientMap.set(recipientKey, {
           timestamp: item.timestamp,
-          airdropId: item.id,
+          airdropId: item.id as string,
           stakeKey: recipient.stakeKey,
           thumb: item.thumb,
           txHash: recipient.txHash,

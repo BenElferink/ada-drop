@@ -9,7 +9,7 @@ export interface TokenSelectionSettings {
 }
 
 export interface Airdrop extends TokenSelectionSettings {
-  id: string
+  id?: string
   timestamp: number
   stakeKey: StakeKey
   recipients?: {

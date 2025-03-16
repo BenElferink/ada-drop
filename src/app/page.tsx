@@ -1,8 +1,9 @@
 'use client'
 
 import styled from 'styled-components'
-import { Header } from '@/components'
+import { useMobile } from '@/hooks'
 import { AirdropMap } from '@/containers'
+import { Header, HeaderMobile } from '@/components'
 import { FlexColumn } from '@odigos/ui-kit/components'
 
 const PageContainer = styled(FlexColumn)`
@@ -13,6 +14,17 @@ const PageContainer = styled(FlexColumn)`
 `
 
 const Page = () => {
+  const { isMobile } = useMobile()
+
+  if (isMobile) {
+    return (
+      <PageContainer>
+        <HeaderMobile />
+        <AirdropMap heightToRemove='88px' />
+      </PageContainer>
+    )
+  }
+
   return (
     <PageContainer>
       <Header />

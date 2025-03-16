@@ -1,3 +1,5 @@
+import type { PolicyId, TokenId } from './common'
+
 export interface TokenAmount {
   onChain: number
   decimals: number
@@ -8,4 +10,36 @@ export interface TokenName {
   onChain: string
   ticker: string
   display: string
+}
+
+export interface BaseToken {
+  tokenId: TokenId
+  isFungible: boolean
+  tokenAmount: TokenAmount
+  tokenName?: TokenName
+}
+
+export interface RankedToken extends BaseToken {
+  rarityRank?: number
+}
+
+export interface PopulatedToken extends RankedToken {
+  fingerprint: string
+  policyId: PolicyId
+  serialNumber?: number
+  mintTransactionId: string
+  mintBlockHeight?: number
+  image: {
+    ipfs: string
+    url: string
+  }
+  files: {
+    src: string
+    mediaType: string
+    name: string
+  }[]
+  attributes: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any
+  }
 }

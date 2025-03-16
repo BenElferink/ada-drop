@@ -1,4 +1,4 @@
-import { resolveMonthName } from '../resolvers'
+import { resolveMonthName } from '.'
 
 export const getTimeStampLabel = (timestamp: number) => {
   const d = new Date(timestamp)

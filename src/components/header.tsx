@@ -56,6 +56,7 @@ export const Header = () => {
         </Tooltip>,
       ]}
       right={[<ToggleDarkMode key='toggle-theme' />]}
+      // right={[<ToggleDarkMode key='toggle-theme' />, <ConnectWallet key='connect-wallet' />]}
     />
   )
 }

@@ -1,3 +1,5 @@
+import type { PopulatedToken } from '@/@types'
+
 export const API_KEYS = {
   BLOCKFROST_API_KEY: process.env.BLOCKFROST_API_KEY || '',
 
@@ -14,6 +16,18 @@ export const ADA = {
   DECIMALS: 6,
 }
 
+export const WALLETS = {
+  STAKE_KEYS: {
+    DEV: 'stake1u80fcwkvn0cdy2zn8hlw7vf4v4sq4q23khj4z39wtvflr5cmyn8n7',
+  },
+  ADDRESSES: {
+    DEV: 'addr1q9knw3lmvlpsvemjpgmkqkwtkzv8wueggf9aavvzyt2akpw7nsavexls6g59x007aucn2etqp2q4rd0929z2ukcn78fslm56p9',
+  },
+  KEYS: {
+    // MNEMONIC: Array.isArray(process.env.MNEMONIC) ? process.env.MNEMONIC : process.env.MNEMONIC?.split(',') || [],
+  },
+}
+
 export const TITLE = `${ADA.SYMBOL}D${ADA.SYMBOL} Drop`
 export const LIGHT_ADA_COLOR = '#3cc8c8'
 
@@ -25,4 +39,32 @@ export const HISTORIC_DATA_MESSAGES = {
     'Some historic data may have missing or innacurate data displayed. This however does not affect the processing of the airdrop, only the visual representation.',
   MISSING_DATA: 'Missing data for historic airdrop',
   INNACURATE_DATA: 'Innacurate data for historic airdrop',
+}
+
+export const ERROR_TYPES = {
+  INVALID_WALLET_IDENTIFIER: 'INVALID_WALLET_IDENTIFIER',
+}
+
+export const POPULATED_LOVELACE: PopulatedToken = {
+  tokenId: 'lovelace',
+  fingerprint: 'lovelace',
+  policyId: 'lovelace',
+  isFungible: true,
+  mintTransactionId: '',
+  tokenName: {
+    onChain: 'lovelace',
+    ticker: 'ADA',
+    display: 'ADA',
+  },
+  tokenAmount: {
+    onChain: 0,
+    display: 0,
+    decimals: ADA['DECIMALS'],
+  },
+  image: {
+    ipfs: '',
+    url: 'https://labs.badfoxmc.com/media/ada.png',
+  },
+  files: [],
+  attributes: {},
 }

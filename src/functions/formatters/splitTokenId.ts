@@ -1,7 +1,7 @@
-import { fromHex } from '../formatters/formatHex'
+import { fromHex } from './formatHex'
 import type { PolicyId, TokenId } from '@/@types'
 
-const splitTokenId = (tokenId: TokenId, policyId: PolicyId) => {
+export const splitTokenId = (tokenId: TokenId, policyId: PolicyId) => {
   const tokenLabel = tokenId.replace(policyId, '')
 
   let tokenType = ''
@@ -34,5 +34,3 @@ const splitTokenId = (tokenId: TokenId, policyId: PolicyId) => {
     tokenName,
   }
 }
-
-export default splitTokenId

@@ -18,7 +18,7 @@ export type NodePositions = Record<
 
 export const getNodePositions = ({ dataFlowWidth }: Params) => {
   const startX = 24
-  const endX = (dataFlowWidth <= 1500 ? 1500 : dataFlowWidth) - nodeWidth - startX
+  const endX = (dataFlowWidth <= 1300 ? 1300 : dataFlowWidth) - nodeWidth - startX
   const getY = (idx?: number) => nodeHeight * ((idx || 0) + 1)
 
   const positions: NodePositions = {
@@ -27,11 +27,11 @@ export const getNodePositions = ({ dataFlowWidth }: Params) => {
       y: getY,
     },
     [NODE_COLUMN_TYPES.AIRDROPS]: {
-      x: (endX - startX) * 0.33,
+      x: (endX - startX) * 0.36,
       y: getY,
     },
     [NODE_COLUMN_TYPES.TRANSACTIONS]: {
-      x: (endX - startX) * 0.66,
+      x: (endX - startX) * 0.69,
       y: getY,
     },
     [NODE_COLUMN_TYPES.RECIPIENTS]: {
