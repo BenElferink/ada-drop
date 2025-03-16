@@ -2,7 +2,7 @@ import type { MouseEvent } from 'react'
 import type { Node } from '@xyflow/react'
 import { useAirdropStore } from '@/store'
 import { NODE_COLUMN_TYPES } from '@/@types'
-import type { BaseNodeProps } from '@/containers/airdrop-map/nodes/base-node'
+import type { BaseNodeProps } from '@/containers/data-flow/nodes/base-node'
 
 const useClickNode = () => {
   const { selectedAirdropId, setSelectedAirdropId } = useAirdropStore()
