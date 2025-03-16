@@ -6,8 +6,8 @@ import { resolveHeaderNode } from '@/containers/data-flow/helpers/resolve-header
 import { resolveScrollNode } from '@/containers/data-flow/helpers/resolve-scroll-node'
 import { resolveSkeletonNode } from '@/containers/data-flow/helpers/resolve-skeleton-node'
 import { type Airdrop, NODE_COLUMN_TYPES, type OnScroll, type OnScrollParams } from '@/@types'
+import { formatIpfsReference, getTimeStampLabel, getTokenName, prettyNumber } from '@/functions'
 import { getNodePositions, isInPosition } from '@/containers/data-flow/helpers/get-node-positions'
-import { formatIpfsReference, getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
 
 interface Params {
   isMobile?: boolean
@@ -40,7 +40,7 @@ export const buildAirdropNodes = ({ isMobile, dataFlowHeight, dataFlowWidth, air
           status: !recipients?.length ? NOTIFICATION_TYPE.WARNING : undefined,
           iconSrc: formatIpfsReference(thumb).url,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
-          subTitle: truncateStringInMiddle(stakeKey, 15),
+          subTitle: `${recipients?.length || 0} Recipients • ${getTimeStampLabel(timestamp).label}`,
           withClick: false,
           positions,
           idx,
