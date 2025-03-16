@@ -1,9 +1,9 @@
 import React, { memo } from 'react'
 import styled from 'styled-components'
 import { NODE_TYPES } from '@/@types'
+import type { BaseNodeProps } from './base-node'
 import { Handle, type Node, type NodeProps, Position } from '@xyflow/react'
 import nodeConfig from '../helpers/node-config'
-import { BaseNodeProps } from './base-node'
 
 export type EdgedNodeProps = NodeProps<Node<BaseNodeProps['data'], NODE_TYPES.EDGED>>
 

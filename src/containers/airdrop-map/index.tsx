@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useEffect, type CSSProperties } from 'react'
 import styled from 'styled-components'
-import { DataFlow } from './data-flow'
+import { DataFlow } from '../data-flow'
 import Theme from '@odigos/ui-kit/theme'
 import { useAirdropStore } from '@/store'
 import { useContainerSize } from '@odigos/ui-kit/hooks'
