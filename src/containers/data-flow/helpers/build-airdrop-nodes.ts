@@ -41,7 +41,7 @@ export const buildAirdropNodes = ({ isMobile, dataFlowHeight, dataFlowWidth, air
           iconSrc: formatIpfsReference(thumb).url,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           subTitle: isMobile ? `${recipients?.length || 0} Recipients • ${getTimestampLabel(timestamp).label}` : truncateStringInMiddle(stakeKey, 15),
-          withClick: true,
+          withClick: !isMobile,
           positions,
           idx,
         })
