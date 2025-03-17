@@ -1,10 +1,9 @@
 import blockfrost from '@/utils/blockfrost'
-import { fromHex } from '../formatters/formatHex'
+import { fromHex } from '../formatHex'
 import { ADA, POPULATED_LOVELACE } from '@/constants'
 import type { PopulatedToken, TokenId } from '@/@types'
-import { splitTokenId } from '../formatters/splitTokenId'
 import resolveTokenRegisteredMetadata from './resolveTokenRegisteredMetadata'
-import { formatIpfsReference, formatTokenAmountFromChain, numbersFromString } from '../formatters'
+import { formatIpfsReference, formatTokenAmountFromChain, numbersFromString, splitTokenId } from '..'
 
 const populateToken = async (tokenId: TokenId, options?: { populateMintTx?: boolean; quantity?: string }): Promise<PopulatedToken> => {
   if (tokenId === 'lovelace') {
