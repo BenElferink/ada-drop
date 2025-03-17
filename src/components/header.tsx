@@ -1,8 +1,8 @@
 import React from 'react'
 import { TITLE } from '@/constants'
 import { CardanoLogo } from '@/icons'
-import { ConnectWallet } from '@/containers'
 import { useChainLoad, useEpochInfo } from '@/hooks'
+import { ConnectWallet, NewAirdrop } from '@/containers'
 import { NOTIFICATION_TYPE } from '@odigos/ui-kit/types'
 import { ToggleDarkMode } from '@odigos/ui-kit/containers'
 import { Header as Container, Status, Text, Tooltip } from '@odigos/ui-kit/components'
@@ -56,7 +56,7 @@ export const Header = () => {
           />
         </Tooltip>,
       ]}
-      right={[<ConnectWallet key='connect-wallet' />, <ToggleDarkMode key='toggle-theme' />]}
+      right={[<NewAirdrop key='new-airdrop' />, <ConnectWallet key='connect-wallet' />, <ToggleDarkMode key='toggle-theme' />]}
     />
   )
 }

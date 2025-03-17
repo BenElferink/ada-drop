@@ -63,8 +63,15 @@ export const ConnectWallet = () => {
   const { connect, disconnect, connecting, connected, error } = useWallet()
   const installedWallets = useWalletList()
 
+  const [isOpen, setIsOpen] = useState(false)
+  const toggleIsOpen = (bool?: boolean) => setIsOpen((prev) => (typeof bool !== 'undefined' ? bool : !prev))
+
   const handleConnect = async (walletId: string) => {
-    await connect(walletId)
+    try {
+      await connect(walletId)
+    } catch (e) {
+      addNotification({ type: NOTIFICATION_TYPE.ERROR, message: extractError(e).message })
+    }
   }
 
   const handleDisconnect = () => {
@@ -73,15 +80,15 @@ export const ConnectWallet = () => {
   }
 
   useEffect(() => {
-    if (connected) addNotification({ type: NOTIFICATION_TYPE.SUCCESS, title: 'Wallet connected' })
+    if (connected) {
+      addNotification({ type: NOTIFICATION_TYPE.SUCCESS, title: 'Wallet connected' })
+      toggleIsOpen(false)
+    }
   }, [connected, addNotification])
 
   useEffect(() => {
     if (error) addNotification({ type: NOTIFICATION_TYPE.ERROR, title: 'Failed to connect wallet', message: extractError(error).message })
   }, [error, addNotification])
-
-  const [isOpen, setIsOpen] = useState(false)
-  const toggleIsOpen = () => setIsOpen((prev) => !prev)
 
   return (
     <Fragment>
