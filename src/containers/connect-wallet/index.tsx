@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useMemo, useState } from 'react'
+import React, { FC, Fragment, useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { LINKS } from '@/constants'
 import { WalletIcon } from '@/icons'
@@ -23,6 +23,30 @@ const NoteWrapper = styled.div`
   }
 `
 
+const ConnectButton: FC<{ onClick: () => void }> = ({ onClick }) => {
+  const theme = Theme.useTheme()
+  const { connected, name } = useWallet()
+
+  const address = useAddress()
+  const installedWallets = useWalletList()
+  const walletAppInfo = useMemo(() => (!!name ? installedWallets.find((x) => x.id === name) : undefined), [installedWallets, name])
+
+  if (connected)
+    return (
+      <Button variant='primary' onClick={onClick}>
+        <Image src={walletAppInfo?.icon || ''} alt='' width={20} height={20} priority unoptimized />
+        {truncateStringInMiddle(address, 7) || '...'}
+      </Button>
+    )
+
+  return (
+    <Button variant='primary' onClick={onClick}>
+      <WalletIcon fill={theme.text.primary} size={20} />
+      {'Connect Wallet'}
+    </Button>
+  )
+}
+
 const ErrorNoWallets = () => {
   return (
     <FlexColumn $gap={12} style={{ alignItems: 'center' }}>
@@ -35,16 +59,9 @@ const ErrorNoWallets = () => {
 }
 
 export const ConnectWallet = () => {
-  const theme = Theme.useTheme()
   const { addNotification } = useNotificationStore()
-  const { connect, disconnect, connecting, connected, name, error } = useWallet()
-
-  const address = useAddress()
+  const { connect, disconnect, connecting, connected, error } = useWallet()
   const installedWallets = useWalletList()
-  const walletAppInfo = useMemo(() => (!!name ? installedWallets.find((x) => x.id === name) : undefined), [installedWallets, name])
-
-  const [isOpen, setIsOpen] = useState(false)
-  const toggleIsOpen = () => setIsOpen((prev) => !prev)
 
   const handleConnect = async (walletId: string) => {
     await connect(walletId)
@@ -63,26 +80,12 @@ export const ConnectWallet = () => {
     if (error) addNotification({ type: NOTIFICATION_TYPE.ERROR, title: 'Failed to connect wallet', message: extractError(error).message })
   }, [error, addNotification])
 
-  const renderButton = () => {
-    if (connected)
-      return (
-        <Button variant='primary' onClick={toggleIsOpen}>
-          <Image src={walletAppInfo?.icon || ''} alt='' width={20} height={20} priority unoptimized />
-          {truncateStringInMiddle(address, 7) || '...'}
-        </Button>
-      )
-
-    return (
-      <Button variant='primary' onClick={toggleIsOpen}>
-        <WalletIcon fill={theme.text.primary} size={20} />
-        {'Connect Wallet'}
-      </Button>
-    )
-  }
+  const [isOpen, setIsOpen] = useState(false)
+  const toggleIsOpen = () => setIsOpen((prev) => !prev)
 
   return (
     <Fragment>
-      {renderButton()}
+      <ConnectButton onClick={toggleIsOpen} />
 
       <Drawer
         width={DRAWER_WIDTH}
