@@ -1,14 +1,16 @@
 import type { MouseEvent } from 'react'
+import { useMobile } from './useMobile'
 import type { Node } from '@xyflow/react'
 import { useAirdropStore } from '@/store'
 import { NODE_COLUMN_TYPES } from '@/@types'
 import type { BaseNodeProps } from '@/containers/data-flow/nodes/base-node'
 
 const useClickNode = () => {
+  const { isMobile } = useMobile()
   const { selectedAirdropId, setSelectedAirdropId } = useAirdropStore()
 
   const onClickNode: (event: MouseEvent, object: Node) => void = (_, { id: nodeId, data: { withClick, ...data } }) => {
-    if (!withClick) return
+    if (!withClick || isMobile) return
 
     const { airdropId, txHash, stakeKey } = data as BaseNodeProps['data']
     const columnType = nodeId.split('$')[0] as NODE_COLUMN_TYPES
