@@ -2,7 +2,7 @@ import React from 'react'
 import Theme from '@odigos/ui-kit/theme'
 import type { SVG } from '@odigos/ui-kit/types'
 
-export const RecipientIcon: SVG = ({ size = 16, fill: f, rotate = 0, onClick }) => {
+export const WalletInIcon: SVG = ({ size = 16, fill: f, rotate = 0, onClick }) => {
   const theme = Theme.useTheme()
   const fill = f || theme.text.secondary
 

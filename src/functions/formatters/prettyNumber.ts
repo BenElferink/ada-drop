@@ -1,6 +1,6 @@
-export const prettyNumber = (num: number | string): string => {
+export const prettyNumber = (num: number | string, decimals?: number): string => {
   return num.toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: decimals || 0,
+    maximumFractionDigits: decimals || 0,
   })
 }

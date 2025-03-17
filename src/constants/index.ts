@@ -41,6 +41,10 @@ export const HISTORIC_DATA_MESSAGES = {
   INNACURATE_DATA: 'Innacurate data for historic airdrop',
 }
 
+export const LINKS = {
+  GET_WALLET: 'https://builtoncardano.com/ecosystem/wallets',
+}
+
 export const ERROR_TYPES = {
   INVALID_WALLET_IDENTIFIER: 'INVALID_WALLET_IDENTIFIER',
 }

@@ -12,13 +12,16 @@
   },
   "scripts": {
     "predev": "rm -rf .next",
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint-fix": "next lint --fix"
   },
   "dependencies": {
     "@blockfrost/blockfrost-js": "^6.0.0",
+    "@meshsdk/core": "^1.9.0-beta.20",
+    "@meshsdk/react": "^1.9.0-beta.20",
     "@odigos/ui-kit": "^0.0.9",
     "@xyflow/react": "^12.4.4",
     "axios": "^1.8.3",

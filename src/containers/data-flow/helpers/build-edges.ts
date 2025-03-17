@@ -1,6 +1,6 @@
 import { EDGE_TYPES, NODE_COLUMN_TYPES, NODE_TYPES } from '@/@types'
 import type { Edge, Node } from '@xyflow/react'
-import { getTimeStampLabel } from '@/functions'
+import { getTimestampLabel } from '@/functions'
 import { isInPosition } from './get-node-positions'
 import type { DefaultTheme } from 'styled-components'
 import type { EdgedNodeProps } from '../nodes/edged-node'
@@ -42,7 +42,7 @@ export const buildEdges = ({ dataFlowHeight, nodes, theme }: Params) => {
           (node) =>
             node.id.includes(`${NODE_COLUMN_TYPES.AIRDROPS}$${NODE_TYPES.EDGED}`) &&
             isInPosition(node.position, dataFlowHeight) &&
-            getTimeStampLabel(node.data.timestamp as number).startOfmonth === timestamp
+            getTimestampLabel(node.data.timestamp as number).startOfmonth === timestamp
         )
         .forEach(({ id }) => {
           const edgeId = `${nodeId}-to-${id}`

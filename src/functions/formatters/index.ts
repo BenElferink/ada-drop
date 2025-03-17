@@ -1,3 +1,4 @@
+export * from './extractError'
 export * from './formatHex'
 export * from './formatIpfsReference'
 export * from './formatTokenAmount'

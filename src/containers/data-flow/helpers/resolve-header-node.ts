@@ -1,4 +1,4 @@
-import { CardanoLogo, RecipientIcon, SenderIcon, TransactionIcon } from '@/icons'
+import { CardanoLogo, TransactionIcon, WalletInIcon, WalletOutIcon } from '@/icons'
 import { NODE_COLUMN_TYPES, NODE_TYPES } from '@/@types'
 import type { NodePositions } from './get-node-positions'
 import type { HeaderNodeProps } from '../nodes/header-node'
@@ -15,11 +15,11 @@ export const resolveHeaderNode = (positions: NodePositions, type: NODE_COLUMN_TY
     data: {
       icon:
         type === NODE_COLUMN_TYPES.RECIPIENTS
-          ? RecipientIcon
+          ? WalletInIcon
           : type === NODE_COLUMN_TYPES.TRANSACTIONS
           ? TransactionIcon
           : type === NODE_COLUMN_TYPES.AIRDROPS
-          ? SenderIcon
+          ? WalletOutIcon
           : CardanoLogo,
       title: type,
       badge,

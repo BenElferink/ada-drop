@@ -1,6 +1,6 @@
 import { resolveMonthName } from '.'
 
-export const getTimeStampLabel = (timestamp: number) => {
+export const getTimestampLabel = (timestamp: number) => {
   const d = new Date(timestamp)
   const y = d.getFullYear()
   const m = d.getMonth()

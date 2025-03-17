@@ -3,7 +3,9 @@
 import styled from 'styled-components'
 import { useMobile } from '@/hooks'
 import { AirdropMap } from '@/containers'
+import { MeshProvider } from '@meshsdk/react'
 import { Header, HeaderMobile } from '@/components'
+import { ToastList } from '@odigos/ui-kit/containers'
 import { FlexColumn } from '@odigos/ui-kit/components'
 import { AirdropMapMobile } from '@/containers/airdrop-map-mobile'
 
@@ -27,10 +29,13 @@ const Page = () => {
   }
 
   return (
-    <PageContainer>
-      <Header />
-      <AirdropMap heightToRemove='88px' />
-    </PageContainer>
+    <MeshProvider>
+      <PageContainer>
+        <Header />
+        <AirdropMap heightToRemove='88px' />
+        <ToastList />
+      </PageContainer>
+    </MeshProvider>
   )
 }
 
