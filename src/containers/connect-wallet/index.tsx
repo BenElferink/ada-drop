@@ -64,7 +64,7 @@ export const ConnectWallet = () => {
   const installedWallets = useWalletList()
 
   const [isOpen, setIsOpen] = useState(false)
-  const toggleIsOpen = (bool?: boolean) => setIsOpen((prev) => (typeof bool !== 'undefined' ? bool : !prev))
+  const toggleIsOpen = (bool?: boolean) => setIsOpen((prev) => (typeof bool === 'boolean' ? bool : !prev))
 
   const handleConnect = async (walletId: string) => {
     try {
