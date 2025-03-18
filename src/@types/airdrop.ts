@@ -1,13 +1,7 @@
-import type { TokenAmount, TokenName } from './token'
-import type { StakeKey, TokenId, TransactionId } from './common'
+import type { StakeKey, TransactionId } from './common'
+import type { TokenSelectionSettings } from './settings'
 
-export interface TokenSelectionSettings {
-  tokenId: TokenId
-  tokenName: TokenName
-  tokenAmount: TokenAmount
-  thumb: string
-}
-
+// as-is in database
 export interface Airdrop extends TokenSelectionSettings {
   id?: string
   timestamp: number
@@ -19,12 +13,14 @@ export interface Airdrop extends TokenSelectionSettings {
   }[]
 }
 
+// for mapping into store
 export interface AirdropMonth {
   timestamp: number
   label: string
   airdropCount: number
 }
 
+// for mapping into store
 export interface AirdropTransaction extends TokenSelectionSettings {
   timestamp: number
   airdropId: string
@@ -32,6 +28,7 @@ export interface AirdropTransaction extends TokenSelectionSettings {
   recipientCount: number
 }
 
+// for mapping into store
 export interface AirdropRicipent extends TokenSelectionSettings {
   timestamp: number
   airdropId: string

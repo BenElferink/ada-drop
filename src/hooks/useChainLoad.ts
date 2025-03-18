@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import poolPm from '@/utils/pool-pm'
 import type { ChainLoad } from '@/@types'
-import { NOTIFICATION_TYPE } from '@odigos/ui-kit/types'
+import { STATUS_TYPE } from '@odigos/ui-kit/types'
 
 interface UseChainLoad {
   chainLoad: ChainLoad
   refetch: () => Promise<void>
-  resolveChainLoadStatus: (percent: number) => NOTIFICATION_TYPE
+  resolveChainLoadStatus: (percent: number) => STATUS_TYPE
 }
 
 const EMPTY: ChainLoad = { load5m: 0, load1h: 0, load24h: 0 }
@@ -27,13 +27,7 @@ const fetchChainLoad = async (): Promise<ChainLoad> => {
 }
 
 const resolveChainLoadStatus: UseChainLoad['resolveChainLoadStatus'] = (percent) => {
-  return percent === 0
-    ? NOTIFICATION_TYPE.INFO
-    : percent <= 50
-    ? NOTIFICATION_TYPE.SUCCESS
-    : percent <= 75
-    ? NOTIFICATION_TYPE.WARNING
-    : NOTIFICATION_TYPE.ERROR
+  return percent === 0 ? STATUS_TYPE.INFO : percent <= 50 ? STATUS_TYPE.SUCCESS : percent <= 75 ? STATUS_TYPE.WARNING : STATUS_TYPE.ERROR
 }
 
 export const useChainLoad = (): UseChainLoad => {

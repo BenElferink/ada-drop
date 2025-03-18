@@ -4,7 +4,7 @@ import { NODE_TYPES } from '@/@types'
 import { HISTORIC_DATA_MESSAGES } from '@/constants'
 import type { Node, NodeProps } from '@xyflow/react'
 import { WarningTriangleIcon } from '@odigos/ui-kit/icons'
-import { NOTIFICATION_TYPE, SVG } from '@odigos/ui-kit/types'
+import { STATUS_TYPE, type SVG } from '@odigos/ui-kit/types'
 import { FlexRow, IconTitleBadge, Tooltip } from '@odigos/ui-kit/components'
 import nodeConfig from '../helpers/node-config'
 
@@ -15,7 +15,7 @@ export type HeaderNodeProps = NodeProps<
       title: string
       badge: string | number
       isFetching?: boolean
-      status?: NOTIFICATION_TYPE
+      status?: STATUS_TYPE
     },
     NODE_TYPES.HEADER
   >
@@ -39,7 +39,7 @@ const HeaderNode: React.FC<HeaderNodeProps> = memo(({ data }) => {
     <Container className='nowheel nodrag'>
       <IconTitleBadge icon={icon} title={title} badge={badge} loading={isFetching} />
 
-      {status === NOTIFICATION_TYPE.WARNING ? (
+      {status === STATUS_TYPE.WARNING ? (
         <Tooltip titleIcon={WarningTriangleIcon} title={HISTORIC_DATA_MESSAGES.TITLE} text={HISTORIC_DATA_MESSAGES.DESCRIPTION}>
           <WarningTriangleIcon size={20} />
         </Tooltip>

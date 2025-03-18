@@ -4,7 +4,7 @@ import { LINKS } from '@/constants'
 import { WalletIcon } from '@/icons'
 import styled from 'styled-components'
 import Theme from '@odigos/ui-kit/theme'
-import { NOTIFICATION_TYPE } from '@odigos/ui-kit/types'
+import { STATUS_TYPE } from '@odigos/ui-kit/types'
 import { useNotificationStore } from '@odigos/ui-kit/store'
 import { extractError, truncateStringInMiddle } from '@/functions'
 import { useAddress, useWallet, useWalletList } from '@meshsdk/react'
@@ -70,24 +70,24 @@ export const ConnectWallet = () => {
     try {
       await connect(walletId)
     } catch (e) {
-      addNotification({ type: NOTIFICATION_TYPE.ERROR, message: extractError(e).message })
+      addNotification({ type: STATUS_TYPE.ERROR, message: extractError(e).message })
     }
   }
 
   const handleDisconnect = () => {
     disconnect()
-    addNotification({ type: NOTIFICATION_TYPE.SUCCESS, title: 'Wallet disconnected' })
+    addNotification({ type: STATUS_TYPE.SUCCESS, title: 'Wallet disconnected' })
   }
 
   useEffect(() => {
     if (connected) {
-      addNotification({ type: NOTIFICATION_TYPE.SUCCESS, title: 'Wallet connected' })
+      addNotification({ type: STATUS_TYPE.SUCCESS, title: 'Wallet connected' })
       toggleIsOpen(false)
     }
   }, [connected, addNotification])
 
   useEffect(() => {
-    if (error) addNotification({ type: NOTIFICATION_TYPE.ERROR, title: 'Failed to connect wallet', message: extractError(error).message })
+    if (error) addNotification({ type: STATUS_TYPE.ERROR, title: 'Failed to connect wallet', message: extractError(error).message })
   }, [error, addNotification])
 
   return (
@@ -108,7 +108,7 @@ export const ConnectWallet = () => {
             <Fragment>
               {!!error && (
                 <NoteWrapper>
-                  <NotificationNote type={NOTIFICATION_TYPE.ERROR} title='Failed to connect wallet' message={extractError(error).message} />
+                  <NotificationNote type={STATUS_TYPE.ERROR} title='Failed to connect wallet' message={extractError(error).message} />
                 </NoteWrapper>
               )}
 

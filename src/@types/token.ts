@@ -1,4 +1,4 @@
-import type { PolicyId, TokenId } from './common'
+import type { Address, PolicyId, StakeKey, TokenId } from './common'
 
 export interface TokenAmount {
   onChain: number
@@ -42,4 +42,16 @@ export interface PopulatedToken extends RankedToken {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
   }
+}
+
+export interface Owner {
+  quantity: number // on-chain value (if using decimals)
+  stakeKey: StakeKey
+  addresses: Address[]
+}
+
+export interface TokenOwners {
+  tokenId: TokenId
+  page: number
+  owners: Owner[]
 }

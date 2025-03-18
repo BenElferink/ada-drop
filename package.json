@@ -22,14 +22,14 @@
     "@blockfrost/blockfrost-js": "^6.0.0",
     "@meshsdk/core": "^1.9.0-beta.20",
     "@meshsdk/react": "^1.9.0-beta.20",
-    "@odigos/ui-kit": "^0.0.9",
+    "@odigos/ui-kit": "^0.0.10",
     "@xyflow/react": "^12.4.4",
     "axios": "^1.8.3",
     "firebase": "^11.4.0",
-    "next": "15.2.2",
+    "next": "15.2.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "styled-components": "^6.1.15",
+    "styled-components": "^6.1.16",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
@@ -38,7 +38,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.2.2",
+    "eslint-config-next": "15.2.3",
     "typescript": "^5"
   }
 }

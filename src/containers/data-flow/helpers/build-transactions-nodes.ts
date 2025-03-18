@@ -35,7 +35,7 @@ export const buildTransactionNodes = ({ dataFlowHeight, dataFlowWidth, transacti
           timestamp,
           airdropId,
           txHash,
-          // status: timestamp < DATA_START_TIME ? NOTIFICATION_TYPE.WARNING : undefined,
+          // status: timestamp < DATA_START_TIME ? STATUS_TYPE.WARNING : undefined,
           iconSrc: formatIpfsReference(thumb).url,
           // title: `${recipientCount} Recipients, ${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           title: `${recipientCount} Recipients`,
