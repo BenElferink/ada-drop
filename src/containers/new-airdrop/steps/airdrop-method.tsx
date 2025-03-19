@@ -1,7 +1,7 @@
 import React, { type FC, useEffect, useState } from 'react'
-import { STATUS_TYPE } from '@odigos/ui-kit/types'
+import { Selected } from '@/components'
+import { DataTab, FlexColumn } from '@odigos/ui-kit/components'
 import { AirdropMethodType, type AirdropSettings } from '@/@types'
-import { DataTab, FlexColumn, Status } from '@odigos/ui-kit/components'
 
 type Data = Pick<AirdropSettings, 'airdropMethod'>
 
@@ -49,5 +49,3 @@ export const AirdropMethod: FC<AirdropMethodProps> = ({ defaultData, callback })
     </FlexColumn>
   )
 }
-
-const Selected = () => <Status status={STATUS_TYPE.DEFAULT} title='Selected' withBorder />

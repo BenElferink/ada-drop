@@ -4,7 +4,10 @@ import Theme from '@odigos/ui-kit/theme'
 import { useWallet } from '@meshsdk/react'
 import { PlusIcon } from '@odigos/ui-kit/icons'
 import { STATUS_TYPE } from '@odigos/ui-kit/types'
+import { HoldersJourney } from './journeys/holders'
 import { AirdropMethod } from './steps/airdrop-method'
+import { DelegatorsJourney } from './journeys/delegators'
+import { CustomListJourney } from './journeys/custom-list'
 import { AirdropMethodType, type AirdropSettings } from '@/@types'
 import { Button, Modal, NavigationButtons, Stepper, Tooltip, WarningModal } from '@odigos/ui-kit/components'
 
@@ -77,6 +80,8 @@ export const NewAirdrop = () => {
     toggleIsWarningOpen()
     toggleIsOpen()
   }
+
+  const callbackSettings = (data: Partial<AirdropSettings>) => setSettings((prev) => ({ ...prev, ...data }))
 
   const stepData = useMemo(() => {
     if (step === 1)
@@ -156,7 +161,15 @@ export const NewAirdrop = () => {
           </SideMenuWrapper>
 
           <ModalBody style={{ padding: '32px' }}>
-            {step === 1 ? <AirdropMethod defaultData={settings} callback={(data) => setSettings((prev) => ({ ...prev, ...data }))} /> : null}
+            {step === 1 ? (
+              <AirdropMethod defaultData={settings} callback={callbackSettings} />
+            ) : settings.airdropMethod === AirdropMethodType.HolderSnapshot ? (
+              <HoldersJourney step={step} defaultData={settings} callback={callbackSettings} />
+            ) : settings.airdropMethod === AirdropMethodType.DelegatorSnapshot ? (
+              <DelegatorsJourney step={step} defaultData={settings} callback={callbackSettings} />
+            ) : settings.airdropMethod === AirdropMethodType.CustomList ? (
+              <CustomListJourney step={step} defaultData={settings} callback={callbackSettings} />
+            ) : null}
           </ModalBody>
         </div>
       </Modal>
