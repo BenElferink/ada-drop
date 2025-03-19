@@ -49,6 +49,13 @@ export interface BlacklistSettings {
   blacklistTokens: TokenId[]
 }
 
+export enum AirdropMethodType {
+  EMPTY = '',
+  HolderSnapshot = 'Holder Snapshot',
+  DelegatorSnapshot = 'Delegator Snapshot',
+  CustomList = 'Custom List',
+}
+
 export interface AirdropSettings extends TokenSelectionSettings, HolderSettings, DelegatorSettings, BlacklistSettings {
-  airdropMethod: 'none' | 'holder-snapshot' | 'delegator-snapshot' | 'custom-list'
+  airdropMethod: AirdropMethodType
 }
