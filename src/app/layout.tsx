@@ -1,5 +1,6 @@
 'use client'
 
+import '@xyflow/react/dist/style.css'
 import React, { type PropsWithChildren } from 'react'
 import dynamic from 'next/dynamic'
 import { TITLE } from '@/constants'
