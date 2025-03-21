@@ -48,7 +48,7 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
     return payload
   }, [tokens, lovelaces])
 
-  const [amountType, setAmountType] = useState<AmountType>(AmountType.Percent)
+  const [amountType, setAmountType] = useState<AmountType>(AmountType.Fixed)
 
   const maxTokenAmount = useMemo(() => {
     return coins.find((c) => c.tokenId === data.tokenId)?.tokenAmount
@@ -199,11 +199,15 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
               onChange={(e) => handleAmountChange(e.target.value.replace('%', '').replaceAll(',', ''))}
             />
 
-            {amountType === AmountType.Percent && (
+            {amountType === AmountType.Fixed ? (
+              <Text size={12} style={{ padding: '6px' }}>
+                Translates to: {Math.round((100 / (maxTokenAmount?.display || 0)) * data.tokenAmount.display)}%
+              </Text>
+            ) : amountType === AmountType.Percent ? (
               <Text size={12} style={{ padding: '6px' }}>
                 Translates to: {prettyNumber(data.tokenAmount.display)} {getTokenName(data.tokenName)}
               </Text>
-            )}
+            ) : null}
           </div>
         </>
       )}
