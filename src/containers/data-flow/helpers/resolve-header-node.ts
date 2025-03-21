@@ -1,5 +1,5 @@
 import { CardanoLogo, TransactionIcon, WalletInIcon, WalletOutIcon } from '@/icons'
-import { STATUS_TYPE } from '@odigos/ui-kit/types'
+import { StatusType } from '@odigos/ui-kit/types'
 import { NODE_COLUMN_TYPES, NODE_TYPES } from '@/@types'
 import type { NodePositions } from './get-node-positions'
 import type { HeaderNodeProps } from '../nodes/header-node'
@@ -24,7 +24,7 @@ export const resolveHeaderNode = (positions: NodePositions, type: NODE_COLUMN_TY
       title: type,
       badge,
       isFetching: !badge,
-      status: [NODE_COLUMN_TYPES.RECIPIENTS, NODE_COLUMN_TYPES.TRANSACTIONS].includes(type) ? STATUS_TYPE.WARNING : undefined,
+      status: [NODE_COLUMN_TYPES.RECIPIENTS, NODE_COLUMN_TYPES.TRANSACTIONS].includes(type) ? StatusType.Warning : undefined,
     } as HeaderNodeProps['data'],
   }
 }

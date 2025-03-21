@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import Theme from '@odigos/ui-kit/theme'
 import { useWallet } from '@meshsdk/react'
 import { PlusIcon } from '@odigos/ui-kit/icons'
-import { STATUS_TYPE } from '@odigos/ui-kit/types'
+import { StatusType } from '@odigos/ui-kit/types'
 import { HoldersJourney } from './journeys/holders'
 import { deepClone } from '@odigos/ui-kit/functions'
 import { AirdropMethod } from './steps/airdrop-method'
@@ -143,7 +143,7 @@ export const NewAirdrop = () => {
         noOverlay
         title='Cancel Airdrop'
         description='Are you sure you want to cancel this airdrop?'
-        approveButton={{ text: 'Yes', variant: STATUS_TYPE.WARNING, onClick: handleClose }}
+        approveButton={{ text: 'Yes', variant: StatusType.Warning, onClick: handleClose }}
         denyButton={{ text: 'No', onClick: toggleIsWarningOpen }}
       />
 
@@ -192,7 +192,7 @@ export const NewAirdrop = () => {
             <FlexColumn $gap={16}>
               {formHasError && (
                 <div style={{ width: '100%' }}>
-                  <NotificationNote type={STATUS_TYPE.ERROR} title='Form Error' message='Missing required fields' />
+                  <NotificationNote type={StatusType.Error} title='Form Error' message='Missing required fields' />
                 </div>
               )}
 

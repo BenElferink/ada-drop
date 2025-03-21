@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { KnownWallet } from '@/components'
 import { HISTORIC_DATA_MESSAGES } from '@/constants'
 import { WarningTriangleIcon } from '@odigos/ui-kit/icons'
-import { STATUS_TYPE, type SVG } from '@odigos/ui-kit/types'
+import { StatusType, type SVG } from '@odigos/ui-kit/types'
 import { DataTab, Tooltip } from '@odigos/ui-kit/components'
 import type { Node, NodeProps, XYPosition } from '@xyflow/react'
 import { NODE_COLUMN_TYPES, NODE_TYPES, type StakeKey, type TransactionId } from '@/@types'
@@ -12,7 +12,7 @@ import nodeConfig from '../helpers/node-config'
 export type BaseNodeProps = NodeProps<
   Node<
     {
-      status?: STATUS_TYPE
+      status?: StatusType
       faded?: boolean
       title: string
       subTitle: string
@@ -49,7 +49,7 @@ const BaseNode: React.FC<BaseNodeProps> = memo(({ id, data }) => {
         faded={faded}
         onClick={withClick ? () => {} : undefined}
         renderActions={() =>
-          status === STATUS_TYPE.WARNING ? (
+          status === StatusType.Warning ? (
             <Tooltip titleIcon={WarningTriangleIcon} title={HISTORIC_DATA_MESSAGES.TITLE} text={HISTORIC_DATA_MESSAGES.DESCRIPTION}>
               <WarningTriangleIcon size={20} />
             </Tooltip>

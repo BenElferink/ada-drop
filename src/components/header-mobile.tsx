@@ -2,7 +2,7 @@ import React from 'react'
 import { TITLE } from '@/constants'
 import { CardanoLogo } from '@/icons'
 import styled from 'styled-components'
-import { STATUS_TYPE } from '@odigos/ui-kit/types'
+import { StatusType } from '@odigos/ui-kit/types'
 import { ToggleDarkMode } from '@odigos/ui-kit/containers'
 import { Header as Container, Status, Text } from '@odigos/ui-kit/components'
 
@@ -29,7 +29,7 @@ export const HeaderMobile = () => {
           </Text>,
         ]}
         right={[
-          <Status key='use-desktop' status={STATUS_TYPE.WARNING} title='Please use Desktop' withBorder withBackground />,
+          <Status key='use-desktop' status={StatusType.Warning} title='Please use Desktop' withBorder withBackground />,
           <ToggleDarkMode key='toggle-theme' />,
         ]}
       />

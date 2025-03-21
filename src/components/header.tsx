@@ -1,7 +1,7 @@
 import React from 'react'
 import { TITLE } from '@/constants'
 import { CardanoLogo } from '@/icons'
-import { STATUS_TYPE } from '@odigos/ui-kit/types'
+import { StatusType } from '@odigos/ui-kit/types'
 import { useChainLoad, useEpochInfo } from '@/hooks'
 import { ConnectWallet, NewAirdrop } from '@/containers'
 import { ToggleDarkMode } from '@odigos/ui-kit/containers'
@@ -48,12 +48,7 @@ export const Header = () => {
           />
         </Tooltip>,
         <Tooltip key='epoch' text='Cardano Epoch Progress'>
-          <Status
-            status={STATUS_TYPE.DEFAULT}
-            title={`Epoch ${epochInfo.epoch}`}
-            subtitle={resolvePercentDisplay(epochInfo.percent)}
-            withBackground
-          />
+          <Status status={StatusType.Default} title={`Epoch ${epochInfo.epoch}`} subtitle={resolvePercentDisplay(epochInfo.percent)} withBackground />
         </Tooltip>,
       ]}
       right={[<NewAirdrop key='new-airdrop' />, <ConnectWallet key='connect-wallet' />, <ToggleDarkMode key='toggle-theme' />]}

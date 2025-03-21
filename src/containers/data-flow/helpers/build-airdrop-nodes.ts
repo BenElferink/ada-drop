@@ -1,5 +1,5 @@
 import type { Node } from '@xyflow/react'
-import { STATUS_TYPE } from '@odigos/ui-kit/types'
+import { StatusType } from '@odigos/ui-kit/types'
 import { mapToNodeData } from './map-to-node-data'
 import { resolveEdgedNode } from './resolve-edged-node'
 import { resolveHeaderNode } from './resolve-header-node'
@@ -37,7 +37,7 @@ export const buildAirdropNodes = ({ isMobile, dataFlowHeight, dataFlowWidth, air
           timestamp,
           airdropId: id,
           stakeKey,
-          status: !recipients?.length ? STATUS_TYPE.WARNING : undefined,
+          status: !recipients?.length ? StatusType.Warning : undefined,
           iconSrc: formatIpfsReference(thumb).url,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           subTitle: isMobile ? `${recipients?.length || 0} Recipients • ${getTimestampLabel(timestamp).label}` : truncateStringInMiddle(stakeKey, 15),
