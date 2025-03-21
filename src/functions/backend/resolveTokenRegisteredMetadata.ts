@@ -1,6 +1,6 @@
 import blockfrost from '@/utils/blockfrost'
-import cardanoTokenRegistry from '@/utils/cardano-token-registry'
 import type { components } from '@blockfrost/openapi'
+import cardanoTokenRegistry from '@/utils/cardano-token-registry'
 
 interface TokenMetadata {
   ticker: string

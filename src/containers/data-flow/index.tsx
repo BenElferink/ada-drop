@@ -1,5 +1,5 @@
 import React from 'react'
-import '@xyflow/react/dist/style.css'
+// import '@xyflow/react/dist/style.css'
 import styled from 'styled-components'
 import { useClickNode } from '@/hooks'
 import BaseNode from './nodes/base-node'

@@ -1,5 +1,6 @@
 'use client'
 
+import '@xyflow/react/dist/style.css'
 import styled from 'styled-components'
 import { useMobile } from '@/hooks'
 import { AirdropMap } from '@/containers'

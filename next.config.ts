@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next'
+import transpileModules from 'next-transpile-modules'
 
-const nextConfig: NextConfig = {
+const withTM = transpileModules(['@odigos/ui-kit'])
+
+const nextConfig: NextConfig = withTM({
   reactStrictMode: true,
   images: {
     unoptimized: true,
@@ -15,6 +18,6 @@ const nextConfig: NextConfig = {
     }
     return config
   },
-}
+})
 
 export default nextConfig

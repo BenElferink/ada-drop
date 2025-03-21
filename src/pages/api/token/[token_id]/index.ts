@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import type { PopulatedToken } from '@/@types'
-const { default: populateToken } = await import('@/functions/backend/populateToken')
+import populateToken from '@/functions/backend/populateToken'
 
 export const config = {
   maxDuration: 300,
