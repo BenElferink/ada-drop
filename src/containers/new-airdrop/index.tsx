@@ -158,7 +158,10 @@ export const NewAirdrop = () => {
                 variant: 'primary',
                 label: 'Back',
                 disabled: [1].includes(step),
-                onClick: decrementStep,
+                onClick: () => {
+                  setFormHasError(false)
+                  decrementStep()
+                },
               },
               {
                 variant: 'primary',
