@@ -95,14 +95,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Wallet>) => {
                   decimals: tokenAmountDecimals,
                   display: formatTokenAmountFromChain(tokenAmountOnChain, tokenAmountDecimals),
                 },
+                tokenName: {
+                  onChain: '',
+                  ticker: '',
+                  display: '',
+                },
               }
 
               if (isFungible) {
-                token.tokenName = {
-                  onChain: '',
-                  ticker: tokenNameTicker,
-                  display: '',
-                }
+                token.tokenName.ticker = tokenNameTicker
               }
 
               return token
