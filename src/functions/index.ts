@@ -1,3 +1,5 @@
+export * from './chunk'
+export * from './eachLimit'
 export * from './extractError'
 export * from './formatHex'
 export * from './formatIpfsReference'

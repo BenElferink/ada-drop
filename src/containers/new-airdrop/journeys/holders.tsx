@@ -1,86 +1,28 @@
-import React, { type FC } from 'react'
-import type { AirdropSettings } from '@/@types'
-import { FlexColumn, Text } from '@odigos/ui-kit/components'
+import React, { forwardRef } from 'react'
+import { TokenSelector } from '../steps/token-selector'
+import type { AirdropSettings, FormRef } from '@/@types'
 
-type Data = Pick<AirdropSettings, 'airdropMethod'>
+type Data = AirdropSettings
 
 interface HoldersJourneyProps {
   step: number
   defaultData: Data
-  callback: (payload: Data) => void
 }
 
-export const HoldersJourney: FC<HoldersJourneyProps> = ({ step, defaultData }) => {
-  return (
-    <FlexColumn>
-      <Text>
-        {defaultData.airdropMethod}
-        <br />
-        Step: {step}
-      </Text>
-    </FlexColumn>
-  )
+export const HoldersJourney = forwardRef<FormRef<Data>, HoldersJourneyProps>(({ step, defaultData }, ref) => {
+  return step === 2 ? <TokenSelector ref={ref} defaultData={defaultData} /> : null
 
-  // return step === 2 ? (
-  //   <TokenSelector
-  //     onlyFungible
-  //     withAda
-  //     withAmount
-  //     defaultData={{
-  //       thumb: settings['thumb'],
-  //       tokenId: settings['tokenId'],
-  //       tokenName: settings['tokenName'],
-  //       tokenAmount: settings['tokenAmount'],
-  //     }}
-  //     callback={(payload) => setSettings((prev) => ({ ...prev, ...payload }))}
-  //     next={increment}
-  //     back={decrement}
-  //   />
-  // ) : step === 3 ? (
-  //   <HolderPolicies
-  //     defaultData={{
-  //       holderPolicies: settings['holderPolicies'],
-  //     }}
-  //     callback={(payload) => setSettings((prev) => ({ ...prev, ...payload }))}
-  //     next={increment}
-  //     back={decrement}
-  //   />
-  // ) : step === 4 ? (
-  //   <StakePools
-  //     defaultData={{
-  //       withDelegators: settings['withDelegators'],
-  //       stakePools: settings['stakePools'],
-  //     }}
-  //     callback={(payload) => setSettings((prev) => ({ ...prev, ...payload }))}
-  //     next={increment}
-  //     back={decrement}
-  //   />
-  // ) : step === 5 ? (
-  //   <HolderBlacklist
-  //     defaultData={{
-  //       withBlacklist: settings['withBlacklist'],
-  //       blacklistWallets: settings['blacklistWallets'],
-  //       blacklistTokens: settings['blacklistTokens'],
-  //       holderPolicies: settings['holderPolicies'],
-  //     }}
-  //     callback={(payload) => setSettings((prev) => ({ ...prev, ...payload }))}
-  //     next={increment}
-  //     back={decrement}
-  //   />
+  // : step === 4 ? (
+  //   <HolderPolicies ref={ref} defaultData={defaultData} />
+  // ) : step ===5 ? (
+  //   <StakePools ref={ref} defaultData={defaultData} />
   // ) : step === 6 ? (
-  //   <AirdropSnapshot
-  //     payoutHolders={payoutHolders}
-  //     settings={settings as AirdropSettings}
-  //     callback={(payload) => setPayoutHolders(payload)}
-  //     next={increment}
-  //     back={decrement}
-  //   />
+  //   <HolderBlacklist ref={ref} defaultData={defaultData} />
   // ) : step === 7 ? (
-  //   <AirdropPayout
-  //     payoutHolders={payoutHolders}
-  //     settings={settings as AirdropSettings}
-  //     // next={increment}
-  //     back={decrement}
-  //   />
+  //   <AirdropSnapshot ref={ref} defaultData={defaultData} />
+  // ) : step === 8 ? (
+  //   <AirdropPayout ref={ref} defaultData={defaultData} />
   // ) : null
-}
+})
+
+HoldersJourney.displayName = HoldersJourney.name

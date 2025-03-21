@@ -1,6 +1,6 @@
 import type { Address, PoolId, StakeKey } from './common'
 
-export interface Pool {
+export interface PoolInfo {
   poolId: PoolId
   ticker: string
 }

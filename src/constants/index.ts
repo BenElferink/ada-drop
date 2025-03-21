@@ -49,6 +49,11 @@ export const ERROR_TYPES = {
   INVALID_WALLET_IDENTIFIER: 'INVALID_WALLET_IDENTIFIER',
 }
 
+export const POLICY_IDS = {
+  ADA_HANDLE: 'f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a',
+  BAD_KEY: '80e3ccc66f4dfeff6bc7d906eb166a984a1fc6d314e33721ad6add14',
+}
+
 export const POPULATED_LOVELACE: PopulatedToken = {
   tokenId: 'lovelace',
   fingerprint: 'lovelace',

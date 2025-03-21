@@ -1,15 +1,16 @@
-import React, { Fragment, useMemo, useState } from 'react'
+import React, { Fragment, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 import Theme from '@odigos/ui-kit/theme'
 import { useWallet } from '@meshsdk/react'
 import { PlusIcon } from '@odigos/ui-kit/icons'
 import { STATUS_TYPE } from '@odigos/ui-kit/types'
 import { HoldersJourney } from './journeys/holders'
+import { deepClone } from '@odigos/ui-kit/functions'
 import { AirdropMethod } from './steps/airdrop-method'
 import { DelegatorsJourney } from './journeys/delegators'
 import { CustomListJourney } from './journeys/custom-list'
-import { AirdropMethodType, type AirdropSettings } from '@/@types'
-import { Button, Modal, NavigationButtons, Stepper, Tooltip, WarningModal } from '@odigos/ui-kit/components'
+import { AirdropMethodType, FormRef, type AirdropSettings } from '@/@types'
+import { Button, FlexColumn, Modal, NavigationButtons, NotificationNote, Stepper, Tooltip, WarningModal } from '@odigos/ui-kit/components'
 
 const DEFAULT_SETTINGS: AirdropSettings = {
   airdropMethod: AirdropMethodType.EMPTY,
@@ -67,13 +68,17 @@ export const NewAirdrop = () => {
   const incrementStep = () => setStep((prev) => prev + 1)
   const decrementStep = () => setStep((prev) => prev - 1)
 
-  const [settings, setSettings] = useState<AirdropSettings>(DEFAULT_SETTINGS)
+  const [settings, setSettings] = useState<AirdropSettings>(deepClone(DEFAULT_SETTINGS))
+  const [formHasError, setFormHasError] = useState(false)
+  const formRef = useRef<FormRef>({ validate: () => Promise.resolve(false), data: settings })
+
   // const [payoutRecipients, setPayoutRecipients] = useState<PayoutRecipient[]>([])
 
   const handleClose = () => {
     // reset data
     setStep(1)
-    setSettings(DEFAULT_SETTINGS)
+    setSettings(deepClone(DEFAULT_SETTINGS))
+    setFormHasError(false)
     // setPayoutRecipients([])
 
     // close modal
@@ -81,32 +86,42 @@ export const NewAirdrop = () => {
     toggleIsOpen()
   }
 
-  const callbackSettings = (data: Partial<AirdropSettings>) => setSettings((prev) => ({ ...prev, ...data }))
-
   const stepData = useMemo(() => {
     if (step === 1)
       return [
         { stepNumber: 1, title: 'Airdrop Method' },
-        { stepNumber: 2, title: '...' },
+        { stepNumber: 2, title: 'Choose Token' },
+        { stepNumber: 4, title: '...' },
       ]
 
     switch (settings.airdropMethod) {
       case AirdropMethodType.HolderSnapshot:
         return [
           { stepNumber: 1, title: 'Airdrop Method' },
-          { stepNumber: 2, title: 'TODO: development' },
+          { stepNumber: 2, title: 'Choose Token' },
+          { stepNumber: 3, title: 'Policy IDs' },
+          { stepNumber: 4, title: 'Stake Pools' }, // ?? remove step
+          { stepNumber: 5, title: 'Blacklist' },
+          { stepNumber: 6, title: 'Run Snapshot' },
+          { stepNumber: 7, title: 'Run Payout' },
         ]
 
       case AirdropMethodType.DelegatorSnapshot:
         return [
           { stepNumber: 1, title: 'Airdrop Method' },
-          { stepNumber: 2, title: 'TODO: development' },
+          { stepNumber: 2, title: 'Choose Token' },
+          { stepNumber: 3, title: 'Stake Pools' },
+          { stepNumber: 4, title: 'Blacklist' }, // !! code into step 6 & 7
+          { stepNumber: 5, title: 'Run Snapshot' },
+          { stepNumber: 6, title: 'Run Payout' },
         ]
 
       case AirdropMethodType.CustomList:
         return [
           { stepNumber: 1, title: 'Airdrop Method' },
-          { stepNumber: 2, title: 'TODO: development' },
+          { stepNumber: 2, title: 'Choose Token' },
+          { stepNumber: 3, title: 'Upload File' },
+          { stepNumber: 4, title: 'Run Payout' },
         ]
 
       default:
@@ -142,14 +157,27 @@ export const NewAirdrop = () => {
               {
                 variant: 'primary',
                 label: 'Back',
-                onClick: decrementStep,
                 disabled: [1].includes(step),
+                onClick: decrementStep,
               },
               {
                 variant: 'primary',
                 label: 'Next',
-                onClick: incrementStep,
-                disabled: step === 1 && settings.airdropMethod === AirdropMethodType.EMPTY,
+                disabled:
+                  (settings.airdropMethod === AirdropMethodType.HolderSnapshot && step === 7) ||
+                  (settings.airdropMethod === AirdropMethodType.DelegatorSnapshot && step === 6) ||
+                  (settings.airdropMethod === AirdropMethodType.CustomList && step === 4),
+                onClick: () => {
+                  formRef.current?.validate().then((isOk) => {
+                    if (isOk) {
+                      setFormHasError(false)
+                      setSettings((prev) => ({ ...prev, ...formRef.current?.data }))
+                      incrementStep()
+                    } else {
+                      setFormHasError(true)
+                    }
+                  })
+                },
               },
             ]}
           />
@@ -161,15 +189,23 @@ export const NewAirdrop = () => {
           </SideMenuWrapper>
 
           <ModalBody style={{ padding: '32px' }}>
-            {step === 1 ? (
-              <AirdropMethod defaultData={settings} callback={callbackSettings} />
-            ) : settings.airdropMethod === AirdropMethodType.HolderSnapshot ? (
-              <HoldersJourney step={step} defaultData={settings} callback={callbackSettings} />
-            ) : settings.airdropMethod === AirdropMethodType.DelegatorSnapshot ? (
-              <DelegatorsJourney step={step} defaultData={settings} callback={callbackSettings} />
-            ) : settings.airdropMethod === AirdropMethodType.CustomList ? (
-              <CustomListJourney step={step} defaultData={settings} callback={callbackSettings} />
-            ) : null}
+            <FlexColumn $gap={16}>
+              {formHasError && (
+                <div style={{ width: '100%' }}>
+                  <NotificationNote type={STATUS_TYPE.ERROR} title='Form Error' message='Missing required fields' />
+                </div>
+              )}
+
+              {step === 1 ? (
+                <AirdropMethod ref={formRef} defaultData={settings} />
+              ) : settings.airdropMethod === AirdropMethodType.HolderSnapshot ? (
+                <HoldersJourney ref={formRef} step={step} defaultData={settings} />
+              ) : settings.airdropMethod === AirdropMethodType.DelegatorSnapshot ? (
+                <DelegatorsJourney ref={formRef} step={step} defaultData={settings} />
+              ) : settings.airdropMethod === AirdropMethodType.CustomList ? (
+                <CustomListJourney ref={formRef} step={step} defaultData={settings} />
+              ) : null}
+            </FlexColumn>
           </ModalBody>
         </div>
       </Modal>

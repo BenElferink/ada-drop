@@ -112,20 +112,22 @@ export const ConnectWallet = () => {
                 </NoteWrapper>
               )}
 
-              {installedWallets.map((w) => {
-                const disabled = connected || connecting
+              {installedWallets
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((w) => {
+                  const disabled = connected || connecting
 
-                return (
-                  <DataTab
-                    key={`wallet-${w.id}`}
-                    iconSrc={w.icon}
-                    title={`${w.name.toLowerCase().replace('wallet', '').trim()}${w.id === 'nufiSnap' ? ' (experimental)' : ''}`}
-                    subTitle={`version: ${w.version}`}
-                    onClick={!disabled ? () => handleConnect(w.id) : undefined}
-                    faded={disabled}
-                  />
-                )
-              })}
+                  return (
+                    <DataTab
+                      key={`wallet-${w.id}`}
+                      iconSrc={w.icon}
+                      title={`${w.name.toLowerCase().replace('wallet', '').trim()}${w.id === 'nufiSnap' ? ' (experimental)' : ''}`}
+                      subTitle={`version: ${w.version}`}
+                      onClick={!disabled ? () => handleConnect(w.id) : undefined}
+                      faded={disabled}
+                    />
+                  )
+                })}
 
               {connected && (
                 <WideButton variant='primary' disabled={!connected || connecting} onClick={handleDisconnect}>

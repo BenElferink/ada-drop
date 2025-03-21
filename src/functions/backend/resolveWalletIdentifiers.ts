@@ -5,11 +5,13 @@ import blockfrost from '@/utils/blockfrost'
 import type { Address, StakeKey } from '@/@types'
 
 const resolveWalletIdentifiers = async (
-  walletIdentifier: string
+  walletIdentifier?: string
 ): Promise<{
   stakeKey: StakeKey
   addresses: Address['address'][]
 }> => {
+  if (!walletIdentifier) throw new Error(ERROR_TYPES['INVALID_WALLET_IDENTIFIER'])
+
   let stakeKey = walletIdentifier.indexOf('stake1') === 0 ? walletIdentifier : ''
   let walletAddress = walletIdentifier.indexOf('addr1') === 0 ? walletIdentifier : ''
   const handle = walletIdentifier.indexOf('$') === 0 ? walletIdentifier : ''

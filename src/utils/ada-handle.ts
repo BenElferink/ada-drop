@@ -1,6 +1,43 @@
 import axios from 'axios'
 import type { Address, StakeKey } from '@/@types'
 
+interface FetchedHandle {
+  hex: string
+  name: string
+  image: string // ipfs
+  standard_image: string // ipfs
+  holder: StakeKey | Address['address']
+  length: number
+  og_number: number
+  rarity: string
+  utxo: string
+  characters: string
+  numeric_modifiers: string
+  default_in_wallet: string
+  pfp_image: string // ipfs
+  pfp_asset: string
+  bg_image: string // ipfs
+  bg_asset: string
+  resolved_addresses: {
+    ada: Address['address']
+  }
+  created_slot_number: number
+  updated_slot_number: number
+  has_datum: boolean
+  svg_version: string
+  image_hash: string
+  standard_image_hash: string
+}
+
+interface FetchedHolder {
+  total_handles: number
+  default_handle: string
+  manually_set: boolean
+  address: StakeKey
+  known_owner_name: string
+  type: string
+}
+
 class AdaHandle {
   baseUrl: string
 
@@ -11,6 +48,7 @@ class AdaHandle {
   resolveHolderFromHandle = (
     handle: string
   ): Promise<{
+    handle: string
     holder: StakeKey | Address['address']
     address: Address['address']
   }> => {
@@ -18,52 +56,24 @@ class AdaHandle {
 
     return new Promise(async (resolve, reject) => {
       try {
-        console.log('Resolving handle:', handle)
-
-        const { data } = await axios.get<{
-          hex: string
-          name: string
-          image: string // ipfs
-          standard_image: string // ipfs
-          holder: StakeKey | Address['address']
-          length: number
-          og_number: number
-          rarity: string
-          utxo: string
-          characters: string
-          numeric_modifiers: string
-          default_in_wallet: string
-          pfp_image: string // ipfs
-          pfp_asset: string
-          bg_image: string // ipfs
-          bg_asset: string
-          resolved_addresses: {
-            ada: Address['address']
-          }
-          created_slot_number: number
-          updated_slot_number: number
-          has_datum: boolean
-          svg_version: string
-          image_hash: string
-          standard_image_hash: string
-        }>(uri, {
+        const { data } = await axios.get<FetchedHandle>(uri, {
           headers: {
             'Accept-Encoding': 'application/json',
           },
         })
 
         const payload = {
+          handle,
           holder: data.holder,
           address: data.resolved_addresses.ada,
         }
-
-        console.log('Resolved handle:', payload)
 
         return resolve(payload)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         if (error?.response?.status === 404) {
           return resolve({
+            handle,
             holder: '',
             address: '',
           })
@@ -79,16 +89,7 @@ class AdaHandle {
 
     return new Promise(async (resolve, reject) => {
       try {
-        console.log('Resolving wallet handle:', stakeKey)
-
-        const { data } = await axios.get<{
-          total_handles: number
-          default_handle: string
-          manually_set: boolean
-          address: StakeKey
-          known_owner_name: string
-          type: string
-        }>(uri, {
+        const { data } = await axios.get<FetchedHolder>(uri, {
           headers: {
             'Accept-Encoding': 'application/json',
           },
@@ -100,14 +101,12 @@ class AdaHandle {
           const { holder } = await this.resolveHolderFromHandle(handle)
 
           if (holder !== stakeKey) {
-            console.log('Resolved with incorrect wallet handle:', handle)
+            console.warn('Resolved with incorrect wallet handle:', handle)
             return resolve('')
           }
 
           handle = `$${handle}`
         }
-
-        console.log('Resolved wallet handle:', handle)
 
         return resolve(handle)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

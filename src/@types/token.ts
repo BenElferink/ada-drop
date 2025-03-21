@@ -16,7 +16,7 @@ export interface BaseToken {
   tokenId: TokenId
   isFungible: boolean
   tokenAmount: TokenAmount
-  tokenName?: TokenName
+  tokenName: TokenName
 }
 
 export interface RankedToken extends BaseToken {

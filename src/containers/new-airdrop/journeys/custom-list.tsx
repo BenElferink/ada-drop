@@ -1,23 +1,16 @@
-import React, { type FC } from 'react'
-import type { AirdropSettings } from '@/@types'
-import { FlexColumn, Text } from '@odigos/ui-kit/components'
+import React, { forwardRef } from 'react'
+import { TokenSelector } from '../steps/token-selector'
+import type { AirdropSettings, FormRef } from '@/@types'
 
-type Data = Partial<AirdropSettings>
+type Data = AirdropSettings
 
 interface CustomListJourneyProps {
   step: number
   defaultData: Data
-  callback: (payload: Data) => void
 }
 
-export const CustomListJourney: FC<CustomListJourneyProps> = ({ step, defaultData }) => {
-  return (
-    <FlexColumn>
-      <Text>
-        {defaultData.airdropMethod}
-        <br />
-        Step: {step}
-      </Text>
-    </FlexColumn>
-  )
-}
+export const CustomListJourney = forwardRef<FormRef<Data>, CustomListJourneyProps>(({ step, defaultData }, ref) => {
+  return step === 2 ? <TokenSelector ref={ref} defaultData={defaultData} /> : null
+})
+
+CustomListJourney.displayName = CustomListJourney.name
