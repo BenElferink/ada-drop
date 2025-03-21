@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
   compiler: {
     styledComponents: true,
   },
+  experimental: {
+    externalDir: true,
+  },
   webpack: function (config) {
     config.experiments = {
       asyncWebAssembly: true,
