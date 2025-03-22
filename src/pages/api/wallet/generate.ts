@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { AppWallet, BlockfrostProvider } from '@meshsdk/core'
-import { API_KEYS } from '@/constants'
 import type { Address } from '@/@types'
+import { BLOCKFROST_API_KEY } from '@/constants'
+import { AppWallet, BlockfrostProvider } from '@meshsdk/core'
 
 export const config = {
   maxDuration: 300,
@@ -23,7 +23,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<WalletGenerateR
       case 'GET': {
         const mnemonic = AppWallet.brew()
 
-        const provider = new BlockfrostProvider(API_KEYS['BLOCKFROST_API_KEY'])
+        const provider = new BlockfrostProvider(BLOCKFROST_API_KEY)
         const wallet = new AppWallet({
           networkId: 1,
           fetcher: provider,

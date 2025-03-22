@@ -1,6 +1,13 @@
 import type { TokenAmount, TokenName } from './token'
 import type { PolicyId, PoolId, StakeKey, TokenId } from './common'
 
+export enum AirdropMethodType {
+  EMPTY = '',
+  HolderSnapshot = 'Holder Snapshot',
+  DelegatorSnapshot = 'Delegator Snapshot',
+  CustomList = 'Custom List',
+}
+
 export interface TokenSelectionSettings {
   tokenId: TokenId
   tokenName: TokenName
@@ -8,38 +15,42 @@ export interface TokenSelectionSettings {
   thumb: string
 }
 
-export interface HolderSettings {
-  withHolders: boolean
-  holderPolicies: {
+export interface PolicyTraitOptions {
+  category: string
+  trait: string
+  amount: number
+}
+
+export interface PolicyRankOptions {
+  minRange: number
+  maxRange: number
+  amount: number
+}
+
+export interface PolicyWhaleOptions {
+  shouldStack: boolean
+  groupSize: number
+  amount: number
+}
+
+export interface PolicySettings {
+  policies: {
     policyId: PolicyId
-    hasFungibleTokens?: boolean
     weight: number
+    hasFungibleTokens?: boolean
 
     withTraits?: boolean
-    traitOptions?: {
-      category: string
-      trait: string
-      amount: number
-    }[]
+    traitOptions?: PolicyTraitOptions[]
 
     withRanks?: boolean
-    rankOptions?: {
-      minRange: number
-      maxRange: number
-      amount: number
-    }[]
+    rankOptions?: PolicyRankOptions[]
 
     withWhales?: boolean
-    whaleOptions?: {
-      shouldStack: boolean
-      groupSize: number
-      amount: number
-    }[]
+    whaleOptions?: PolicyWhaleOptions[]
   }[]
 }
 
 export interface DelegatorSettings {
-  withDelegators: boolean
   stakePools: PoolId[]
 }
 
@@ -49,13 +60,10 @@ export interface BlacklistSettings {
   blacklistTokens: TokenId[]
 }
 
-export enum AirdropMethodType {
-  EMPTY = '',
-  HolderSnapshot = 'Holder Snapshot',
-  DelegatorSnapshot = 'Delegator Snapshot',
-  CustomList = 'Custom List',
-}
-
-export interface AirdropSettings extends TokenSelectionSettings, HolderSettings, DelegatorSettings, BlacklistSettings {
+export interface AirdropSettings extends TokenSelectionSettings, PolicySettings, DelegatorSettings, BlacklistSettings {
   airdropMethod: AirdropMethodType
 }
+
+// export interface HolderAirdrop extends TokenSelectionSettings, PolicySettings, BlacklistSettings {}
+// export interface DelegatorAirdrop extends TokenSelectionSettings, DelegatorSettings, BlacklistSettings {}
+// export interface CustomListAirdrop extends TokenSelectionSettings, BlacklistSettings {}

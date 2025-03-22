@@ -4,6 +4,7 @@ import Theme from '@odigos/ui-kit/theme'
 import { useWallet } from '@meshsdk/react'
 import { PlusIcon } from '@odigos/ui-kit/icons'
 import { StatusType } from '@odigos/ui-kit/types'
+import { INIT_AIRDROP_SETTINGS } from '@/constants'
 import { HoldersJourney } from './journeys/holders'
 import { deepClone } from '@odigos/ui-kit/functions'
 import { AirdropMethod } from './steps/airdrop-method'
@@ -11,33 +12,6 @@ import { DelegatorsJourney } from './journeys/delegators'
 import { CustomListJourney } from './journeys/custom-list'
 import { AirdropMethodType, FormRef, type AirdropSettings } from '@/@types'
 import { Button, FlexColumn, Modal, NavigationButtons, NotificationNote, Stepper, Tooltip, WarningModal } from '@odigos/ui-kit/components'
-
-const DEFAULT_SETTINGS: AirdropSettings = {
-  airdropMethod: AirdropMethodType.EMPTY,
-
-  tokenId: '',
-  tokenName: {
-    onChain: '',
-    display: '',
-    ticker: '',
-  },
-  tokenAmount: {
-    onChain: 0,
-    display: 0,
-    decimals: 0,
-  },
-  thumb: '',
-
-  withHolders: false,
-  holderPolicies: [],
-
-  withDelegators: false,
-  stakePools: [],
-
-  withBlacklist: false,
-  blacklistWallets: [],
-  blacklistTokens: [],
-}
 
 export const ModalBody = styled.div`
   width: 640px;
@@ -68,17 +42,20 @@ export const NewAirdrop = () => {
   const incrementStep = () => setStep((prev) => prev + 1)
   const decrementStep = () => setStep((prev) => prev - 1)
 
-  const [settings, setSettings] = useState<AirdropSettings>(deepClone(DEFAULT_SETTINGS))
-  const [formHasError, setFormHasError] = useState(false)
-  const formRef = useRef<FormRef>({ validate: () => Promise.resolve(false), data: settings })
+  const [formError, setFormError] = useState({ isOk: true, message: '' })
+  const [settings, setSettings] = useState<AirdropSettings>(deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS))
+  const formRef = useRef<FormRef>({
+    validate: () => Promise.resolve({ isOk: true, message: '' }),
+    getData: () => deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS),
+  })
 
   // const [payoutRecipients, setPayoutRecipients] = useState<PayoutRecipient[]>([])
 
   const handleClose = () => {
     // reset data
     setStep(1)
-    setSettings(deepClone(DEFAULT_SETTINGS))
-    setFormHasError(false)
+    setSettings(deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS))
+    setFormError({ isOk: true, message: '' })
     // setPayoutRecipients([])
 
     // close modal
@@ -100,10 +77,9 @@ export const NewAirdrop = () => {
           { stepNumber: 1, title: 'Airdrop Method' },
           { stepNumber: 2, title: 'Choose Token' },
           { stepNumber: 3, title: 'Policy IDs' },
-          { stepNumber: 4, title: 'Stake Pools' }, // ?? remove step
-          { stepNumber: 5, title: 'Blacklist' },
-          { stepNumber: 6, title: 'Run Snapshot' },
-          { stepNumber: 7, title: 'Run Payout' },
+          { stepNumber: 4, title: 'Blacklist' },
+          { stepNumber: 5, title: 'Run Snapshot' },
+          { stepNumber: 6, title: 'Run Payout' },
         ]
 
       case AirdropMethodType.DelegatorSnapshot:
@@ -159,7 +135,7 @@ export const NewAirdrop = () => {
                 label: 'Back',
                 disabled: [1].includes(step),
                 onClick: () => {
-                  setFormHasError(false)
+                  setFormError({ isOk: true, message: '' })
                   decrementStep()
                 },
               },
@@ -167,17 +143,18 @@ export const NewAirdrop = () => {
                 variant: 'primary',
                 label: 'Next',
                 disabled:
-                  (settings.airdropMethod === AirdropMethodType.HolderSnapshot && step === 7) ||
+                  (settings.airdropMethod === AirdropMethodType.HolderSnapshot && step === 6) ||
                   (settings.airdropMethod === AirdropMethodType.DelegatorSnapshot && step === 6) ||
                   (settings.airdropMethod === AirdropMethodType.CustomList && step === 4),
                 onClick: () => {
-                  formRef.current?.validate().then((isOk) => {
+                  setFormError({ isOk: true, message: '' })
+                  formRef.current?.validate().then(({ isOk, message }) => {
                     if (isOk) {
-                      setFormHasError(false)
-                      setSettings((prev) => ({ ...prev, ...formRef.current?.data }))
+                      setFormError({ isOk, message: '' })
+                      setSettings((prev) => ({ ...prev, ...formRef.current.getData() }))
                       incrementStep()
                     } else {
-                      setFormHasError(true)
+                      setFormError({ isOk, message })
                     }
                   })
                 },
@@ -193,9 +170,9 @@ export const NewAirdrop = () => {
 
           <ModalBody style={{ padding: '32px' }}>
             <FlexColumn $gap={16}>
-              {formHasError && (
+              {!formError.isOk && !!formError.message && (
                 <div style={{ width: '100%' }}>
-                  <NotificationNote type={StatusType.Error} title='Form Error' message='Missing required fields' />
+                  <NotificationNote type={StatusType.Warning} title='Cannot proceed to next step' message={formError.message} />
                 </div>
               )}
 

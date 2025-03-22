@@ -13,8 +13,12 @@ export const AirdropMethod = forwardRef<FormRef<Data>, AirdropMethodProps>(({ de
   const [data, setData] = useState(defaultData)
 
   useImperativeHandle(ref, () => ({
-    data,
-    validate: () => Promise.resolve(!!data.airdropMethod),
+    getData: () => data,
+    validate: () =>
+      Promise.resolve({
+        isOk: !!data.airdropMethod,
+        message: 'Please select an airdrop method',
+      }),
   }))
 
   return (

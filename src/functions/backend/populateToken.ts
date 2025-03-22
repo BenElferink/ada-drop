@@ -1,4 +1,5 @@
 import blockfrost from '@/utils/blockfrost'
+import { deepClone } from '@odigos/ui-kit/functions'
 import { ADA, POPULATED_LOVELACE } from '@/constants'
 import type { PopulatedToken, TokenId } from '@/@types'
 import resolveTokenRegisteredMetadata from './resolveTokenRegisteredMetadata'
@@ -9,7 +10,7 @@ const populateToken = async (tokenId: TokenId, options?: { populateMintTx?: bool
     const lovelaces = options?.quantity ? Number(options.quantity) : 0
 
     const payload = {
-      ...POPULATED_LOVELACE,
+      ...deepClone(POPULATED_LOVELACE),
       tokenAmount: {
         onChain: lovelaces,
         display: formatTokenAmountFromChain(lovelaces, ADA['DECIMALS']),

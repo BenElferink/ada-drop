@@ -3,10 +3,12 @@ import { Selected } from '@/components'
 import Theme from '@odigos/ui-kit/theme'
 import { useLovelace } from '@meshsdk/react'
 import { useConnectedWallet } from '@/hooks'
+import { deepClone } from '@odigos/ui-kit/functions'
 import { ADA, POPULATED_LOVELACE } from '@/constants'
 import type { FormRef, PopulatedToken, TokenSelectionSettings } from '@/@types'
 import { formatTokenAmountFromChain, formatTokenAmountToChain, getTokenName, prettyNumber } from '@/functions'
 import { CenterThis, DataTab, FadeLoader, Input, NoDataFound, Segment, Text } from '@odigos/ui-kit/components'
+import { StatusType } from '@odigos/ui-kit/types'
 
 type Data = TokenSelectionSettings
 
@@ -22,10 +24,33 @@ interface TokenSelectorProps {
 export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ defaultData }, ref) => {
   const theme = Theme.useTheme()
   const [data, setData] = useState(defaultData)
+  const [errors, setErrors] = useState({
+    tokenId: false,
+    tokenAmount: false,
+  })
 
   useImperativeHandle(ref, () => ({
-    data,
-    validate: () => Promise.resolve(!!data.tokenId && !!data.tokenAmount.onChain),
+    getData: () => data,
+    validate: () => {
+      const hasId = !!data.tokenId
+      const hasAmount = !!data.tokenAmount.onChain
+
+      setErrors({
+        tokenId: !hasId,
+        tokenAmount: !hasAmount,
+      })
+
+      return Promise.resolve({
+        isOk: hasId && hasAmount,
+        message: !hasId
+          ? 'Please select a token to airdrop'
+          : !hasAmount
+          ? 'Please select an amount to airdrop'
+          : !hasId && !hasAmount
+          ? 'Please select a token and amount to airdrop'
+          : '',
+      })
+    },
   }))
 
   const { isFetching, tokens } = useConnectedWallet()
@@ -36,7 +61,7 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
 
     if (!!lovelaces) {
       payload.unshift({
-        ...POPULATED_LOVELACE,
+        ...deepClone(POPULATED_LOVELACE),
         tokenAmount: {
           onChain: Number(lovelaces),
           display: formatTokenAmountFromChain(lovelaces, ADA['DECIMALS']),
@@ -108,6 +133,7 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
         // verify the amount is between the min and max ranges (with the help of available balance)
         v = v < min ? min : v > max ? max : v
 
+        setErrors((prev) => ({ ...prev, tokenAmount: v < min || v > max }))
         setData((prev) => ({
           ...prev,
           tokenAmount: {
@@ -125,6 +151,7 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
         v = v < min ? min : v > max ? max : v
         v = Math.floor((maxTokenAmount?.onChain || 0) * (v / 100))
 
+        setErrors((prev) => ({ ...prev, tokenAmount: v < min || v > max }))
         setData((prev) => ({
           ...prev,
           tokenAmount: {
@@ -155,8 +182,15 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
             iconSrc={image.url}
             title={getTokenName(tokenName)}
             subTitle={prettyNumber(tokenAmount.display)}
-            onClick={() => handleClick(isSelected, coin)}
-            onCheckboxChange={() => handleClick(isSelected, coin)}
+            status={errors.tokenId ? StatusType.Error : undefined}
+            onClick={() => {
+              handleClick(isSelected, coin)
+              setErrors({ tokenId: false, tokenAmount: false })
+            }}
+            onCheckboxChange={() => {
+              handleClick(isSelected, coin)
+              setErrors({ tokenId: false, tokenAmount: false })
+            }}
             withCheckbox
             isChecked={isSelected}
             renderActions={isSelected ? Selected : undefined}
@@ -189,6 +223,7 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
 
           <div style={{ width: '100%' }}>
             <Input
+              errorMessage={errors.tokenAmount ? 'Please enter a valid amount' : undefined}
               value={
                 amountType === AmountType.Fixed
                   ? prettyNumber(data.tokenAmount.display)
@@ -199,12 +234,12 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
               onChange={(e) => handleAmountChange(e.target.value.replace('%', '').replaceAll(',', ''))}
             />
 
-            {amountType === AmountType.Fixed ? (
-              <Text size={12} style={{ padding: '6px' }}>
+            {amountType === AmountType.Fixed && !errors.tokenAmount ? (
+              <Text size={12} style={{ padding: '4px 0' }}>
                 Translates to: {Math.round((100 / (maxTokenAmount?.display || 0)) * data.tokenAmount.display)}%
               </Text>
-            ) : amountType === AmountType.Percent ? (
-              <Text size={12} style={{ padding: '6px' }}>
+            ) : amountType === AmountType.Percent && !errors.tokenAmount ? (
+              <Text size={12} style={{ padding: '4px 0' }}>
                 Translates to: {prettyNumber(data.tokenAmount.display)} {getTokenName(data.tokenName)}
               </Text>
             ) : null}

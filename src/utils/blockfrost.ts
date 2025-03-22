@@ -1,8 +1,8 @@
+import { BLOCKFROST_API_KEY } from '@/constants'
 import { BlockFrostAPI } from '@blockfrost/blockfrost-js'
-import { API_KEYS } from '@/constants'
 
 const blockfrost = new BlockFrostAPI({
-  projectId: API_KEYS['BLOCKFROST_API_KEY'],
+  projectId: BLOCKFROST_API_KEY,
   network: 'mainnet',
 })
 
