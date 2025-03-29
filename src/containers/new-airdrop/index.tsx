@@ -9,7 +9,7 @@ import { deepClone } from '@odigos/ui-kit/functions'
 import { AirdropMethod } from './steps/airdrop-method'
 import { DelegatorsJourney } from './journeys/delegators'
 import { CustomListJourney } from './journeys/custom-list'
-import { AirdropMethodType, FormRef, type AirdropSettings } from '@/@types'
+import { AirdropMethodType, type FormRef, type PayoutRecipient, type AirdropSettings } from '@/@types'
 import { Button, FlexColumn, Modal, NavigationButtons, Stepper, Tooltip, WarningModal } from '@odigos/ui-kit/components'
 
 export const ModalBody = styled.div`
@@ -47,13 +47,13 @@ export const NewAirdrop = () => {
     getData: () => deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS),
   })
 
-  // const [payoutRecipients, setPayoutRecipients] = useState<PayoutRecipient[]>([])
+  const [payoutRecipients, setPayoutRecipients] = useState<PayoutRecipient[]>([])
 
   const handleClose = () => {
     // reset data
     setStep(1)
     setSettings(deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS))
-    // setPayoutRecipients([])
+    setPayoutRecipients([])
 
     // close modal
     toggleIsWarningOpen()
@@ -84,7 +84,7 @@ export const NewAirdrop = () => {
           { stepNumber: 1, title: 'Airdrop Method' },
           { stepNumber: 2, title: 'Choose Token' },
           { stepNumber: 3, title: 'Stake Pools' },
-          { stepNumber: 4, title: 'Blacklist' }, // !! code into step 6 & 7
+          { stepNumber: 4, title: 'Blacklist' },
           { stepNumber: 5, title: 'Run Snapshot' },
           { stepNumber: 6, title: 'Run Payout' },
         ]
@@ -130,7 +130,11 @@ export const NewAirdrop = () => {
               {
                 variant: 'primary',
                 label: 'Back',
-                disabled: step === 1,
+                disabled:
+                  step === 1 ||
+                  (settings.airdropMethod === AirdropMethodType.HolderSnapshot && [5, 6].includes(step)) ||
+                  (settings.airdropMethod === AirdropMethodType.DelegatorSnapshot && [5, 6].includes(step)) ||
+                  (settings.airdropMethod === AirdropMethodType.CustomList && [4].includes(step)),
                 onClick: decrementStep,
               },
               {
@@ -143,12 +147,14 @@ export const NewAirdrop = () => {
                 onClick: () => {
                   formRef.current?.validate().then((isOk) => {
                     if (isOk) {
-                      setSettings((prev) =>
-                        step === 1
-                          ? // reset when swithching methods
-                            { ...deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS), ...formRef.current.getData() }
-                          : { ...prev, ...formRef.current.getData() }
-                      )
+                      if (step === 1) {
+                        // reset when swithching methods
+                        setSettings({ ...deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS), ...formRef.current.getData() })
+                        setPayoutRecipients([])
+                      } else {
+                        setSettings((prev) => ({ ...prev, ...formRef.current.getData() }))
+                      }
+
                       incrementStep()
                     }
                   })
@@ -168,9 +174,21 @@ export const NewAirdrop = () => {
               {step === 1 ? (
                 <AirdropMethod ref={formRef} defaultData={settings} />
               ) : settings.airdropMethod === AirdropMethodType.HolderSnapshot ? (
-                <HoldersJourney ref={formRef} step={step} defaultData={settings} />
+                <HoldersJourney
+                  ref={formRef}
+                  step={step}
+                  defaultData={settings}
+                  payoutRecipients={payoutRecipients}
+                  setPayoutRecipients={setPayoutRecipients}
+                />
               ) : settings.airdropMethod === AirdropMethodType.DelegatorSnapshot ? (
-                <DelegatorsJourney ref={formRef} step={step} defaultData={settings} />
+                <DelegatorsJourney
+                  ref={formRef}
+                  step={step}
+                  defaultData={settings}
+                  payoutRecipients={payoutRecipients}
+                  setPayoutRecipients={setPayoutRecipients}
+                />
               ) : settings.airdropMethod === AirdropMethodType.CustomList ? (
                 <CustomListJourney ref={formRef} step={step} defaultData={settings} />
               ) : null}

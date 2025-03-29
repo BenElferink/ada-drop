@@ -87,7 +87,7 @@ export const StakePools = forwardRef<FormRef<Data>, StakePoolsProps>(({ defaultD
 
   return (
     <>
-      <SectionTitle title='Stake Pools' description='Enter the Pool IDs of the Stake Pools you wish to airdrop to their delegators.' />
+      <SectionTitle title='Stake Pools' description='Enter the Stake Pool IDs of the pools you wish to airdrop to their delegators.' />
       {!!errors.message && (
         <div style={{ width: '100%' }}>
           <NotificationNote type={StatusType.Error} title={errors.message} />
