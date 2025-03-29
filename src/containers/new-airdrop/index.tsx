@@ -130,10 +130,8 @@ export const NewAirdrop = () => {
               {
                 variant: 'primary',
                 label: 'Back',
-                disabled: [1].includes(step),
-                onClick: () => {
-                  decrementStep()
-                },
+                disabled: step === 1,
+                onClick: decrementStep,
               },
               {
                 variant: 'primary',
@@ -145,7 +143,12 @@ export const NewAirdrop = () => {
                 onClick: () => {
                   formRef.current?.validate().then((isOk) => {
                     if (isOk) {
-                      setSettings((prev) => ({ ...prev, ...formRef.current.getData() }))
+                      setSettings((prev) =>
+                        step === 1
+                          ? // reset when swithching methods
+                            { ...deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS), ...formRef.current.getData() }
+                          : { ...prev, ...formRef.current.getData() }
+                      )
                       incrementStep()
                     }
                   })
