@@ -3,7 +3,6 @@ import styled from 'styled-components'
 import Theme from '@odigos/ui-kit/theme'
 import { useWallet } from '@meshsdk/react'
 import { PlusIcon } from '@odigos/ui-kit/icons'
-import { StatusType } from '@odigos/ui-kit/types'
 import { INIT_AIRDROP_SETTINGS } from '@/constants'
 import { HoldersJourney } from './journeys/holders'
 import { deepClone } from '@odigos/ui-kit/functions'
@@ -11,7 +10,7 @@ import { AirdropMethod } from './steps/airdrop-method'
 import { DelegatorsJourney } from './journeys/delegators'
 import { CustomListJourney } from './journeys/custom-list'
 import { AirdropMethodType, FormRef, type AirdropSettings } from '@/@types'
-import { Button, FlexColumn, Modal, NavigationButtons, NotificationNote, Stepper, Tooltip, WarningModal } from '@odigos/ui-kit/components'
+import { Button, FlexColumn, Modal, NavigationButtons, Stepper, Tooltip, WarningModal } from '@odigos/ui-kit/components'
 
 export const ModalBody = styled.div`
   width: 640px;
@@ -42,10 +41,9 @@ export const NewAirdrop = () => {
   const incrementStep = () => setStep((prev) => prev + 1)
   const decrementStep = () => setStep((prev) => prev - 1)
 
-  const [formError, setFormError] = useState({ isOk: true, message: '' })
   const [settings, setSettings] = useState<AirdropSettings>(deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS))
   const formRef = useRef<FormRef>({
-    validate: () => Promise.resolve({ isOk: true, message: '' }),
+    validate: () => Promise.resolve(false),
     getData: () => deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS),
   })
 
@@ -55,7 +53,6 @@ export const NewAirdrop = () => {
     // reset data
     setStep(1)
     setSettings(deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS))
-    setFormError({ isOk: true, message: '' })
     // setPayoutRecipients([])
 
     // close modal
@@ -119,7 +116,7 @@ export const NewAirdrop = () => {
         noOverlay
         title='Cancel Airdrop'
         description='Are you sure you want to cancel this airdrop?'
-        approveButton={{ text: 'Yes', variant: StatusType.Warning, onClick: handleClose }}
+        approveButton={{ text: 'Yes', variant: 'danger', onClick: handleClose }}
         denyButton={{ text: 'No', onClick: toggleIsWarningOpen }}
       />
 
@@ -135,7 +132,6 @@ export const NewAirdrop = () => {
                 label: 'Back',
                 disabled: [1].includes(step),
                 onClick: () => {
-                  setFormError({ isOk: true, message: '' })
                   decrementStep()
                 },
               },
@@ -147,14 +143,10 @@ export const NewAirdrop = () => {
                   (settings.airdropMethod === AirdropMethodType.DelegatorSnapshot && step === 6) ||
                   (settings.airdropMethod === AirdropMethodType.CustomList && step === 4),
                 onClick: () => {
-                  setFormError({ isOk: true, message: '' })
-                  formRef.current?.validate().then(({ isOk, message }) => {
+                  formRef.current?.validate().then((isOk) => {
                     if (isOk) {
-                      setFormError({ isOk, message: '' })
                       setSettings((prev) => ({ ...prev, ...formRef.current.getData() }))
                       incrementStep()
-                    } else {
-                      setFormError({ isOk, message })
                     }
                   })
                 },
@@ -170,12 +162,6 @@ export const NewAirdrop = () => {
 
           <ModalBody style={{ padding: '32px' }}>
             <FlexColumn $gap={16}>
-              {!formError.isOk && !!formError.message && (
-                <div style={{ width: '100%' }}>
-                  <NotificationNote type={StatusType.Warning} title='Cannot proceed to next step' message={formError.message} />
-                </div>
-              )}
-
               {step === 1 ? (
                 <AirdropMethod ref={formRef} defaultData={settings} />
               ) : settings.airdropMethod === AirdropMethodType.HolderSnapshot ? (

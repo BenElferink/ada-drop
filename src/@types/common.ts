@@ -15,7 +15,7 @@ export type OnScroll = (params: OnScrollParams) => void
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface FormRef<T = any> {
   getData: () => T
-  validate: () => Promise<{ isOk: boolean; message: string }>
+  validate: () => Promise<boolean>
 }
 
 export interface SnapshotHolder {

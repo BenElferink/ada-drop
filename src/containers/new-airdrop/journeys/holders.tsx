@@ -1,5 +1,6 @@
 import React, { forwardRef } from 'react'
 import { Policies } from '../steps/policies'
+import { Blacklist } from '../steps/blacklist'
 import { TokenSelector } from '../steps/token-selector'
 import type { AirdropSettings, FormRef } from '@/@types'
 
@@ -11,15 +12,17 @@ interface HoldersJourneyProps {
 }
 
 export const HoldersJourney = forwardRef<FormRef<Data>, HoldersJourneyProps>(({ step, defaultData }, ref) => {
-  return step === 2 ? <TokenSelector ref={ref} defaultData={defaultData} /> : step === 3 ? <Policies ref={ref} defaultData={defaultData} /> : null
+  return step === 2 ? (
+    <TokenSelector ref={ref} defaultData={defaultData} />
+  ) : step === 3 ? (
+    <Policies ref={ref} defaultData={defaultData} />
+  ) : step === 4 ? (
+    <Blacklist ref={ref} defaultData={defaultData} />
+  ) : null
 
-  // ) : step ===5 ? (
-  //   <StakePools ref={ref} defaultData={defaultData} />
-  // ) : step === 6 ? (
-  //   <HolderBlacklist ref={ref} defaultData={defaultData} />
-  // ) : step === 7 ? (
+  // ) : step === 5 ? (
   //   <AirdropSnapshot ref={ref} defaultData={defaultData} />
-  // ) : step === 8 ? (
+  // ) : step === 6 ? (
   //   <AirdropPayout ref={ref} defaultData={defaultData} />
   // ) : null
 })

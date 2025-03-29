@@ -37,7 +37,7 @@ const populateToken = async (tokenId: TokenId, options?: { populateMintTx?: bool
   const tokenAmountOnChain = Number(quantity)
   let tokenAmountDecimals = 0
 
-  const tokenNameOnChain = fromHex(asset_name || splitTokenId(tokenId, policyId).tokenName)
+  const tokenNameOnChain = !!asset_name ? fromHex(asset_name) : splitTokenId(tokenId, policyId).tokenName
   const tokenNameDisplay = onchain_metadata?.name?.toString() || metadata?.name?.toString() || ''
   let tokenNameTicker = ''
 

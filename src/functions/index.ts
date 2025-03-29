@@ -1,4 +1,5 @@
 export * from './chunk'
+export * from './debounce'
 export * from './eachLimit'
 export * from './extractError'
 export * from './formatHex'

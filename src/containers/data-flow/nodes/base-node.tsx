@@ -43,11 +43,9 @@ const BaseNode: React.FC<BaseNodeProps> = memo(({ id, data }) => {
       <DataTab
         title={title}
         subTitle={subTitle}
-        icons={icons}
-        iconSrcs={iconSrcs}
-        status={status}
-        faded={faded}
         onClick={withClick ? () => {} : undefined}
+        iconProps={{ icons, iconSrcs }}
+        visualProps={{ status, faded }}
         renderActions={() =>
           status === StatusType.Warning ? (
             <Tooltip titleIcon={WarningTriangleIcon} title={HISTORIC_DATA_MESSAGES.TITLE} text={HISTORIC_DATA_MESSAGES.DESCRIPTION}>

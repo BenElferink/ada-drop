@@ -37,7 +37,6 @@ export interface PolicySettings {
   policies: {
     policyId: PolicyId
     weight: number
-    hasFungibleTokens?: boolean
 
     withTraits?: boolean
     traitOptions?: PolicyTraitOptions[]
@@ -55,7 +54,6 @@ export interface DelegatorSettings {
 }
 
 export interface BlacklistSettings {
-  withBlacklist: boolean
   blacklistWallets: StakeKey[]
   blacklistTokens: TokenId[]
 }

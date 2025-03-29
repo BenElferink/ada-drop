@@ -98,7 +98,7 @@ export const ConnectWallet = () => {
         width={DRAWER_WIDTH}
         isOpen={isOpen}
         onClose={toggleIsOpen}
-        header={{ title: 'Connect Wallet', icon: WalletIcon }}
+        header={{ title: 'Connect Wallet', icons: [WalletIcon] }}
         footer={{ isOpen: false }}
       >
         <FlexColumn $gap={12} style={{ alignItems: 'center' }}>
@@ -120,11 +120,11 @@ export const ConnectWallet = () => {
                   return (
                     <DataTab
                       key={`wallet-${w.id}`}
-                      iconSrc={w.icon}
                       title={`${w.name.toLowerCase().replace('wallet', '').trim()}${w.id === 'nufiSnap' ? ' (experimental)' : ''}`}
                       subTitle={`version: ${w.version}`}
                       onClick={!disabled ? () => handleConnect(w.id) : undefined}
-                      faded={disabled}
+                      iconProps={{ iconSrc: w.icon }}
+                      visualProps={{ faded: disabled }}
                     />
                   )
                 })}

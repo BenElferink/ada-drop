@@ -1,36 +1,46 @@
 import { fromHex } from './formatHex'
 import type { PolicyId, TokenId } from '@/@types'
 
+const CIP68_PREFIXES_LENGTH = 8
+
+enum Cip68Prefixes {
+  NFT = '000de140',
+  REF = '000643b0',
+}
+
+enum Cip68TokenTypes {
+  NFT = '222',
+  REF = '100',
+}
+
 export const splitTokenId = (tokenId: TokenId, policyId: PolicyId) => {
-  const tokenLabel = tokenId.replace(policyId, '')
+  if (!tokenId.startsWith(policyId)) throw new Error('Invalid tokenId: does not start with policyId')
 
   let tokenType = ''
+  let tokenName = ''
 
-  switch (tokenLabel.substring(0, 8)) {
-    case '000de140': // CIP-68 nft token
-      tokenType = '222'
+  const tokenNameHex = tokenId.replace(policyId, '')
+  if (!tokenNameHex) return { tokenType, tokenName }
+
+  switch (tokenNameHex.substring(0, CIP68_PREFIXES_LENGTH)) {
+    case Cip68Prefixes.NFT:
+      tokenType = Cip68TokenTypes.NFT
       break
 
-    case '000643b0': // CIP-68 ref token
-      tokenType = '100'
+    case Cip68Prefixes.REF:
+      tokenType = Cip68TokenTypes.REF
       break
 
     default:
+      tokenType = ''
       break
   }
 
-  let tokenName = fromHex(tokenLabel)
-
-  if (tokenName === tokenLabel) {
-    tokenName = fromHex(tokenLabel.substring(8))
-
-    if (tokenName === tokenLabel) {
-      tokenName = tokenLabel
-    }
+  if ([Cip68TokenTypes.NFT, Cip68TokenTypes.REF].includes(tokenType as Cip68TokenTypes)) {
+    tokenName = fromHex(tokenNameHex.substring(CIP68_PREFIXES_LENGTH))
+  } else {
+    tokenName = fromHex(tokenNameHex)
   }
 
-  return {
-    tokenType,
-    tokenName,
-  }
+  return { tokenType, tokenName }
 }

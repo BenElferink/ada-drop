@@ -71,7 +71,6 @@ export const INIT_AIRDROP_SETTINGS: AirdropSettings = {
   policies: [],
   stakePools: [],
 
-  withBlacklist: false,
   blacklistWallets: [],
   blacklistTokens: [],
 }

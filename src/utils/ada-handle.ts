@@ -18,7 +18,7 @@ interface FetchedHandle {
   pfp_asset: string
   bg_image: string // ipfs
   bg_asset: string
-  resolved_addresses: {
+  resolved_addresses?: {
     ada: Address['address']
   }
   created_slot_number: number
@@ -65,7 +65,7 @@ class AdaHandle {
         const payload = {
           handle,
           holder: data.holder,
-          address: data.resolved_addresses.ada,
+          address: data.resolved_addresses?.ada || '',
         }
 
         return resolve(payload)

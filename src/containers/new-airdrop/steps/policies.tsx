@@ -7,7 +7,22 @@ import { deepClone } from '@odigos/ui-kit/functions'
 import { PlusIcon, TrashIcon } from '@odigos/ui-kit/icons'
 import { INIT_POLICY_SETTINGS, INIT_RANK_POINTS, INIT_TRAIT_POINTS, INIT_WHALE_POINTS } from '@/constants'
 import type { FormRef, PolicyRankOptions, PolicySettings, PolicyTraitOptions, PolicyWhaleOptions } from '@/@types'
-import { Button, CenterThis, Checkbox, Divider, FadeLoader, FlexColumn, FlexRow, IconButton, Input, Text, Toggle } from '@odigos/ui-kit/components'
+import {
+  Button,
+  CenterThis,
+  Checkbox,
+  Divider,
+  FadeLoader,
+  FlexColumn,
+  FlexRow,
+  IconButton,
+  Input,
+  NotificationNote,
+  SectionTitle,
+  Text,
+  Toggle,
+} from '@odigos/ui-kit/components'
+import { StatusType } from '@odigos/ui-kit/types'
 
 type Data = PolicySettings
 
@@ -19,9 +34,9 @@ export const Policies = forwardRef<FormRef<Data>, PoliciesProps>(({ defaultData 
   const theme = Theme.useTheme()
 
   const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<{ [value: string]: boolean }>({})
+  const [errors, setErrors] = useState<{ [key: string]: string }>({ message: '' })
   const [data, setData] = useState({
-    ...defaultData,
+    ...deepClone(defaultData),
     policies: defaultData['policies'].length ? defaultData['policies'] : [deepClone(INIT_POLICY_SETTINGS)],
   })
 
@@ -59,32 +74,27 @@ export const Policies = forwardRef<FormRef<Data>, PoliciesProps>(({ defaultData 
     }),
     validate: async () => {
       if (!nonEmpties.length) {
-        setErrors((prev) => ({ ...prev, policyId: true }))
-        return { isOk: false, message: 'Missing required fields' }
+        setErrors({ message: 'Missing required fields' })
+        return false
       }
 
       setIsLoading(true)
-      setErrors({})
+      // setErrors({ message: '' })
 
-      let allowNext = true
+      let isOk = true
       for await (const { policyId } of nonEmpties) {
         try {
           await api.policy.getData(policyId)
-          setErrors((prev) => ({ ...prev, [policyId]: false }))
+          setErrors((prev) => ({ ...prev, [policyId]: '' }))
         } catch (error) {
           console.error(error)
-          allowNext = false
-          setErrors((prev) => ({ ...prev, [policyId]: true }))
+          isOk = false
+          setErrors((prev) => ({ ...prev, message: 'Invalid Policy IDs', [policyId]: 'Invalid Policy ID' }))
         }
       }
 
       setIsLoading(false)
-
-      if (allowNext) {
-        return { isOk: true, message: '' }
-      } else {
-        return { isOk: false, message: 'Invalid Policy IDs' }
-      }
+      return isOk
     },
   }))
 
@@ -92,21 +102,28 @@ export const Policies = forwardRef<FormRef<Data>, PoliciesProps>(({ defaultData 
     return (
       <CenterThis $gap={12}>
         <FadeLoader scale={1.2} />
-        <Text>Verifying Policy IDs...</Text>
+        <Text>Verifying Data...</Text>
       </CenterThis>
     )
   }
 
   return (
     <>
+      <SectionTitle title='Policy IDs' description='Enter the Policy IDs of the NFTs/Tokens you wish to airdrop to their holders.' />
+      {!!errors.message && (
+        <div style={{ width: '100%' }}>
+          <NotificationNote type={StatusType.Error} title={errors.message} />
+        </div>
+      )}
+      <Divider />
+
       {data.policies?.map(({ policyId, weight, withTraits, traitOptions, withRanks, rankOptions, withWhales, whaleOptions }, policyIdx) => (
         <FlexColumn key={`policy-${policyIdx}-${data.policies.length}`} $gap={24}>
           <FlexRow $gap={12} style={{ alignItems: 'flex-end' }}>
             <Input
               title='Policy ID'
-              tooltip="The Policy ID of the NFT/Token you want to airdrop to it's holders."
               required
-              errorMessage={errors.policyId ? 'Missing required fields' : errors[policyId] ? 'Invalid Policy ID' : ''}
+              errorMessage={errors[policyId] || errors.message}
               value={policyId}
               onChange={(e) => {
                 const v = e.target.value
@@ -119,11 +136,12 @@ export const Policies = forwardRef<FormRef<Data>, PoliciesProps>(({ defaultData 
                   }
                   return payload
                 })
+                setErrors((prev) => ({ ...prev, message: '' }))
               }}
-              style={{ width: '400px' }}
+              style={{ width: '455px' }}
             />
 
-            <div style={{ marginBottom: errors[policyId] || errors.policyId ? '18px' : '0' }}>
+            <div style={{ marginBottom: errors[policyId] || errors.message ? '18px' : '0' }}>
               <Input
                 title='Weight'
                 tooltip='The multiplier of this Policy ID (e.g. give Pass/Key/Card holders 2x more than PFP holders).'
@@ -144,11 +162,11 @@ export const Policies = forwardRef<FormRef<Data>, PoliciesProps>(({ defaultData 
                     return payload
                   })
                 }}
-                style={{ width: '155px' }}
+                style={{ width: '100px' }}
               />
             </div>
 
-            <div style={{ marginBottom: errors[policyId] || errors.policyId ? '18px' : '0' }}>
+            <div style={{ marginBottom: errors[policyId] || errors.message ? '18px' : '0' }}>
               <IconButton
                 onClick={() => {
                   setData((prev) => {

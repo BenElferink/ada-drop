@@ -3,7 +3,7 @@ import blockfrost from '@/utils/blockfrost'
 import type { BaseToken, Wallet } from '@/@types'
 import { ERROR_TYPES, POLICY_IDS } from '@/constants'
 import populateToken from '@/functions/backend/populateToken'
-import { formatTokenAmountFromChain, fromHex, splitTokenId } from '@/functions'
+import { formatTokenAmountFromChain, splitTokenId } from '@/functions'
 import resolveWalletIdentifiers from '@/functions/backend/resolveWalletIdentifiers'
 import resolveTokenRegisteredMetadata from '@/functions/backend/resolveTokenRegisteredMetadata'
 
@@ -113,7 +113,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Wallet>) => {
           wallet.handles.push(
             ...wallet.tokens
               .filter(({ tokenId }) => tokenId.indexOf(POLICY_IDS['ADA_HANDLE']) === 0)
-              .map(({ tokenId }) => `$${fromHex(splitTokenId(tokenId, POLICY_IDS['ADA_HANDLE']).tokenName)}`)
+              .map(({ tokenId }) => `$${splitTokenId(tokenId, POLICY_IDS['ADA_HANDLE']).tokenName}`)
           )
         }
 

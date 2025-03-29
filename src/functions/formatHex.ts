@@ -1,8 +1,9 @@
 export const fromHex = (hex: string) => {
   try {
     return decodeURIComponent('%' + hex.match(/.{1,2}/g)?.join('%'))
-  } catch (error) {
-    console.error('Error decoding hex', hex, error)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error('ERROR decoding hex:', hex, '\n', error?.stack)
     return hex
   }
 }

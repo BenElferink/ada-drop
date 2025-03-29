@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import type { BaseToken, PolicyInfo, RankedToken } from '@/@types'
 import blockfrost from '@/utils/blockfrost'
+import type { BaseToken, PolicyInfo, RankedToken } from '@/@types'
 import cnftTools, { type CnftToolsPolicy } from '@/utils/cnft-tools'
-import { formatTokenAmountFromChain, fromHex, splitTokenId } from '@/functions'
+import { formatTokenAmountFromChain, splitTokenId } from '@/functions'
 import resolveTokenRegisteredMetadata from '@/functions/backend/resolveTokenRegisteredMetadata'
 
 export const config = {
@@ -43,7 +43,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<PolicyInfo>) =>
           let tokenAmountDecimals = 0
 
           const isFungible = tokenAmountOnChain > 1
-          const tokenNameOnChain = fromHex(splitTokenId(tokenId, policyId).tokenName)
+          const tokenNameOnChain = splitTokenId(tokenId, policyId).tokenName
           let tokenNameTicker = ''
 
           if (tokenAmountOnChain > 0 || withBurned) {
@@ -70,7 +70,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<PolicyInfo>) =>
             }
 
             if (withRanks) {
-              const tokenName = fromHex(splitTokenId(tokenId, policyId).tokenName)
+              const tokenName = splitTokenId(tokenId, policyId).tokenName
               const rarityRank = Number(rankedAssets[tokenName] || 0)
 
               ;(token as RankedToken).rarityRank = rarityRank
