@@ -2,9 +2,11 @@ import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'reac
 import api from '@/utils/api'
 import { debounce } from '@/functions'
 import { StatusType } from '@odigos/ui-kit/types'
+import { deepClone } from '@odigos/ui-kit/functions'
 import type { BlacklistSettings, FormRef, StakeKey } from '@/@types'
 import { CenterThis, Divider, FadeLoader, InputList, NotificationNote, SectionTitle, Text } from '@odigos/ui-kit/components'
-import { deepClone } from '@odigos/ui-kit/functions'
+
+// TODO: add support for populating tokens based on block-height
 
 type Data = BlacklistSettings
 
@@ -73,7 +75,6 @@ export const Blacklist = forwardRef<FormRef<Data>, BlacklistProps>(({ defaultDat
   const [isLoading, setIsLoading] = useState(false)
   const [isFetchingStakeKeys, setIsFetchingStakeKeys] = useState(false)
   const [isFetchingTokenIds, setIsFetchingTokenIds] = useState(false)
-
   const latestWalletsRef = useRef<string[]>([])
   const latestTokensRef = useRef<string[]>([])
 
@@ -95,13 +96,13 @@ export const Blacklist = forwardRef<FormRef<Data>, BlacklistProps>(({ defaultDat
       const { hasError: e1 } = await resolveStakeKeys(nonEmptyWallets)
       if (e1) {
         isOk = false
-        setErrors((prev) => ({ ...prev, message: 'Form has invalid values', wallets: 'Contains invalid wallets' }))
+        setErrors((prev) => ({ ...prev, message: 'Invalid values', wallets: 'Contains invalid wallets' }))
       }
 
       const { hasError: e2 } = await resolveTokenIds(nonEmptyTokens)
       if (e2) {
         isOk = false
-        setErrors((prev) => ({ ...prev, message: 'Form has invalid values', tokens: 'Contains invalid asset IDs' }))
+        setErrors((prev) => ({ ...prev, message: 'Invalid values', tokens: 'Contains invalid asset IDs' }))
       }
 
       setIsLoading(false)
