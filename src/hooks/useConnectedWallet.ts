@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import api from '@/utils/api'
 import { useWalletStore } from '@/store'
-import { useWallet } from '@meshsdk/react'
 import type { PopulatedToken } from '@/@types'
 import type { AssetExtended } from '@meshsdk/core'
+import { deepClone } from '@odigos/ui-kit/functions'
+import { ADA, POPULATED_LOVELACE } from '@/constants'
+import { useLovelace, useWallet } from '@meshsdk/react'
 import { chunk, eachLimit, formatTokenAmountFromChain } from '@/functions'
 
 interface UseConnectedWallet {
@@ -46,14 +48,15 @@ const fetchTokens = async (assets?: AssetExtended[]): Promise<PopulatedToken[]> 
 }
 
 export const useConnectedWallet = (): UseConnectedWallet => {
+  const lovelaces = useLovelace()
   const { connected, wallet } = useWallet()
-  const { tokens, setTokens } = useWalletStore()
+  const { tokens, addTokens } = useWalletStore()
   const [isFetching, setIsFetching] = useState(false)
 
   const refetch = useCallback(
     async () => {
       setIsFetching(true)
-      setTokens(await fetchTokens(await wallet.getAssets()))
+      addTokens(await fetchTokens(await wallet.getAssets()))
       setIsFetching(false)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,6 +66,21 @@ export const useConnectedWallet = (): UseConnectedWallet => {
   useEffect(() => {
     if (connected && !tokens.length) refetch()
   }, [connected, tokens, refetch])
+
+  useEffect(() => {
+    if (connected && !!lovelaces)
+      addTokens([
+        {
+          ...deepClone(POPULATED_LOVELACE),
+          tokenAmount: {
+            onChain: Number(lovelaces),
+            display: formatTokenAmountFromChain(lovelaces || 0, ADA['DECIMALS']),
+            decimals: ADA['DECIMALS'],
+          },
+        },
+      ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connected, lovelaces])
 
   return {
     tokens,

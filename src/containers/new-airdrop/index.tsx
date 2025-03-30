@@ -93,7 +93,7 @@ export const NewAirdrop = () => {
         return [
           { stepNumber: 1, title: 'Airdrop Method' },
           { stepNumber: 2, title: 'Choose Token' },
-          { stepNumber: 3, title: 'Upload File' },
+          { stepNumber: 3, title: 'Load File' },
           { stepNumber: 4, title: 'Run Payout' },
         ]
 
@@ -190,7 +190,13 @@ export const NewAirdrop = () => {
                   setPayoutRecipients={setPayoutRecipients}
                 />
               ) : settings.airdropMethod === AirdropMethodType.CustomList ? (
-                <CustomListJourney ref={formRef} step={step} defaultData={settings} />
+                <CustomListJourney
+                  ref={formRef}
+                  step={step}
+                  defaultData={settings}
+                  payoutRecipients={payoutRecipients}
+                  setPayoutRecipients={setPayoutRecipients}
+                />
               ) : null}
             </FlexColumn>
           </ModalBody>

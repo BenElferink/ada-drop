@@ -1,11 +1,9 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react'
 import { Selected } from '@/components'
 import Theme from '@odigos/ui-kit/theme'
-import { useLovelace } from '@meshsdk/react'
 import { useConnectedWallet } from '@/hooks'
 import { StatusType } from '@odigos/ui-kit/types'
 import { deepClone } from '@odigos/ui-kit/functions'
-import { ADA, POPULATED_LOVELACE } from '@/constants'
 import type { FormRef, PopulatedToken, TokenSelectionSettings } from '@/@types'
 import { formatTokenAmountFromChain, formatTokenAmountToChain, getTokenName, prettyNumber } from '@/functions'
 import {
@@ -30,9 +28,10 @@ enum AmountType {
 
 interface TokenSelectorProps {
   defaultData: Data
+  withAmount?: boolean
 }
 
-export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ defaultData }, ref) => {
+export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ defaultData, withAmount }, ref) => {
   const theme = Theme.useTheme()
   const [data, setData] = useState(deepClone(defaultData))
   const [errors, setErrors] = useState({
@@ -44,7 +43,7 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
     getData: () => data,
     validate: () => {
       const hasId = !!data.tokenId
-      const hasAmount = !!data.tokenAmount.onChain
+      const hasAmount = !withAmount || (withAmount && !!data.tokenAmount.onChain)
       const isOk = hasId && hasAmount
 
       if (isOk) {
@@ -61,30 +60,12 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
   }))
 
   const { isFetching, tokens } = useConnectedWallet()
-  const lovelaces = useLovelace()
-
-  const coins = useMemo(() => {
-    const payload: PopulatedToken[] = [...tokens]
-
-    if (!!lovelaces) {
-      payload.unshift({
-        ...deepClone(POPULATED_LOVELACE),
-        tokenAmount: {
-          onChain: Number(lovelaces),
-          display: formatTokenAmountFromChain(lovelaces, ADA['DECIMALS']),
-          decimals: ADA['DECIMALS'],
-        },
-      })
-    }
-
-    return payload
-  }, [tokens, lovelaces])
 
   const [amountType, setAmountType] = useState<AmountType>(AmountType.Fixed)
 
   const maxTokenAmount = useMemo(() => {
-    return coins.find((c) => c.tokenId === data.tokenId)?.tokenAmount
-  }, [coins, data])
+    return tokens.find((c) => c.tokenId === data.tokenId)?.tokenAmount
+  }, [tokens, data])
 
   if (isFetching) {
     return (
@@ -95,7 +76,7 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
     )
   }
 
-  if (!coins.length) {
+  if (!tokens.length) {
     return (
       <CenterThis>
         <NoDataFound
@@ -172,19 +153,18 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
   return (
     <>
       <SectionTitle title='Choose Token to Airdrop' description='You can airdrop ADA or any Fungible Tokens.' />
-      {!!errors.tokenId ||
-        (!!errors.tokenAmount && (
-          <div style={{ width: '100%' }}>
-            <NotificationNote type={StatusType.Error} title={errors.tokenId || errors.tokenAmount} />
-          </div>
-        ))}
+      {(!!errors.tokenId || !!errors.tokenAmount) && (
+        <div style={{ width: '100%' }}>
+          <NotificationNote type={StatusType.Error} title={errors.tokenId || errors.tokenAmount} />
+        </div>
+      )}
       <Divider />
 
-      {coins.map((coin) => {
-        const { tokenId, tokenName, tokenAmount, image } = coin
+      {tokens.map((t) => {
+        const { tokenId, tokenName, tokenAmount, image } = t
         const isSelected = data.tokenId === tokenId
 
-        if (!!data.tokenId && !isSelected) {
+        if (!!data.tokenId && !isSelected && withAmount) {
           return null
         }
 
@@ -195,14 +175,14 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
             subTitle={prettyNumber(tokenAmount.display)}
             iconProps={{ iconSrcs: [image.url] }}
             onClick={() => {
-              handleClick(isSelected, coin)
+              handleClick(isSelected, t)
               setErrors({ tokenId: '', tokenAmount: '' })
             }}
             checkboxProps={{
               withCheckbox: true,
               isChecked: isSelected,
               onCheckboxChange: () => {
-                handleClick(isSelected, coin)
+                handleClick(isSelected, t)
                 setErrors({ tokenId: '', tokenAmount: '' })
               },
             }}
@@ -216,7 +196,7 @@ export const TokenSelector = forwardRef<FormRef<Data>, TokenSelectorProps>(({ de
         )
       })}
 
-      {!!data.tokenId && (
+      {!!data.tokenId && withAmount && (
         <>
           <Text>Choose amount to airdrop</Text>
 

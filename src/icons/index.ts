@@ -1,6 +1,7 @@
 export * from './cardano-logo'
 export * from './download-icon'
 export * from './transaction-icon'
+export * from './upload-icon'
 export * from './wallet-icon'
 export * from './wallet-in-icon'
 export * from './wallet-out-icon'
