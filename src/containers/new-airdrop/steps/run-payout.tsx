@@ -226,48 +226,63 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
 
   const rows = useMemo(
     () =>
-      processedRecipients.map((item) => {
-        const isUnderMin = defaultData.tokenId === 'lovelace' && item.payout < 1000000
-        const isPayed = !!item.txHash
+      processedRecipients
+        .sort((a, b) => {
+          const aHasTx = !!a.txHash
+          const bHasTx = !!b.txHash
 
-        const status = isUnderMin ? StatusType.Error : isPayed ? StatusType.Success : StatusType.Info
-        const statusText = isUnderMin ? `Below minim required amount (of ${ADA['SYMBOL']}1)` : isPayed ? 'Payment Success' : 'Pending Payment'
+          if (aHasTx && !bHasTx) return 1 // a goes after b
+          if (!aHasTx && bHasTx) return -1 // a goes before b
 
-        return {
-          status,
-          cells: [
-            {
-              columnKey: 'amount',
-              value: prettyNumber(formatTokenAmountFromChain(item.payout, defaultData.tokenAmount.decimals, false)),
-            },
-            {
-              columnKey: 'stakeKey',
-              value: truncateStringInMiddle(item.stakeKey, 11),
-            },
-            {
-              columnKey: 'txHash',
-              value: truncateStringInMiddle(item.txHash, 11) || '-',
-            },
-            {
-              columnKey: 'status',
-              component: () => {
-                return (
-                  <FlexRow>
-                    <Tooltip text={statusText}>
-                      <IconWrapped icon={getStatusIcon(status, theme)} />
-                    </Tooltip>
-                    {status === StatusType.Error && (
-                      <IconButton withPing pingColor={theme.colors.majestic_blue} onClick={() => setWarn({ isOpen: true, stakeKey: item.stakeKey })}>
-                        <PlusIcon size={24} />
-                      </IconButton>
-                    )}
-                  </FlexRow>
-                )
+          // If both have or both don't have txHash, sort by payout descending
+          return b.payout - a.payout
+        })
+        .map((item) => {
+          const isUnderMin = defaultData.tokenId === 'lovelace' && item.payout < 1000000
+          const isPayed = !!item.txHash
+
+          const status = isUnderMin ? StatusType.Error : isPayed ? StatusType.Success : StatusType.Info
+          const statusText = isUnderMin ? `Below minim required amount (of ${ADA['SYMBOL']}1)` : isPayed ? 'Payment Success' : 'Pending Payment'
+
+          return {
+            status,
+            cells: [
+              {
+                columnKey: 'amount',
+                value: prettyNumber(formatTokenAmountFromChain(item.payout, defaultData.tokenAmount.decimals, false)),
               },
-            },
-          ],
-        }
-      }),
+              {
+                columnKey: 'stakeKey',
+                value: truncateStringInMiddle(item.stakeKey, 11),
+              },
+              {
+                columnKey: 'txHash',
+                value: truncateStringInMiddle(item.txHash, 11) || '-',
+              },
+              {
+                columnKey: 'status',
+                component: () => {
+                  return (
+                    <FlexRow>
+                      <Tooltip text={statusText}>
+                        <IconWrapped icon={getStatusIcon(status, theme)} />
+                      </Tooltip>
+                      {status === StatusType.Error && (
+                        <IconButton
+                          withPing
+                          pingColor={theme.colors.majestic_blue}
+                          onClick={() => setWarn({ isOpen: true, stakeKey: item.stakeKey })}
+                        >
+                          <PlusIcon size={24} />
+                        </IconButton>
+                      )}
+                    </FlexRow>
+                  )
+                },
+              },
+            ],
+          }
+        }),
     [processedRecipients, defaultData, theme]
   )
 
