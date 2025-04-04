@@ -20,7 +20,7 @@ export const CustomListJourney = forwardRef<FormRef<Data>, CustomListJourneyProp
     ) : step === 3 ? (
       <LoadFile ref={ref} defaultData={defaultData} payoutRecipients={payoutRecipients} setPayoutRecipients={setPayoutRecipients} />
     ) : step === 4 ? (
-      <RunPayout ref={ref} defaultData={defaultData} payoutRecipients={payoutRecipients} setPayoutRecipients={setPayoutRecipients} />
+      <RunPayout ref={ref} defaultData={defaultData} payoutRecipients={payoutRecipients} />
     ) : null
   }
 )

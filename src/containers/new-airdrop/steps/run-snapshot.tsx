@@ -4,10 +4,10 @@ import Theme from '@odigos/ui-kit/theme'
 import { ProgressBar } from '@/components'
 import { utils, writeFileXLSX } from 'xlsx'
 import { StatusType } from '@odigos/ui-kit/types'
+import { runSnapshot } from '../helpers/run-snapshot'
 import { formatTokenAmountFromChain } from '@/functions'
-import type { AirdropSettings, FormRef, PayoutRecipient } from '@/@types'
-import { runSnapshot, type ProgressCounts } from '../helpers/run-snapshot'
-import { Button, Divider, FlexColumn, NotificationNote, SectionTitle, Text } from '@odigos/ui-kit/components'
+import { Button, Divider, FlexColumn, NotificationNote, SectionTitle, Text, Tooltip } from '@odigos/ui-kit/components'
+import { AirdropMethodType, type AirdropSettings, type FormRef, type PayoutRecipient, type SnapshotProgressCounts } from '@/@types'
 
 type Data = AirdropSettings
 
@@ -20,9 +20,9 @@ interface RunSnapshotProps {
 export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaultData, payoutRecipients, setPayoutRecipients }, ref) => {
   const theme = Theme.useTheme()
 
-  const [errorMessage, setErrorMessage] = useState('')
-  const [snapshotEnded, setSnapshotEnded] = useState(!!payoutRecipients.length)
-  const [progress, setProgress] = useState<ProgressCounts>({
+  const [status, setStatus] = useState({ type: StatusType.Info, title: '', message: '' })
+  const [ended, setEnded] = useState(!!payoutRecipients.length)
+  const [progress, setProgress] = useState<SnapshotProgressCounts>({
     policy: {
       current: !!payoutRecipients.length ? defaultData.policies.length || 0 : 0,
       max: defaultData.policies.length || 0,
@@ -48,30 +48,35 @@ export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaul
   useImperativeHandle(ref, () => ({
     getData: () => defaultData,
     validate: () => {
-      if (!snapshotEnded) setErrorMessage('Snapshot is still running, please wait until it ends')
-      return Promise.resolve(snapshotEnded)
+      let isOk = status.type !== StatusType.Error
+
+      if (isOk && !ended) {
+        isOk = false
+        setStatus({ type: StatusType.Warning, title: '', message: 'Snapshot is still running, please wait until it ends' })
+      }
+
+      return Promise.resolve(isOk)
     },
   }))
 
   const runRef = useRef(false)
   useEffect(() => {
-    if (!!payoutRecipients.length || runRef.current) return
+    if (runRef.current) return
     runRef.current = true
 
     runSnapshot(defaultData, setProgress)
       .then((recipients) => {
         setPayoutRecipients(recipients)
-        setSnapshotEnded(true)
-        setErrorMessage('')
+        setEnded(true)
+        setStatus({ type: StatusType.Info, title: '', message: '' })
       })
       .catch((error) => {
         const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
-        console.error('ERROR running snapshot:\n', `${errMsg}\n`, error)
-        setErrorMessage(errMsg)
+        setStatus({ type: StatusType.Error, title: 'Error running snapshot', message: errMsg })
       })
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [payoutRecipients])
+  }, [defaultData])
 
   const downloadSnapshot = useCallback(() => {
     try {
@@ -90,12 +95,12 @@ export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaul
       utils.book_append_sheet(wb, ws, 'snapshot')
 
       writeFileXLSX(wb, `ADA Drop - snapshot (${new Date().toLocaleDateString()}).xlsx`)
+      setStatus({ type: StatusType.Info, title: '', message: '' })
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
-      console.error('ERROR downloading snapshot:\n', `${errMsg}\n`, error)
-      setErrorMessage(errMsg)
+      setStatus({ type: StatusType.Error, title: 'Error downloading snapshot', message: errMsg })
     }
   }, [payoutRecipients, defaultData])
 
@@ -104,32 +109,30 @@ export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaul
       <FlexColumn $gap={16} style={{ width: '100%', alignItems: 'unset' }}>
         <SectionTitle
           title='Snapshot'
-          description={snapshotEnded ? '' : "We're collecting on-chain data, in the meantime just sit back & enjoy 🍺"}
+          description={ended ? '' : "We're collecting on-chain data, in the meantime just sit back & enjoy 🍺"}
           actionButton={
-            snapshotEnded && (
-              <Button variant='tertiary' onClick={downloadSnapshot} style={{ textDecoration: 'none' }}>
-                <DownloadIcon size={24} fill={theme.text.success} />
-                <Text color={theme.text.success} family='secondary'>
-                  Download Copy
-                </Text>
-              </Button>
+            ended && (
+              <Tooltip text={`You can use this file with the "${AirdropMethodType.CustomList}" method, or just keep it for your records.`}>
+                <Button variant='tertiary' onClick={downloadSnapshot} style={{ textDecoration: 'none' }}>
+                  <DownloadIcon size={24} fill={theme.text.success} />
+                  <Text color={theme.text.success} family='secondary'>
+                    Download Copy
+                  </Text>
+                </Button>
+              </Tooltip>
             )
           }
         />
         <div style={{ width: '100%' }}>
-          {snapshotEnded ? (
-            <NotificationNote
-              type={StatusType.Success}
-              title='Done'
-              message='you can download a copy of this snapshot, or just proceed to the next step'
-            />
+          {ended ? (
+            <NotificationNote type={StatusType.Success} title='Snapshot ready' message='You can download a copy, or skip to the next step' />
           ) : (
             <NotificationNote type={StatusType.Info} title='"Script" wallets not included, for example:' message='jpg.store, Mutant Labs, etc.' />
           )}
         </div>
-        {errorMessage && (
+        {(!!status.title || !!status.message) && (
           <div style={{ width: '100%' }}>
-            <NotificationNote type={StatusType.Error} message={errorMessage} />
+            <NotificationNote type={status.type} title={status.title} message={status.message} />
           </div>
         )}
         <Divider />

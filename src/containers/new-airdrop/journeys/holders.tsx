@@ -25,7 +25,7 @@ export const HoldersJourney = forwardRef<FormRef<Data>, HoldersJourneyProps>(({ 
   ) : step === 5 ? (
     <RunSnapshot ref={ref} defaultData={defaultData} payoutRecipients={payoutRecipients} setPayoutRecipients={setPayoutRecipients} />
   ) : step === 6 ? (
-    <RunPayout ref={ref} defaultData={defaultData} payoutRecipients={payoutRecipients} setPayoutRecipients={setPayoutRecipients} />
+    <RunPayout ref={ref} defaultData={defaultData} payoutRecipients={payoutRecipients} />
   ) : null
 })
 

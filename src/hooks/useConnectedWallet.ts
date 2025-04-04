@@ -5,10 +5,12 @@ import type { PopulatedToken } from '@/@types'
 import type { AssetExtended } from '@meshsdk/core'
 import { deepClone } from '@odigos/ui-kit/functions'
 import { ADA, POPULATED_LOVELACE } from '@/constants'
-import { useLovelace, useWallet } from '@meshsdk/react'
+import { useLovelace, useRewardAddress, useWallet } from '@meshsdk/react'
 import { chunk, eachLimit, formatTokenAmountFromChain } from '@/functions'
 
 interface UseConnectedWallet {
+  stakeKey: string
+  lovelaces: number
   tokens: PopulatedToken[]
   refetch: () => Promise<void>
   isFetching: boolean
@@ -49,6 +51,7 @@ const fetchTokens = async (assets?: AssetExtended[]): Promise<PopulatedToken[]> 
 
 export const useConnectedWallet = (): UseConnectedWallet => {
   const lovelaces = useLovelace()
+  const stakeKey = useRewardAddress()
   const { connected, wallet } = useWallet()
   const { tokens, addTokens } = useWalletStore()
   const [isFetching, setIsFetching] = useState(false)
@@ -83,6 +86,8 @@ export const useConnectedWallet = (): UseConnectedWallet => {
   }, [connected, lovelaces])
 
   return {
+    stakeKey: stakeKey || '',
+    lovelaces: Number(lovelaces || '0'),
     tokens,
     refetch,
     isFetching,

@@ -2,23 +2,23 @@ import { type Dispatch, type SetStateAction } from 'react'
 import api from '@/utils/api'
 import { ADA } from '@/constants'
 import { chunk, eachLimit, formatTokenAmountFromChain, formatTokenAmountToChain } from '@/functions'
-import type { AirdropSettings, Delegator, PayoutRecipient, PolicyInfo, PopulatedToken, RankedToken, SnapshotHolder, TokenOwners } from '@/@types'
-
-interface CurrentAndMax {
-  current: number
-  max: number
-}
-
-export interface ProgressCounts {
-  policy?: CurrentAndMax
-  token?: CurrentAndMax
-  holder?: CurrentAndMax
-  pool?: CurrentAndMax
-  delegator?: CurrentAndMax
-}
+import type {
+  AirdropSettings,
+  Delegator,
+  PayoutRecipient,
+  PolicyInfo,
+  PopulatedToken,
+  RankedToken,
+  SnapshotHolder,
+  SnapshotProgressCounts,
+  TokenOwners,
+} from '@/@types'
 
 // !! must handle catch outside
-export const runSnapshot = async (settings: AirdropSettings, setProgress: Dispatch<SetStateAction<ProgressCounts>>): Promise<PayoutRecipient[]> => {
+export const runSnapshot = async (
+  settings: AirdropSettings,
+  setProgress: Dispatch<SetStateAction<SnapshotProgressCounts>>
+): Promise<PayoutRecipient[]> => {
   if (!settings) return []
 
   const { tokenAmount, policies, stakePools, blacklistWallets, blacklistTokens } = settings

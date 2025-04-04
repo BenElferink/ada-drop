@@ -4,10 +4,10 @@ import { read, utils } from 'xlsx'
 import { UploadIcon } from '@/icons'
 import Theme from '@odigos/ui-kit/theme'
 import { ProgressBar } from '@/components'
-import { useConnectedWallet } from '@/hooks'
 import { StatusType } from '@odigos/ui-kit/types'
+import { formatTokenAmountToChain } from '@/functions'
+import { getStatusIcon } from '@odigos/ui-kit/functions'
 import type { AirdropSettings, FormRef, PayoutRecipient } from '@/@types'
-import { formatTokenAmountFromChain, formatTokenAmountToChain } from '@/functions'
 import { Button, Divider, FlexColumn, InteractiveTable, NotificationNote, SectionTitle, Text } from '@odigos/ui-kit/components'
 
 type Data = AirdropSettings
@@ -20,57 +20,47 @@ interface LoadFileProps {
 
 export const LoadFile = forwardRef<FormRef<Data>, LoadFileProps>(({ defaultData, payoutRecipients, setPayoutRecipients }, ref) => {
   const theme = Theme.useTheme()
-  const { tokens } = useConnectedWallet()
 
-  const [errorMessage, setErrorMessage] = useState('')
+  const [fileErrors, setFileErrors] = useState<{ row: number; type: StatusType; message: string; origin: string }[]>([])
+  const [status, setStatus] = useState({ type: StatusType.Info, title: '', message: '' })
   const [started, setStarted] = useState(false)
   const [ended, setEnded] = useState(false)
-  const [progress, setProgress] = useState({
-    row: {
-      current: 0,
-      max: 0,
-    },
-  })
+  const [progress, setProgress] = useState({ row: { current: 0, max: 0 } })
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useImperativeHandle(ref, () => ({
     getData: () => defaultData,
     validate: async () => {
-      let isOk = true
+      let isOk = status.type !== StatusType.Error
 
-      if (started) {
+      if (isOk && !!fileErrors.length) {
         isOk = false
-        setErrorMessage('File is still loading, please wait until it ends')
-      } else if (!payoutRecipients.length) {
+        setStatus({ type: StatusType.Warning, title: '', message: 'Please fix the errors in the file' })
+      }
+      if (isOk && started) {
         isOk = false
-        setErrorMessage('Please upload a valid file')
+        setStatus({ type: StatusType.Warning, title: '', message: 'File is still loading, please wait until it ends' })
+      }
+      if (isOk && (!payoutRecipients.length || !ended)) {
+        isOk = false
+        setStatus({ type: StatusType.Warning, title: '', message: 'Please upload a file' })
       }
 
       return Promise.resolve(isOk)
     },
   }))
 
-  const clearAfterError = () => {
-    setStarted(false)
-    setEnded(false)
-    setProgress({
-      row: {
-        current: 0,
-        max: 0,
-      },
-    })
-  }
-
   const handleFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    setStarted(true)
-    setErrorMessage('')
-
     const file = event.target.files?.[0]
-    if (!file) {
-      clearAfterError()
-      return
-    }
+    if (!file) return
+
+    setPayoutRecipients([])
+    setFileErrors([])
+    setStarted(true)
+    setEnded(false)
+    setStatus({ type: StatusType.Info, title: '', message: '' })
+    setProgress({ row: { current: 0, max: 0 } })
 
     try {
       const buffer = await file.arrayBuffer()
@@ -79,108 +69,114 @@ export const LoadFile = forwardRef<FormRef<Data>, LoadFileProps>(({ defaultData,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rows: Record<string, any>[] = utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])
       const payload: PayoutRecipient[] = []
-      let totalAmountOnChain = 0
 
-      for (const rowObj of rows) {
-        const payoutWallet: Partial<PayoutRecipient> = {}
-        const goodKeyCount = 2
-        let keyCount = 0
+      const walletKeys = ['wallet', 'address', 'stakekey', 'stake-key', 'stake key', 'handle', 'adahandle', 'ada-handle', 'ada handle']
+      const amountKeys = ['amount']
 
-        for await (const [objKey, keyVal] of Object.entries(rowObj)) {
-          const key = objKey.trim().toLowerCase()
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]
+        const detectedKeys = { wallet: false, amount: false }
+        const payoutWallet: PayoutRecipient = { stakeKey: '', address: '', txHash: '', payout: 0 }
 
-          if (['wallet', 'amount'].includes(key)) {
-            if (key === 'amount') {
-              // remove all non-digit characters
-              const n = typeof keyVal === 'string' ? Number(keyVal.replace(/[^\d]/g, '')) : (keyVal as number)
-              if (isNaN(n)) {
-                setErrorMessage(`Bad file! Detected invalid value(s) for "amount" field.\n\nValue was: ${keyVal}`)
-                clearAfterError()
-                return
+        for await (const [objKey, keyVal] of Object.entries(row)) {
+          const key = objKey?.toString().trim().toLowerCase()
+          const val = keyVal?.toString().trim()
+
+          if (walletKeys.concat(amountKeys).includes(key)) {
+            if (amountKeys.includes(key) && !detectedKeys['amount']) {
+              detectedKeys['amount'] = true
+
+              const n = Number(
+                val
+                  .replace(/[^\d.]/g, '') // remove everything except digits and dots
+                  .replace(/^\.*/g, '') // remove leading dots
+                  .replace(/\.{2,}/g, '.') // collapse multiple dots
+                  .replace(/(\..*)\./g, '$1') // keep only the first dot
+              )
+
+              if (isNaN(n) || n <= 0) {
+                setFileErrors((prev) => [...prev, { row: i + 1, type: StatusType.Error, message: 'Amount is invalid', origin: val }])
+              } else {
+                const amountOnChain = formatTokenAmountToChain(n, defaultData.tokenAmount.decimals)
+                payoutWallet['payout'] = amountOnChain
               }
-
-              const amountOnChain = formatTokenAmountToChain(n, defaultData.tokenAmount.decimals)
-              payoutWallet['payout'] = amountOnChain
-              keyCount++
-              totalAmountOnChain += amountOnChain
             }
 
-            if (key === 'wallet') {
+            if (walletKeys.includes(key) && !detectedKeys['wallet']) {
+              detectedKeys['wallet'] = true
+
               try {
-                const { stakeKey, addresses } = await api.wallet.getData(keyVal)
+                const { stakeKey, addresses } = await api.wallet.getData(val)
 
                 if (addresses[0].address.indexOf('addr1') !== 0) {
-                  setErrorMessage(`Bad file! Address is not on Cardano.\n\nValue was: ${addresses[0].address}`)
-                  clearAfterError()
-                  return
+                  setFileErrors((prev) => [
+                    ...prev,
+                    { row: i + 1, type: StatusType.Error, message: 'Address is not on Cardano', origin: addresses[0].address },
+                  ])
                 } else if (addresses[0].isScript) {
-                  // TODO: undo this and ignore ??
-                  setErrorMessage(`Bad file! Address is a Script or Contract.\n\nValue was: ${addresses[0].address}`)
-                  clearAfterError()
-                  return
+                  // !! ignore script wallets
                 } else if (!stakeKey) {
                   // TODO: undo this and rely on an address ??
-                  setErrorMessage(`Bad file! Address has no registered Stake Key.\n\nValue was: ${addresses[0].address}`)
-                  clearAfterError()
-                  return
+                  setFileErrors((prev) => [
+                    ...prev,
+                    { row: i + 1, type: StatusType.Error, message: 'Address has no registered Stake Key', origin: addresses[0].address },
+                  ])
                 } else {
                   payoutWallet['address'] = addresses[0].address
                   payoutWallet['stakeKey'] = stakeKey
-                  payoutWallet['txHash'] = ''
-                  keyCount++
                 }
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
               } catch (error: any) {
                 const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
-                console.error('ERROR:\n', `${errMsg}\n`, error)
-                setErrorMessage(errMsg)
-                clearAfterError()
-                return
+                setFileErrors((prev) => [
+                  ...prev,
+                  {
+                    row: i + 1,
+                    type: StatusType.Error,
+                    message: errMsg.includes('provide a valid wallet') ? 'Invalid wallet identifier' : errMsg,
+                    origin: val,
+                  },
+                ])
               }
             }
           }
         }
 
-        if (keyCount < goodKeyCount) {
-          setErrorMessage('Bad file! Detected row(s) with missing value(s).')
-          clearAfterError()
-          return
+        if (!detectedKeys['wallet'] || !detectedKeys['amount']) {
+          setFileErrors((prev) => [
+            ...prev,
+            {
+              row: i + 1,
+              type: StatusType.Error,
+              message: 'Row is missing required columns',
+              origin:
+                (!detectedKeys['wallet'] ? 'wallet' : '') +
+                (!detectedKeys['wallet'] && !detectedKeys['amount'] ? ' & ' : '') +
+                (!detectedKeys['amount'] ? 'amount' : ''),
+            },
+          ])
         }
 
-        payload.push(payoutWallet as PayoutRecipient)
-
+        payload.push(payoutWallet)
         setProgress((prev) => ({
           ...prev,
           row: { ...prev.row, current: prev.row.current + 1, max: rows.length },
         }))
       }
 
-      const userOwnedOnChain = tokens.find((t) => t.tokenId === defaultData.tokenId)?.tokenAmount.onChain || 0
-
-      if (totalAmountOnChain > userOwnedOnChain) {
-        setErrorMessage(
-          `Woopsies! The total amount on-file (${formatTokenAmountFromChain(
-            totalAmountOnChain,
-            defaultData.tokenAmount.decimals
-          )}), is greater than the amount you own (${formatTokenAmountFromChain(userOwnedOnChain, defaultData.tokenAmount.decimals)}).`
-        )
-        clearAfterError()
-        return
-      }
-
-      setPayoutRecipients(payload)
-      setEnded(!!payload.length)
+      setPayoutRecipients(payload.filter(({ payout }) => !!payout).sort((a, b) => b.payout - a.payout))
       setStarted(false)
-      setErrorMessage('')
+      setEnded(true)
+      setStatus({ type: StatusType.Info, title: '', message: '' })
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
-      console.error('ERROR:\n', `${errMsg}\n`, error)
-      setErrorMessage(errMsg)
-      clearAfterError()
-      return
+      setStarted(false)
+      setEnded(false)
+      setStatus({ type: StatusType.Error, title: 'Error loading file', message: errMsg })
+      setProgress({ row: { current: 0, max: 0 } })
     }
   }
 
@@ -192,7 +188,12 @@ export const LoadFile = forwardRef<FormRef<Data>, LoadFileProps>(({ defaultData,
           description='Load an Excel Spreadsheet with receiving wallets'
           actionButton={
             <>
-              <Button variant='tertiary' disabled={started || ended} onClick={() => fileInputRef.current?.click()} style={{ textDecoration: 'none' }}>
+              <Button
+                variant='tertiary'
+                disabled={started || (ended && !fileErrors.length)}
+                onClick={() => fileInputRef.current?.click()}
+                style={{ textDecoration: 'none' }}
+              >
                 <UploadIcon size={24} fill={theme.text.info} />
                 <Text color={theme.text.info} family='secondary'>
                   Upload File
@@ -204,51 +205,75 @@ export const LoadFile = forwardRef<FormRef<Data>, LoadFileProps>(({ defaultData,
           }
         />
         <div style={{ width: '100%' }}>
-          {ended ? (
-            <NotificationNote type={StatusType.Success} title='Done' message='you can proceed to the next step' />
-          ) : !started && !ended ? (
-            <NotificationNote type={StatusType.Info} title='The columns must be named "Amount" and "Wallet":' />
-          ) : (
+          {!started && !ended ? (
+            <NotificationNote type={StatusType.Info} title='The columns must be named "Amount" and "Wallet"' />
+          ) : started ? (
             <NotificationNote type={StatusType.Info} title='"Script" wallets not included, for example:' message='jpg.store, Mutant Labs, etc.' />
-          )}
+          ) : ended && status.type !== StatusType.Error && !fileErrors.length ? (
+            <NotificationNote type={StatusType.Success} title='File loaded successfully' message='You can proceed to the next step' />
+          ) : null}
         </div>
-        {!!errorMessage && (
+        {(!!status.title || !!status.message) && (
           <div style={{ width: '100%' }}>
-            <NotificationNote type={StatusType.Error} title={errorMessage} />
+            <NotificationNote type={status.type} title={status.title} message={status.message} />
           </div>
         )}
-        {(started || ended) && <Divider />}
+        {(started || (ended && !fileErrors.length)) && <Divider />}
       </FlexColumn>
 
-      {!started && !ended ? (
-        <InteractiveTable
-          columns={[
-            { key: 'amount', title: 'Amount' },
-            { key: 'wallet', title: 'Wallet' },
-          ]}
-          rows={[
-            {
-              cells: [
-                { columnKey: 'amount', value: '11' },
-                { columnKey: 'wallet', value: 'addr1... / stake1... / $handle' },
-              ],
-            },
-            {
-              cells: [
-                { columnKey: 'amount', value: '420.69' },
-                { columnKey: 'wallet', value: 'addr1... / stake1... / $handle' },
-              ],
-            },
-            {
-              cells: [
-                { columnKey: 'amount', value: '555,555.5' },
-                { columnKey: 'wallet', value: 'addr1... / stake1... / $handle' },
-              ],
-            },
-          ]}
-        />
-      ) : (
+      {started || (ended && !fileErrors.length) ? (
         <ProgressBar label='File Rows' max={progress.row.max} current={progress.row.current} />
+      ) : !started && !ended ? (
+        <div style={{ width: '100%' }}>
+          <InteractiveTable
+            columns={[
+              { key: 'amount', title: 'Amount' },
+              { key: 'wallet', title: 'Wallet' },
+            ]}
+            rows={[
+              {
+                cells: [
+                  { columnKey: 'amount', value: '11' },
+                  { columnKey: 'wallet', value: 'addr1... / stake1... / $handle' },
+                ],
+              },
+              {
+                cells: [
+                  { columnKey: 'amount', value: '420.69' },
+                  { columnKey: 'wallet', value: 'addr1... / stake1... / $handle' },
+                ],
+              },
+              {
+                cells: [
+                  { columnKey: 'amount', value: '555,555.5' },
+                  { columnKey: 'wallet', value: 'addr1... / stake1... / $handle' },
+                ],
+              },
+            ]}
+          />
+        </div>
+      ) : null}
+
+      {!!fileErrors.length && (
+        <div style={{ width: '100%' }}>
+          <InteractiveTable
+            columns={[
+              { key: 'status', title: '' },
+              { key: 'row', title: 'File Row' },
+              { key: 'msg', title: 'Problem' },
+              { key: 'src', title: 'Value' },
+            ]}
+            rows={fileErrors.map((e) => ({
+              status: e.type,
+              cells: [
+                { columnKey: 'status', icon: getStatusIcon(e.type, theme) },
+                { columnKey: 'row', value: e.row },
+                { columnKey: 'msg', value: e.message + ':' },
+                { columnKey: 'src', value: e.origin },
+              ],
+            }))}
+          />
+        </div>
       )}
     </>
   )

@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import Theme from '@odigos/ui-kit/theme'
 import { useWallet } from '@meshsdk/react'
 import { PlusIcon } from '@odigos/ui-kit/icons'
+import { useKeyDown } from '@odigos/ui-kit/hooks'
 import { INIT_AIRDROP_SETTINGS } from '@/constants'
 import { HoldersJourney } from './journeys/holders'
 import { deepClone } from '@odigos/ui-kit/functions'
@@ -102,6 +103,37 @@ export const NewAirdrop = () => {
     }
   }, [step, settings.airdropMethod])
 
+  const backDisabled =
+    step === 1 ||
+    (settings.airdropMethod === AirdropMethodType.HolderSnapshot && [5, 6].includes(step)) ||
+    (settings.airdropMethod === AirdropMethodType.DelegatorSnapshot && [5, 6].includes(step)) ||
+    (settings.airdropMethod === AirdropMethodType.CustomList && [4].includes(step))
+
+  const nextDisabled =
+    (settings.airdropMethod === AirdropMethodType.HolderSnapshot && step === 6) ||
+    (settings.airdropMethod === AirdropMethodType.DelegatorSnapshot && step === 6) ||
+    (settings.airdropMethod === AirdropMethodType.CustomList && step === 4)
+
+  const onNext = () => {
+    if (nextDisabled) return
+
+    formRef.current?.validate().then((isOk) => {
+      if (isOk) {
+        if (step === 1) {
+          // reset when swithching methods
+          setSettings({ ...deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS), ...formRef.current.getData() })
+          setPayoutRecipients([])
+        } else {
+          setSettings((prev) => ({ ...prev, ...formRef.current.getData() }))
+        }
+
+        incrementStep()
+      }
+    })
+  }
+
+  useKeyDown({ active: isOpen, key: 'Enter' }, onNext)
+
   return (
     <Fragment>
       <Tooltip text={!connected ? 'Wallet must be connected to process a new airdrop' : ''}>
@@ -116,7 +148,7 @@ export const NewAirdrop = () => {
         noOverlay
         title='Cancel Airdrop'
         description='Are you sure you want to cancel this airdrop?'
-        approveButton={{ text: 'Yes', variant: 'danger', onClick: handleClose }}
+        approveButton={{ text: `Yes (${String.fromCodePoint(0x21b5)})`, variant: 'danger', onClick: handleClose }}
         denyButton={{ text: 'No', onClick: toggleIsWarningOpen }}
       />
 
@@ -130,35 +162,14 @@ export const NewAirdrop = () => {
               {
                 variant: 'primary',
                 label: 'Back',
-                disabled:
-                  step === 1 ||
-                  (settings.airdropMethod === AirdropMethodType.HolderSnapshot && [5, 6].includes(step)) ||
-                  (settings.airdropMethod === AirdropMethodType.DelegatorSnapshot && [5, 6].includes(step)) ||
-                  (settings.airdropMethod === AirdropMethodType.CustomList && [4].includes(step)),
+                disabled: backDisabled,
                 onClick: decrementStep,
               },
               {
                 variant: 'primary',
-                label: 'Next',
-                disabled:
-                  (settings.airdropMethod === AirdropMethodType.HolderSnapshot && step === 6) ||
-                  (settings.airdropMethod === AirdropMethodType.DelegatorSnapshot && step === 6) ||
-                  (settings.airdropMethod === AirdropMethodType.CustomList && step === 4),
-                onClick: () => {
-                  formRef.current?.validate().then((isOk) => {
-                    if (isOk) {
-                      if (step === 1) {
-                        // reset when swithching methods
-                        setSettings({ ...deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS), ...formRef.current.getData() })
-                        setPayoutRecipients([])
-                      } else {
-                        setSettings((prev) => ({ ...prev, ...formRef.current.getData() }))
-                      }
-
-                      incrementStep()
-                    }
-                  })
-                },
+                label: `Next (${String.fromCodePoint(0x21b5)})`,
+                disabled: nextDisabled,
+                onClick: onNext,
               },
             ]}
           />

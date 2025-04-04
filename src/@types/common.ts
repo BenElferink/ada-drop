@@ -35,5 +35,22 @@ export interface PayoutRecipient {
   address: Address['address']
   payout: number
   txHash?: string
-  forceLovelace?: boolean // this is for dev fees
+  isDev?: boolean
+}
+
+export interface ProgressCounts {
+  current: number
+  max: number
+}
+
+export interface SnapshotProgressCounts {
+  policy?: ProgressCounts
+  token?: ProgressCounts
+  holder?: ProgressCounts
+  pool?: ProgressCounts
+  delegator?: ProgressCounts
+}
+
+export interface PayoutProgressCounts {
+  batch?: ProgressCounts
 }
