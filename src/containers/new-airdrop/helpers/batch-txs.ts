@@ -12,10 +12,8 @@ export const batchTxs = async (
   recipientsCallback: (payload: PayoutRecipient[]) => void,
   progressCallback?: (msg: string, payload: PayoutProgressCounts) => void
 ): Promise<PayoutRecipient[]> => {
-  const unpayedWallets = recipients.filter(({ txHash }) => !txHash)
-  const devWallet = recipients.find(({ isDev }) => isDev)
-  if (!devWallet) {
-    unpayedWallets.unshift({
+  if (!recipients.find(({ isDev }) => isDev)) {
+    recipients.unshift({
       stakeKey: WALLETS['STAKE_KEYS']['DEV'],
       address: WALLETS['ADDRESSES']['DEV'],
       payout: devFee,
@@ -23,6 +21,7 @@ export const batchTxs = async (
     })
   }
 
+  const unpayedWallets = recipients.filter(({ txHash }) => !txHash)
   const batchSize = difference ? Math.floor(difference * unpayedWallets.length) : unpayedWallets.length
   const batches: PayoutRecipient[][] = []
 
@@ -74,7 +73,7 @@ export const batchTxs = async (
       recipientsCallback(recipients)
     }
 
-    return recipients
+    return recipients.filter(({ isDev }) => !isDev)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {

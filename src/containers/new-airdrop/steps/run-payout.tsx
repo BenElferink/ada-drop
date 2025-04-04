@@ -97,30 +97,42 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
 
         // not enough ada for cardano + fees
         if (adaErr) {
-          setStatus({
-            type: StatusType.Error,
-            title: 'Insufficient ADA for Cardano',
-            message: `Please acquire another ${ADA['SYMBOL']}${prettyNumber(missingAda + devFeeAda)} and try again`,
-          })
+          setStatus((prev) =>
+            prev.title.includes('Insufficient') || !prev.title
+              ? {
+                  type: StatusType.Error,
+                  title: 'Insufficient ADA for Cardano',
+                  message: `Please acquire another ${ADA['SYMBOL']}${prettyNumber(missingAda + devFeeAda)} and try again`,
+                }
+              : prev
+          )
         }
         // not enough ada for fees
         else if (neededAda + devFeeAda > ownedAda) {
-          setStatus({
-            type: StatusType.Error,
-            title: 'Insufficient ADA for fees',
-            message: `Please acquire another ${ADA['SYMBOL']}${prettyNumber(devFeeAda)} and try again`,
-          })
+          setStatus((prev) =>
+            prev.title.includes('Insufficient') || !prev.title
+              ? {
+                  type: StatusType.Error,
+                  title: 'Insufficient ADA for fees',
+                  message: `Please acquire another ${ADA['SYMBOL']}${prettyNumber(devFeeAda)} and try again`,
+                }
+              : prev
+          )
         } else {
           const hasRecipientsWithLessThanMinimumLovelaces = isLovelaces
             ? processedRecipients.some((recipient) => recipient.payout < minLovelacesPerWallet)
             : false
 
           if (hasRecipientsWithLessThanMinimumLovelaces) {
-            setStatus({
-              type: StatusType.Warning,
-              title: 'Insufficient recipients',
-              message: `Some wallets have less than ${ADA['SYMBOL']}${minAdaPerWallet} assigned to them, please check the list below or they will be excluded from the airdrop`,
-            })
+            setStatus((prev) =>
+              prev.title.includes('Insufficient') || !prev.title
+                ? {
+                    type: StatusType.Warning,
+                    title: 'Insufficient recipients',
+                    message: `Some wallets have less than ${ADA['SYMBOL']}${minAdaPerWallet} assigned to them, please check the list below or they will be excluded from the airdrop`,
+                  }
+                : prev
+            )
           } else {
             setStatus((prev) => (prev.title.includes('Insufficient') ? { type: StatusType.Info, title: '', message: '' } : prev))
           }
@@ -137,6 +149,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
       setStatus({ type: StatusType.Info, title: '', message: msg })
     })
       .then((recipients) => {
+        setProcessedRecipients(recipients)
         setStatus({ type: StatusType.Success, title: '', message: '' })
         setStarted(false)
         setEnded(true)
@@ -183,13 +196,15 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
     try {
       const wb = utils.book_new()
       const ws = utils.json_to_sheet(
-        processedRecipients.map((item) => ({
-          amount: formatTokenAmountFromChain(item.payout, defaultData.tokenAmount.decimals),
-          tokenName: ticker,
-          address: item.address,
-          stakeKey: item.stakeKey,
-          txHash: item.txHash,
-        })),
+        processedRecipients
+          .filter(({ isDev }) => !isDev)
+          .map((item) => ({
+            amount: formatTokenAmountFromChain(item.payout, defaultData.tokenAmount.decimals),
+            tokenName: ticker,
+            address: item.address,
+            stakeKey: item.stakeKey,
+            txHash: item.txHash,
+          })),
         { header: ['amount', 'tokenName', 'address', 'stakeKey', 'txHash'] }
       )
 
@@ -227,6 +242,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
   const rows = useMemo(
     () =>
       processedRecipients
+        .filter(({ isDev }) => !isDev)
         .sort((a, b) => {
           const aHasTx = !!a.txHash
           const bHasTx = !!b.txHash
