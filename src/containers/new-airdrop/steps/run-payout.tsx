@@ -144,7 +144,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
   const runPayout = (): void => {
     setStarted(true)
     setStatus({ type: StatusType.Info, title: '', message: '' })
-    batchTxs(0, wallet, defaultData.tokenId, devFee, processedRecipients, setProcessedRecipients, (msg, prgrs) => {
+    batchTxs(0, wallet, defaultData.tokenId, devFee, deepClone(processedRecipients), setProcessedRecipients, (msg, prgrs) => {
       setProgress(prgrs)
       setStatus({ type: StatusType.Info, title: '', message: msg })
     })
