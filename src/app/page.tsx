@@ -12,7 +12,9 @@ import { AirdropMapMobile } from '@/containers/airdrop-map-mobile'
 const PageContainer = styled(FlexColumn)`
   width: 100%;
   min-height: 100vh;
-  background-color: ${({ theme }) => theme.colors.primary};
+  background-color: ${({ theme }) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (theme as any).colors.primary};
   align-items: center;
 `
 

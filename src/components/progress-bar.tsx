@@ -18,14 +18,19 @@ const Container = styled.div`
   gap: 16px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  border-bottom: 1px solid
+    ${({ theme }) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (theme as any).colors.border};
 `
 
 const Bar = styled.div<{ $percent: number; $isDone: boolean }>`
   position: absolute;
   bottom: -2px;
   left: 0;
-  background-color: ${({ theme, $isDone }) => ($isDone ? theme.text.success : theme.colors.majestic_blue_soft)};
+  background-color: ${({ theme, $isDone }) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    $isDone ? (theme as any).text.success : (theme as any).colors.majestic_blue_soft};
   border-radius: 32px;
   height: 4px;
   width: ${({ $percent }) => `${$percent}%`};
@@ -39,6 +44,10 @@ export const ProgressBar: FC<ProgressBarProps> = ({ label, max = 100, current = 
   const percent = isDone ? 100 : Math.round((100 / max) * current)
 
   const Icon = useMemo(() => (isDone ? getStatusIcon(StatusType.Success, theme) : () => <FadeLoader />), [isDone, theme])
+
+  if (!max) {
+    return null
+  }
 
   return (
     <Container>

@@ -19,11 +19,20 @@ const Label = styled.div<{ $labelX: number; $labelY: number; $isError?: boolean 
   transform: ${({ $labelX, $labelY }) => `translate(-50%, -50%) translate(${$labelX}px, ${$labelY}px)`};
   width: 75px;
   padding: 2px 6px;
-  background-color: ${({ theme }) => theme.colors.primary};
+  background-color: ${({ theme }) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (theme as any).colors.primary};
   border-radius: 360px;
-  border: 1px solid ${({ $isError, theme }) => ($isError ? theme.colors.dark_red : theme.colors.border)};
-  color: ${({ $isError, theme }) => ($isError ? theme.text.error : theme.text.light_grey)};
-  font-family: ${({ theme }) => theme.font_family.secondary};
+  border: 1px solid
+    ${({ $isError, theme }) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      $isError ? (theme as any).colors.dark_red : (theme as any).colors.border};
+  color: ${({ $isError, theme }) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    $isError ? (theme as any).text.error : (theme as any).text.light_grey};
+  font-family: ${({ theme }) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (theme as any).font_family.secondary};
   font-size: 10px;
   font-weight: 400;
   text-transform: uppercase;

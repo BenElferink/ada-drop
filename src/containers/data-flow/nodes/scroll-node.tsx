@@ -36,7 +36,9 @@ const Overlay = styled.div<{ $hide?: boolean }>`
   height: 100px;
   padding-bottom: 12px;
 
-  background: ${({ theme, $hide }) => ($hide ? 'transparent' : `linear-gradient(to top, ${theme.colors.primary}, transparent)`)};
+  background: ${({ theme, $hide }) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    $hide ? 'transparent' : `linear-gradient(to top, ${(theme as any).colors.primary}, transparent)`};
   display: flex;
   align-items: flex-end;
   justify-content: center;
