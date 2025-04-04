@@ -21,7 +21,7 @@ export const HoldersJourney = forwardRef<FormRef<Data>, HoldersJourneyProps>(({ 
   ) : step === 3 ? (
     <Policies ref={ref} defaultData={defaultData} />
   ) : step === 4 ? (
-    <Blacklist ref={ref} defaultData={defaultData} />
+    <Blacklist ref={ref} defaultData={defaultData} withWallets withTokenIds />
   ) : step === 5 ? (
     <RunSnapshot ref={ref} defaultData={defaultData} payoutRecipients={payoutRecipients} setPayoutRecipients={setPayoutRecipients} />
   ) : step === 6 ? (

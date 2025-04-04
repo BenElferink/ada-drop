@@ -12,6 +12,8 @@ type Data = BlacklistSettings
 
 interface BlacklistProps {
   defaultData: Data
+  withWallets?: boolean
+  withTokenIds?: boolean
 }
 
 const resolveStakeKeys = async (wallets: string[]) => {
@@ -68,7 +70,7 @@ const resolveTokenIds = async (tokens: string[]) => {
   return { tokenIds: payload, hasError }
 }
 
-export const Blacklist = forwardRef<FormRef<Data>, BlacklistProps>(({ defaultData }, ref) => {
+export const Blacklist = forwardRef<FormRef<Data>, BlacklistProps>(({ defaultData, withWallets, withTokenIds }, ref) => {
   const [errors, setErrors] = useState({ message: '', wallets: '', tokens: '' })
   const [data, setData] = useState(deepClone(defaultData))
 
@@ -127,80 +129,87 @@ export const Blacklist = forwardRef<FormRef<Data>, BlacklistProps>(({ defaultDat
           <NotificationNote type={StatusType.Error} title={errors.message} />
         </div>
       )}
-      <Divider />
 
-      {isFetchingStakeKeys ? (
-        <CenterThis $gap={12}>
-          <FadeLoader scale={1.2} />
-          <Text>Resolving Stake Keys...</Text>
-        </CenterThis>
-      ) : (
-        <InputList
-          title='Wallets to Blacklist'
-          tooltip='Enter the wallets you want to blacklist from the airdrop. These wallets will not get any share of the airdrop.'
-          value={data.blacklistWallets}
-          onChange={(arr) => {
-            latestWalletsRef.current = arr
+      {withWallets && (
+        <>
+          <Divider />
+          {isFetchingStakeKeys ? (
+            <CenterThis $gap={12}>
+              <FadeLoader scale={1.2} />
+              <Text>Resolving Stake Keys...</Text>
+            </CenterThis>
+          ) : (
+            <InputList
+              title='Wallets to Blacklist'
+              tooltip='Enter the wallets you want to blacklist from the airdrop. These wallets will not get any share of the airdrop.'
+              value={data.blacklistWallets}
+              onChange={(arr) => {
+                latestWalletsRef.current = arr
 
-            setData((prev) => ({ ...prev, blacklistWallets: arr }))
-            setErrors((prev) => ({ ...prev, message: '', wallets: '' }))
+                setData((prev) => ({ ...prev, blacklistWallets: arr }))
+                setErrors((prev) => ({ ...prev, message: '', wallets: '' }))
 
-            debounce(
-              resolveStakeKeys,
-              1000
-            )(arr).then(({ sKeys, hasError }) => {
-              // Only apply if input hasn't changed
-              if (JSON.stringify(latestWalletsRef.current) === JSON.stringify(arr)) {
-                // This toggle is after the debounce to trigger a re-render of the input list with new values
-                setIsFetchingStakeKeys(true)
+                debounce(
+                  resolveStakeKeys,
+                  1000
+                )(arr).then(({ sKeys, hasError }) => {
+                  // Only apply if input hasn't changed
+                  if (JSON.stringify(latestWalletsRef.current) === JSON.stringify(arr)) {
+                    // This toggle is after the debounce to trigger a re-render of the input list with new values
+                    setIsFetchingStakeKeys(true)
 
-                setData((prev) => ({ ...prev, blacklistWallets: sKeys }))
-                if (hasError) setErrors((prev) => ({ ...prev, wallets: 'Contains invalid wallets' }))
+                    setData((prev) => ({ ...prev, blacklistWallets: sKeys }))
+                    if (hasError) setErrors((prev) => ({ ...prev, wallets: 'Contains invalid wallets' }))
 
-                setTimeout(() => setIsFetchingStakeKeys(false), 1000)
-              }
-            })
-          }}
-          errorMessage={errors.wallets}
-        />
+                    setTimeout(() => setIsFetchingStakeKeys(false), 1000)
+                  }
+                })
+              }}
+              errorMessage={errors.wallets}
+            />
+          )}
+        </>
       )}
 
-      <Divider />
+      {withTokenIds && (
+        <>
+          <Divider />
+          {isFetchingTokenIds ? (
+            <CenterThis $gap={12}>
+              <FadeLoader scale={1.2} />
+              <Text>Resolving Asset IDs...</Text>
+            </CenterThis>
+          ) : (
+            <InputList
+              title='Asset IDs to Blacklist'
+              tooltip='Provide the asset IDs you want to blacklist. If a wallet meets other conditions but holds these assets, they will still get their share of the airdrop, minus these assets.'
+              value={data.blacklistTokens}
+              onChange={(arr) => {
+                latestTokensRef.current = arr
 
-      {isFetchingTokenIds ? (
-        <CenterThis $gap={12}>
-          <FadeLoader scale={1.2} />
-          <Text>Resolving Asset IDs...</Text>
-        </CenterThis>
-      ) : (
-        <InputList
-          title='Asset IDs to Blacklist'
-          tooltip='Provide the asset IDs you want to blacklist. If a wallet meets other conditions but holds these assets, they will still get their share of the airdrop, minus these assets.'
-          value={data.blacklistTokens}
-          onChange={(arr) => {
-            latestTokensRef.current = arr
+                setData((prev) => ({ ...prev, blacklistTokens: arr }))
+                setErrors((prev) => ({ ...prev, message: '', tokens: '' }))
 
-            setData((prev) => ({ ...prev, blacklistTokens: arr }))
-            setErrors((prev) => ({ ...prev, message: '', tokens: '' }))
+                debounce(
+                  resolveTokenIds,
+                  1000
+                )(arr).then(({ tokenIds, hasError }) => {
+                  // Only apply if input hasn't changed
+                  if (JSON.stringify(latestTokensRef.current) === JSON.stringify(arr)) {
+                    // This toggle is after the debounce to trigger a re-render of the input list with new values
+                    setIsFetchingTokenIds(true)
 
-            debounce(
-              resolveTokenIds,
-              1000
-            )(arr).then(({ tokenIds, hasError }) => {
-              // Only apply if input hasn't changed
-              if (JSON.stringify(latestTokensRef.current) === JSON.stringify(arr)) {
-                // This toggle is after the debounce to trigger a re-render of the input list with new values
-                setIsFetchingTokenIds(true)
+                    setData((prev) => ({ ...prev, blacklistTokens: tokenIds }))
+                    if (hasError) setErrors((prev) => ({ ...prev, tokens: 'Contains invalid asset IDs' }))
 
-                setData((prev) => ({ ...prev, blacklistTokens: tokenIds }))
-                if (hasError) setErrors((prev) => ({ ...prev, tokens: 'Contains invalid asset IDs' }))
-
-                setTimeout(() => setIsFetchingTokenIds(false), 1000)
-              }
-            })
-          }}
-          errorMessage={errors.tokens}
-        />
+                    setTimeout(() => setIsFetchingTokenIds(false), 1000)
+                  }
+                })
+              }}
+              errorMessage={errors.tokens}
+            />
+          )}
+        </>
       )}
     </>
   )
