@@ -366,19 +366,21 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
         noOverlay
         title={`Round up to ${ADA['SYMBOL']}1 ${warn.stakeKey ? 'for this wallet' : 'for all wallets'}?`}
         description={warn.stakeKey}
-        note={{
-          type: StatusType.Warning,
-          title: '',
-          message: warn.isOpen
-            ? `This will increase the total pool size by ${ADA['SYMBOL']}${formatTokenAmountFromChain(
-                warn.stakeKey
-                  ? 1_000_000 - (processedRecipients.find((x) => x.stakeKey === warn.stakeKey)?.payout || 0)
-                  : processedRecipients.reduce((prev, curr) => (curr.payout < 1_000_000 ? prev + curr.payout : prev), 0),
-                ADA['DECIMALS'],
-                false
-              )}!`
-            : '',
-        }}
+        note={
+          warn.isOpen
+            ? {
+                type: StatusType.Warning,
+                title: '',
+                message: `This will increase the total pool size by ${ADA['SYMBOL']}${formatTokenAmountFromChain(
+                  warn.stakeKey
+                    ? 1_000_000 - (processedRecipients.find((x) => x.stakeKey === warn.stakeKey)?.payout || 0)
+                    : processedRecipients.reduce((prev, curr) => (curr.payout < 1_000_000 ? prev + curr.payout : prev), 0),
+                  ADA['DECIMALS'],
+                  false
+                )}!`,
+              }
+            : undefined
+        }
         approveButton={{
           text: `Yes (${String.fromCodePoint(0x21b5)})`,
           variant: 'warning',
