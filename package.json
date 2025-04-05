@@ -20,14 +20,13 @@
   },
   "dependencies": {
     "@blockfrost/blockfrost-js": "^6.0.0",
-    "@meshsdk/core": "^1.9.0-beta.27",
-    "@meshsdk/react": "^1.9.0-beta.27",
+    "@meshsdk/core": "^1.8.14",
+    "@meshsdk/react": "^1.8.14",
     "@odigos/ui-kit": "^0.0.21",
     "@xyflow/react": "^12.5.4",
     "axios": "^1.8.4",
     "firebase": "^11.6.0",
     "next": "15.2.4",
-    "next-transpile-modules": "^10.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "styled-components": "^6.1.17",
@@ -39,10 +38,8 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "css-loader": "^7.1.2",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
-    "style-loader": "^4.0.0",
     "typescript": "^5"
   }
 }

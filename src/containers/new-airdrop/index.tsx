@@ -147,7 +147,7 @@ export const NewAirdrop = () => {
         <Button
           variant='primary'
           onClick={() => {
-            toggleIsOpen()
+            // toggleIsOpen()
             toggleIsUnfrackOpen()
           }}
           disabled={!connected}
@@ -240,19 +240,25 @@ export const NewAirdrop = () => {
         >
           <Image src='/assets/unfrack.svg' alt='' width={556.31} height={143.15} />
 
+          <Text color={theme.darkMode ? theme.colors.primary : theme.colors.secondary}>
+            We recommend unfracking your wallet before running an airdrop.
+          </Text>
+
           <FlexRow>
             <Button variant='tertiary' onClick={() => window.open('https://unfrack.it', '_blank', 'noopener noreferrer')}>
               {'Unfrack.it'}
             </Button>
 
-            <Button variant='tertiary' onClick={toggleIsUnfrackOpen}>
+            <Button
+              variant='tertiary'
+              onClick={() => {
+                toggleIsUnfrackOpen()
+                toggleIsOpen()
+              }}
+            >
               {'Ignore'}
             </Button>
           </FlexRow>
-
-          <Text color={theme.darkMode ? theme.colors.primary : theme.colors.secondary}>
-            We recommend unfracking your wallet before running an airdrop.
-          </Text>
         </FlexColumn>
       </Modal>
     </Fragment>

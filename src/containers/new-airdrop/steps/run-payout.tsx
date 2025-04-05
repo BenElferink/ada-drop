@@ -1,20 +1,20 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react'
-import { ADA } from '@/constants'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import Theme from '@odigos/ui-kit/theme'
-import { useWallet } from '@meshsdk/react'
+import { ADA, WALLETS } from '@/constants'
 import { ProgressBar } from '@/components'
+import { useWallet } from '@meshsdk/react'
+import { Transaction } from '@meshsdk/core'
 import { utils, writeFileXLSX } from 'xlsx'
 import { useConnectedWallet } from '@/hooks'
 import { firestore } from '@/utils/firebase'
 import { PlusIcon } from '@odigos/ui-kit/icons'
-import { batchTxs } from '../helpers/batch-txs'
 import { StatusType } from '@odigos/ui-kit/types'
 import { DownloadIcon, TransactionIcon } from '@/icons'
 import { deepClone, getStatusIcon } from '@odigos/ui-kit/functions'
 import { verifyMinRequiredAda } from '../helpers/verify-min-required-ada'
 import { verifyMinRequiredBalance } from '../helpers/verify-min-required-balance'
-import type { Airdrop, AirdropSettings, FormRef, PayoutProgressCounts, PayoutRecipient } from '@/@types'
-import { formatTokenAmountFromChain, formatTokenAmountToChain, getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
+import type { Airdrop, AirdropSettings, FormRef, PayoutProgressCounts, PayoutRecipient, StakeKey } from '@/@types'
+import { formatTokenAmountFromChain, formatTokenAmountToChain, getTokenName, prettyNumber, truncateStringInMiddle, txConfirmation } from '@/functions'
 import {
   Button,
   FlexColumn,
@@ -42,13 +42,15 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
   const { stakeKey, lovelaces, tokens } = useConnectedWallet()
 
   const [status, setStatus] = useState({ type: StatusType.Info, title: '', message: '' })
-  const [allowPreFilghtChecks, setAllowPreFilghtChecks] = useState(true)
+  const [allowPreFlightChecks, setAllowPreFlightChecks] = useState(true)
+  const [ranPreFlightChecks, setRanPreFlightChecks] = useState(false)
   const [started, setStarted] = useState(false)
   const [ended, setEnded] = useState(false)
   const [progress, setProgress] = useState<PayoutProgressCounts>({ batch: { current: 0, max: 0 } })
 
   const [processedRecipients, setProcessedRecipients] = useState(deepClone(payoutRecipients))
   const devFee = useMemo(() => formatTokenAmountToChain(Math.max(1, payoutRecipients.length * 0.5), ADA['DECIMALS']), [payoutRecipients])
+  const devPayed = useRef(false)
   const ticker = useMemo(() => defaultData.tokenName.ticker || defaultData.tokenName.display || defaultData.tokenName.onChain, [defaultData])
 
   useImperativeHandle(ref, () => ({
@@ -66,90 +68,175 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
   }))
 
   useEffect(() => {
-    if (allowPreFilghtChecks && !!lovelaces && !!devFee) {
-      const { isError: balanceErr, missingBalance } = verifyMinRequiredBalance(processedRecipients, tokens, defaultData.tokenId)
+    if (allowPreFlightChecks) {
+      setStatus((prev) =>
+        !prev.title && !prev.message
+          ? {
+              type: StatusType.Info,
+              title: 'Preflight checks',
+              message: 'Verifying final output vs. your wallet balance',
+            }
+          : prev
+      )
 
-      // not enough funds to airdrop
-      if (balanceErr) {
-        setStatus({
-          type: StatusType.Error,
-          title: 'Insufficient airdrop funds',
-          message: `Please acquire another ${prettyNumber(
-            formatTokenAmountFromChain(missingBalance, defaultData.tokenAmount.decimals)
-          )} ${getTokenName(defaultData.tokenName)} and try again`,
-        })
-      } else {
-        const isLovelaces = defaultData.tokenId === 'lovelace'
-        const devFeeAda = formatTokenAmountFromChain(devFee, ADA['DECIMALS'])
+      if (!!lovelaces) {
+        setTimeout(() => {
+          const { isError: balanceErr, missingBalance } = verifyMinRequiredBalance(processedRecipients, tokens, defaultData.tokenId)
 
-        const {
-          isError: adaErr,
-          neededAda,
-          ownedAda,
-          missingAda,
-          minAdaPerWallet,
-          minLovelacesPerWallet,
-        } = verifyMinRequiredAda(processedRecipients, lovelaces, isLovelaces)
-
-        // not enough ada for cardano + fees
-        if (adaErr) {
-          setStatus({
-            type: StatusType.Error,
-            title: 'Insufficient ADA for Cardano',
-            message: `Please acquire another ${ADA['SYMBOL']}${prettyNumber(missingAda + devFeeAda)} and try again`,
-          })
-        }
-        // not enough ada for fees
-        else if (neededAda + devFeeAda > ownedAda) {
-          setStatus({
-            type: StatusType.Error,
-            title: 'Insufficient ADA for fees',
-            message: `Please acquire another ${ADA['SYMBOL']}${prettyNumber(devFeeAda)} and try again`,
-          })
-        } else {
-          const hasRecipientsWithLessThanMinimumLovelaces = isLovelaces
-            ? processedRecipients.some((recipient) => recipient.payout < minLovelacesPerWallet)
-            : false
-
-          if (hasRecipientsWithLessThanMinimumLovelaces) {
+          // not enough funds to airdrop
+          if (balanceErr) {
             setStatus({
-              type: StatusType.Warning,
-              title: 'Insufficient recipients',
-              message: `Some wallets have less than ${ADA['SYMBOL']}${minAdaPerWallet} assigned to them, please check the list below or they will be excluded from the airdrop`,
+              type: StatusType.Error,
+              title: 'Insufficient airdrop funds',
+              message: `Please acquire another ${prettyNumber(
+                formatTokenAmountFromChain(missingBalance, defaultData.tokenAmount.decimals)
+              )} ${getTokenName(defaultData.tokenName)} and try again`,
             })
           } else {
-            setStatus((prev) =>
-              prev.title?.includes('Insufficient')
-                ? {
-                    type: StatusType.Info,
-                    title: '',
-                    message: '',
-                  }
-                : prev
-            )
+            const isLovelaces = defaultData.tokenId === 'lovelace'
+            const devFeeAda = formatTokenAmountFromChain(devFee, ADA['DECIMALS'])
+
+            const {
+              isError: adaErr,
+              neededAda,
+              ownedAda,
+              missingAda,
+              minAdaPerWallet,
+              minLovelacesPerWallet,
+            } = verifyMinRequiredAda(processedRecipients, lovelaces, isLovelaces)
+
+            // not enough ada for cardano + fees
+            if (adaErr) {
+              setStatus({
+                type: StatusType.Error,
+                title: 'Insufficient ADA for Cardano',
+                message: `Please acquire another ${ADA['SYMBOL']}${prettyNumber(missingAda + devFeeAda)} and try again`,
+              })
+            }
+            // not enough ada for fees
+            else if (neededAda + devFeeAda > ownedAda) {
+              setStatus({
+                type: StatusType.Error,
+                title: 'Insufficient ADA for fees',
+                message: `Please acquire another ${ADA['SYMBOL']}${prettyNumber(neededAda + devFeeAda - ownedAda)} and try again`,
+              })
+            } else {
+              const hasRecipientsWithLessThanMinimumLovelaces = isLovelaces
+                ? processedRecipients.some((recipient) => recipient.payout < minLovelacesPerWallet)
+                : false
+
+              if (hasRecipientsWithLessThanMinimumLovelaces) {
+                setStatus({
+                  type: StatusType.Warning,
+                  title: 'Insufficient recipients',
+                  message: `Some wallets have less than ${ADA['SYMBOL']}${minAdaPerWallet} assigned to them, please check the list below or they will be excluded from the airdrop`,
+                })
+              } else {
+                setStatus((prev) =>
+                  prev.title?.includes('Insufficient') || prev.message?.includes('Preflight')
+                    ? {
+                        type: StatusType.Info,
+                        title: '',
+                        message: '',
+                      }
+                    : prev
+                )
+              }
+            }
           }
-        }
+
+          setRanPreFlightChecks(true)
+        }, 1000)
       }
     }
-  }, [allowPreFilghtChecks, lovelaces, tokens, devFee, processedRecipients, defaultData])
+  }, [allowPreFlightChecks, lovelaces, tokens, devFee, processedRecipients, defaultData])
 
-  const runPayout = (): void => {
-    setAllowPreFilghtChecks(false)
-    setStarted(true)
-    setStatus({ type: StatusType.Info, title: '', message: '' })
-    batchTxs(0, wallet, defaultData.tokenId, devFee, deepClone(processedRecipients), setProcessedRecipients, (msg, prgrs) => {
-      setProgress(prgrs)
-      setStatus({ type: StatusType.Info, title: '', message: msg })
-    })
-      .then((recipients) => {
-        setProcessedRecipients(recipients)
-        setStatus({ type: StatusType.Success, title: '', message: '' })
+  const runPayout = useCallback(
+    async (difference: number): Promise<void> => {
+      setAllowPreFlightChecks(false)
+      setStarted(true)
+      setStatus({ type: StatusType.Info, title: '', message: '' })
+
+      const unpayedWallets = processedRecipients.filter(({ txHash }) => !txHash)
+      if (!devPayed.current)
+        unpayedWallets.unshift({
+          stakeKey: WALLETS['STAKE_KEYS']['DEV'],
+          address: WALLETS['ADDRESSES']['DEV'],
+          payout: devFee,
+          isDev: true,
+        })
+
+      const batchSize = !!difference ? Math.floor(difference * unpayedWallets.length) : unpayedWallets.length
+      const batches: PayoutRecipient[][] = []
+
+      for (let i = 0; i < unpayedWallets.length; i += batchSize) {
+        batches.push(unpayedWallets.slice(i, (i / batchSize + 1) * batchSize))
+      }
+
+      setStatus({ type: StatusType.Info, title: 'Batching transactions', message: `Trying difference: ${difference}` })
+      setProgress({ batch: { current: 0, max: batches.length } })
+
+      const dbRecipients: {
+        stakeKey: StakeKey
+        txHash: string
+        quantity: number
+      }[] = []
+
+      try {
+        for await (const batch of batches) {
+          const tx = new Transaction({ initiator: wallet })
+
+          for (const { address, payout, isDev } of batch) {
+            if (defaultData.tokenId === 'lovelace' || isDev) {
+              if (payout > 1_000_000) {
+                tx.sendLovelace({ address }, String(payout))
+              } else {
+                // !! skip because the user did not approve adding this amount
+              }
+            } else {
+              tx.sendAssets({ address }, [
+                {
+                  unit: defaultData.tokenId,
+                  quantity: String(payout),
+                },
+              ])
+            }
+          }
+
+          // this may throw an error if TX size is over the limit
+          const unsignedTx = await tx.build()
+          const signedTx = await wallet.signTx(unsignedTx)
+          const txHash = await wallet.submitTx(signedTx)
+
+          if (!devPayed.current) devPayed.current = true
+
+          setStatus({ type: StatusType.Info, title: 'Awaiting network confirmation', message: txHash })
+          await txConfirmation(txHash)
+          setProgress((prev) => ({ batch: { current: (prev.batch?.current || 0) + 1, max: batches.length } }))
+
+          dbRecipients.push(...batch.filter(({ isDev }) => !isDev).map(({ stakeKey, payout }) => ({ stakeKey, txHash, quantity: payout })))
+
+          setProcessedRecipients((prev) =>
+            prev.map((item) =>
+              batch.some(({ stakeKey }) => stakeKey === item.stakeKey)
+                ? {
+                    ...item,
+                    txHash,
+                  }
+                : item
+            )
+          )
+        }
+
+        // done
+
+        setStatus({ type: StatusType.Info, title: '', message: '' })
         setStarted(false)
         setEnded(true)
 
-        const _dec = defaultData.tokenAmount.decimals
-        const totalPayout = recipients.reduce((prev, curr) => prev + curr.payout, 0)
+        // save to db
 
+        const totalPayout = dbRecipients.reduce((prev, curr) => prev + curr.quantity, 0)
         const airdrop: Airdrop = {
           stakeKey,
           timestamp: Date.now(),
@@ -157,18 +244,13 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           tokenId: defaultData.tokenId,
           tokenName: defaultData.tokenName,
           tokenAmount: {
-            decimals: _dec,
+            decimals: defaultData.tokenAmount.decimals,
             onChain: totalPayout,
-            display: formatTokenAmountFromChain(totalPayout, _dec),
+            display: formatTokenAmountFromChain(totalPayout, defaultData.tokenAmount.decimals),
           },
           thumb: defaultData.thumb,
 
-          recipients: recipients.map((item) => ({
-            stakeKey: item.stakeKey,
-            address: item.address,
-            quantity: item.payout,
-            txHash: item.txHash as string,
-          })),
+          recipients: dbRecipients,
         }
 
         firestore
@@ -176,28 +258,39 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           .add(airdrop)
           .then((doc) => console.log('Airdrop saved to Firestore', doc.id))
           .catch((error) => console.error('Error saving airdrop to Firestore:', error))
-      })
-      .catch((error) => {
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
         const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
-        setStatus({ type: StatusType.Error, title: '', message: errMsg })
-        setProgress({ batch: { current: 0, max: 0 } })
-        setStarted(false)
-      })
-  }
+
+        if (!!errMsg && errMsg.indexOf('Maximum transaction size') !== -1) {
+          // errMsg === `txBuildResult error: JsValue("Maximum transaction size of 16384 exceeded. Found: 19226")`
+          const splitMessage: string[] = errMsg.split(' ')
+          const [max, curr] = splitMessage.map((str) => Number(str.replace(/[^\d]/g, ''))).filter((num) => num && !isNaN(num))
+          const newDifference = (difference || 1) * (max / curr)
+
+          return await runPayout(newDifference)
+        } else {
+          setStatus({ type: StatusType.Error, title: '', message: errMsg })
+          setProgress({ batch: { current: 0, max: 0 } })
+          setStarted(false)
+        }
+      }
+    },
+    [defaultData, processedRecipients, devFee, wallet, stakeKey]
+  )
 
   const downloadReceipt = useCallback(() => {
     try {
       const wb = utils.book_new()
       const ws = utils.json_to_sheet(
-        processedRecipients
-          .filter(({ isDev }) => !isDev)
-          .map((item) => ({
-            amount: formatTokenAmountFromChain(item.payout, defaultData.tokenAmount.decimals),
-            tokenName: ticker,
-            address: item.address,
-            stakeKey: item.stakeKey,
-            txHash: item.txHash,
-          })),
+        processedRecipients.map((item) => ({
+          amount: formatTokenAmountFromChain(item.payout, defaultData.tokenAmount.decimals),
+          tokenName: ticker,
+          address: item.address,
+          stakeKey: item.stakeKey,
+          txHash: item.txHash,
+        })),
         { header: ['amount', 'tokenName', 'address', 'stakeKey', 'txHash'] }
       )
 
@@ -222,7 +315,6 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
   const rows = useMemo(
     () =>
       processedRecipients
-        .filter(({ isDev }) => !isDev)
         .sort((a, b) => {
           const aHasTx = !!a.txHash
           const bHasTx = !!b.txHash
@@ -304,7 +396,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
     if (defaultData.tokenId !== 'lovelace') return { wallets: 0, amount: 0 }
 
     const filtered = processedRecipients.filter((item) => item.payout < 1_000_000)
-    const reduced = filtered.reduce((prev, curr) => prev + curr.payout, 0)
+    const reduced = filtered.reduce((prev, curr) => prev + (1_000_000 - curr.payout), 0)
 
     return { wallets: filtered.length, amount: reduced }
   }, [processedRecipients, defaultData])
@@ -314,7 +406,9 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
       <FlexColumn $gap={16} style={{ width: '100%', alignItems: 'unset' }}>
         <SectionTitle
           title='Airdrop Payout'
-          description={`${totalAmount} to airdrop • ${serviceFee} • ${processedRecipients.length} wallet${processedRecipients.length > 1 ? 's' : ''}`}
+          description={`${totalAmount} to airdrop • ${serviceFee} • ${processedRecipients.length - totalUnderMin.wallets}${
+            !!totalUnderMin.wallets ? `/${processedRecipients.length}` : ''
+          } wallets`}
           actionButton={
             ended ? (
               <Button variant='tertiary' onClick={downloadReceipt} style={{ textDecoration: 'none' }}>
@@ -326,8 +420,8 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
             ) : (
               <Button
                 variant='tertiary'
-                disabled={started || ended}
-                onClick={runPayout}
+                disabled={!ranPreFlightChecks || started || ended}
+                onClick={() => runPayout(0)}
                 style={{ textDecoration: 'none', backgroundColor: theme.colors.majestic_blue_soft + Theme.opacity.hex['030'] }}
               >
                 <TransactionIcon size={24} fill={theme.text.default} />
