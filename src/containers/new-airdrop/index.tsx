@@ -1,4 +1,5 @@
 import React, { Fragment, useMemo, useRef, useState } from 'react'
+import Image from 'next/image'
 import styled from 'styled-components'
 import Theme from '@odigos/ui-kit/theme'
 import { useWallet } from '@meshsdk/react'
@@ -11,7 +12,7 @@ import { AirdropMethod } from './steps/airdrop-method'
 import { DelegatorsJourney } from './journeys/delegators'
 import { CustomListJourney } from './journeys/custom-list'
 import { AirdropMethodType, type FormRef, type PayoutRecipient, type AirdropSettings } from '@/@types'
-import { Button, FlexColumn, Modal, NavigationButtons, Stepper, Tooltip, WarningModal } from '@odigos/ui-kit/components'
+import { Button, FlexColumn, FlexRow, Modal, NavigationButtons, Stepper, Text, Tooltip, WarningModal } from '@odigos/ui-kit/components'
 
 export const ModalBody = styled.div`
   width: 640px;
@@ -40,6 +41,9 @@ export const NewAirdrop = () => {
 
   const [isWarningOpen, setIsWarningOpen] = useState(false)
   const toggleIsWarningOpen = () => setIsWarningOpen((prev) => !prev)
+
+  const [isUnfrackOpen, setIsUnfrackOpen] = useState(false)
+  const toggleIsUnfrackOpen = () => setIsUnfrackOpen((prev) => !prev)
 
   const [step, setStep] = useState(1)
   const incrementStep = () => setStep((prev) => prev + 1)
@@ -140,20 +144,18 @@ export const NewAirdrop = () => {
   return (
     <Fragment>
       <Tooltip text={!connected ? 'Wallet must be connected to process a new airdrop' : ''}>
-        <Button variant='primary' onClick={toggleIsOpen} disabled={!connected}>
+        <Button
+          variant='primary'
+          onClick={() => {
+            toggleIsOpen()
+            toggleIsUnfrackOpen()
+          }}
+          disabled={!connected}
+        >
           <PlusIcon fill={!connected ? theme.text.secondary : theme.text.primary} size={20} />
           {'New Airdrop'}
         </Button>
       </Tooltip>
-
-      <WarningModal
-        isOpen={isWarningOpen}
-        noOverlay
-        title='Cancel Airdrop'
-        description='Are you sure you want to cancel this airdrop?'
-        approveButton={{ text: `Yes (${String.fromCodePoint(0x21b5)})`, variant: 'danger', onClick: handleClose }}
-        denyButton={{ text: 'No', onClick: toggleIsWarningOpen }}
-      />
 
       <Modal
         isOpen={isOpen}
@@ -215,6 +217,43 @@ export const NewAirdrop = () => {
             </FlexColumn>
           </ModalBody>
         </div>
+      </Modal>
+
+      <WarningModal
+        isOpen={isWarningOpen}
+        noOverlay
+        title='Cancel Airdrop'
+        description='Are you sure you want to cancel this airdrop?'
+        approveButton={{ text: `Yes (${String.fromCodePoint(0x21b5)})`, variant: 'danger', onClick: handleClose }}
+        denyButton={{ text: 'No', onClick: toggleIsWarningOpen }}
+      />
+
+      <Modal isOpen={isUnfrackOpen} onClose={toggleIsUnfrackOpen}>
+        <FlexColumn
+          $gap={24}
+          style={{
+            padding: '24px',
+            borderRadius: '32px',
+            backgroundColor: theme.darkMode ? theme.colors.secondary : theme.colors.primary,
+            alignItems: 'center',
+          }}
+        >
+          <Image src='/assets/unfrack.svg' alt='' width={556.31} height={143.15} />
+
+          <FlexRow>
+            <Button variant='tertiary' onClick={() => window.open('https://unfrack.it', '_blank', 'noopener noreferrer')}>
+              {'Unfrack.it'}
+            </Button>
+
+            <Button variant='tertiary' onClick={toggleIsUnfrackOpen}>
+              {'Ignore'}
+            </Button>
+          </FlexRow>
+
+          <Text color={theme.darkMode ? theme.colors.primary : theme.colors.secondary}>
+            We recommend unfracking your wallet before running an airdrop.
+          </Text>
+        </FlexColumn>
       </Modal>
     </Fragment>
   )
