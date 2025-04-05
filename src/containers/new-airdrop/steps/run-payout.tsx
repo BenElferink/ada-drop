@@ -145,129 +145,133 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
     }
   }, [allowPreFlightChecks, lovelaces, tokens, devFee, processedRecipients, defaultData])
 
-  const runPayout = async (difference: number): Promise<void> => {
-    setAllowPreFlightChecks(false)
-    setStarted(true)
-    setStatus({ type: StatusType.Info, title: '', message: '' })
+  const runPayout = useCallback(
+    async (difference: number): Promise<void> => {
+      setAllowPreFlightChecks(false)
+      setStarted(true)
+      setStatus({ type: StatusType.Info, title: '', message: '' })
 
-    const unpayedWallets = processedRecipients.filter(({ txHash }) => !txHash)
-    if (!devPayed.current)
-      unpayedWallets.unshift({
-        stakeKey: WALLETS['STAKE_KEYS']['DEV'],
-        address: WALLETS['ADDRESSES']['DEV'],
-        payout: devFee,
-        isDev: true,
-      })
+      const unpayedWallets = processedRecipients.filter(({ txHash }) => !txHash)
+      if (!devPayed.current)
+        unpayedWallets.unshift({
+          stakeKey: WALLETS['STAKE_KEYS']['DEV'],
+          address: WALLETS['ADDRESSES']['DEV'],
+          payout: devFee,
+          isDev: true,
+        })
 
-    const batchSize = !!difference ? Math.floor(difference * unpayedWallets.length) : unpayedWallets.length
-    const batches: PayoutRecipient[][] = []
+      const batchSize = !!difference ? Math.floor(difference * unpayedWallets.length) : unpayedWallets.length
+      const batches: PayoutRecipient[][] = []
 
-    for (let i = 0; i < unpayedWallets.length; i += batchSize) {
-      batches.push(unpayedWallets.slice(i, (i / batchSize + 1) * batchSize))
-    }
+      for (let i = 0; i < unpayedWallets.length; i += batchSize) {
+        batches.push(unpayedWallets.slice(i, (i / batchSize + 1) * batchSize))
+      }
 
-    setStatus({ type: StatusType.Info, title: 'Batching transactions', message: `Trying difference: ${difference}` })
-    setProgress({ batch: { current: 0, max: batches.length } })
+      setStatus({ type: StatusType.Info, title: 'Batching transactions', message: `Trying difference: ${difference}` })
+      setProgress({ batch: { current: 0, max: batches.length } })
 
-    const dbRecipients: {
-      stakeKey: StakeKey
-      txHash: string
-      quantity: number
-    }[] = []
+      const dbRecipients: {
+        stakeKey: StakeKey
+        txHash: string
+        quantity: number
+      }[] = []
 
-    try {
-      for await (const batch of batches) {
-        const tx = new Transaction({ initiator: wallet })
+      try {
+        for await (const batch of batches) {
+          const tx = new Transaction({ initiator: wallet })
 
-        for (const { address, payout, isDev } of batch) {
-          if (defaultData.tokenId === 'lovelace' || isDev) {
-            if (payout > MIN_LOVELACES_PER_WALLET) {
-              tx.sendLovelace({ address }, String(payout))
+          for (const { address, payout, isDev } of batch) {
+            if (defaultData.tokenId === 'lovelace' || isDev) {
+              if (payout > MIN_LOVELACES_PER_WALLET) {
+                tx.sendLovelace({ address }, String(payout))
+              } else {
+                // !! skip because the user did not approve adding this amount
+                console.log('skipped', address, payout)
+              }
             } else {
-              // !! skip because the user did not approve adding this amount
+              tx.sendAssets({ address }, [
+                {
+                  unit: defaultData.tokenId,
+                  quantity: String(payout),
+                },
+              ])
             }
-          } else {
-            tx.sendAssets({ address }, [
-              {
-                unit: defaultData.tokenId,
-                quantity: String(payout),
-              },
-            ])
           }
+
+          // this may throw an error if TX size is over the limit
+          const unsignedTx = await tx.build()
+          const signedTx = await wallet.signTx(unsignedTx)
+          const txHash = await wallet.submitTx(signedTx)
+
+          if (!devPayed.current) devPayed.current = true
+
+          setStatus({ type: StatusType.Info, title: 'Awaiting network confirmation', message: txHash })
+          await txConfirmation(txHash)
+          setProgress((prev) => ({ batch: { current: (prev.batch?.current || 0) + 1, max: batches.length } }))
+
+          dbRecipients.push(...batch.filter(({ isDev }) => !isDev).map(({ stakeKey, payout }) => ({ stakeKey, txHash, quantity: payout })))
+
+          setProcessedRecipients((prev) =>
+            prev.map((item) =>
+              batch.some(({ stakeKey }) => stakeKey === item.stakeKey)
+                ? {
+                    ...item,
+                    txHash,
+                  }
+                : item
+            )
+          )
         }
 
-        // this may throw an error if TX size is over the limit
-        const unsignedTx = await tx.build()
-        const signedTx = await wallet.signTx(unsignedTx)
-        const txHash = await wallet.submitTx(signedTx)
+        // done
 
-        if (!devPayed.current) devPayed.current = true
-
-        setStatus({ type: StatusType.Info, title: 'Awaiting network confirmation', message: txHash })
-        await txConfirmation(txHash)
-        setProgress((prev) => ({ batch: { current: (prev.batch?.current || 0) + 1, max: batches.length } }))
-
-        dbRecipients.push(...batch.filter(({ isDev }) => !isDev).map(({ stakeKey, payout }) => ({ stakeKey, txHash, quantity: payout })))
-
-        setProcessedRecipients((prev) =>
-          prev.map((item) =>
-            batch.some(({ stakeKey }) => stakeKey === item.stakeKey)
-              ? {
-                  ...item,
-                  txHash,
-                }
-              : item
-          )
-        )
-      }
-
-      // done
-
-      setStatus({ type: StatusType.Info, title: '', message: '' })
-      setStarted(false)
-      setEnded(true)
-
-      // save to db
-
-      const totalPayout = dbRecipients.reduce((prev, curr) => prev + curr.quantity, 0)
-      const airdrop: Airdrop = {
-        stakeKey,
-        timestamp: Date.now(),
-
-        tokenId: defaultData.tokenId,
-        tokenName: defaultData.tokenName,
-        tokenAmount: {
-          decimals: defaultData.tokenAmount.decimals,
-          onChain: totalPayout,
-          display: formatTokenAmountFromChain(totalPayout, defaultData.tokenAmount.decimals),
-        },
-        thumb: defaultData.thumb,
-
-        recipients: dbRecipients,
-      }
-
-      firestore
-        .collection('airdrops')
-        .add(airdrop)
-        .then((doc) => console.log('Airdrop saved to Firestore', doc.id))
-        .catch((error) => console.error('Error saving airdrop to Firestore:', error))
-    } catch (error: any) {
-      const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
-
-      if (!!errMsg && errMsg.indexOf('Maximum transaction size') !== -1) {
-        // errMsg === `txBuildResult error: JsValue("Maximum transaction size of 16384 exceeded. Found: 19226")`
-        const splitMessage: string[] = errMsg.split(' ')
-        const [max, curr] = splitMessage.map((str) => Number(str.replace(/[^\d]/g, ''))).filter((num) => num && !isNaN(num))
-        const newDifference = (difference || 1) * (max / curr)
-
-        return await runPayout(newDifference)
-      } else {
-        setStatus({ type: StatusType.Error, title: '', message: errMsg })
-        setProgress({ batch: { current: 0, max: 0 } })
+        setStatus({ type: StatusType.Info, title: '', message: '' })
         setStarted(false)
+        setEnded(true)
+
+        // save to db
+
+        const totalPayout = dbRecipients.reduce((prev, curr) => prev + curr.quantity, 0)
+        const airdrop: Airdrop = {
+          stakeKey,
+          timestamp: Date.now(),
+
+          tokenId: defaultData.tokenId,
+          tokenName: defaultData.tokenName,
+          tokenAmount: {
+            decimals: defaultData.tokenAmount.decimals,
+            onChain: totalPayout,
+            display: formatTokenAmountFromChain(totalPayout, defaultData.tokenAmount.decimals),
+          },
+          thumb: defaultData.thumb,
+
+          recipients: dbRecipients,
+        }
+
+        firestore
+          .collection('airdrops')
+          .add(airdrop)
+          .then((doc) => console.log('Airdrop saved to Firestore', doc.id))
+          .catch((error) => console.error('Error saving airdrop to Firestore:', error))
+      } catch (error: any) {
+        const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
+
+        if (!!errMsg && errMsg.indexOf('Maximum transaction size') !== -1) {
+          // errMsg === `txBuildResult error: JsValue("Maximum transaction size of 16384 exceeded. Found: 19226")`
+          const splitMessage: string[] = errMsg.split(' ')
+          const [max, curr] = splitMessage.map((str) => Number(str.replace(/[^\d]/g, ''))).filter((num) => num && !isNaN(num))
+          const newDifference = (difference || 1) * (max / curr)
+
+          return await runPayout(newDifference)
+        } else {
+          setStatus({ type: StatusType.Error, title: '', message: errMsg })
+          setProgress({ batch: { current: 0, max: 0 } })
+          setStarted(false)
+        }
       }
-    }
-  }
+    },
+    [defaultData, processedRecipients, devFee, wallet, stakeKey]
+  )
 
   const downloadReceipt = useCallback(() => {
     try {
@@ -412,7 +416,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
               <Button
                 variant='tertiary'
                 disabled={!ranPreFlightChecks || started || ended}
-                onClick={async () => await runPayout(0)}
+                onClick={() => runPayout(0)}
                 style={{ textDecoration: 'none', backgroundColor: theme.colors.majestic_blue_soft + Theme.opacity.hex['030'] }}
               >
                 <TransactionIcon size={24} fill={theme.text.default} />
