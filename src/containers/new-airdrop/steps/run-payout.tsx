@@ -305,7 +305,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
       <FlexColumn $gap={16} style={{ width: '100%', alignItems: 'unset' }}>
         <SectionTitle
           title='Airdrop Payout'
-          description={`${totalAmount} to airdrop • ${processedRecipients.length} wallet${processedRecipients.length > 1 ? 's' : ''} • ${serviceFee}`}
+          description={`${totalAmount} to airdrop • ${serviceFee} • ${processedRecipients.length} wallet${processedRecipients.length > 1 ? 's' : ''}`}
           actionButton={
             ended ? (
               <Button variant='tertiary' onClick={downloadReceipt} style={{ textDecoration: 'none' }}>
@@ -341,7 +341,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           <Button onClick={() => setWarn({ isOpen: true, stakeKey: '' })} variant='secondary' style={{ width: '100%', textDecoration: 'none' }}>
             <PlusIcon fill={theme.text.secondary} />
             <Text color={theme.text.secondary} family='secondary'>
-              {`Round up to ${ADA['SYMBOL']}1 for all recipients`}
+              {`Round up to ${ADA['SYMBOL']}1 for all (${processedRecipients.filter((r) => r.payout < 1_000_000)}) recipients`}
             </Text>
           </Button>
         )}
@@ -369,13 +369,15 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
         note={{
           type: StatusType.Warning,
           title: '',
-          message: `This will increase the total pool size by ${ADA['SYMBOL']}${formatTokenAmountFromChain(
-            warn.stakeKey
-              ? 1_000_000 - (processedRecipients.find((x) => x.stakeKey === warn.stakeKey)?.payout || 0)
-              : processedRecipients.reduce((prev, curr) => (curr.payout < 1_000_000 ? prev + curr.payout : prev), 0),
-            ADA['DECIMALS'],
-            false
-          )}!`,
+          message: warn.isOpen
+            ? `This will increase the total pool size by ${ADA['SYMBOL']}${formatTokenAmountFromChain(
+                warn.stakeKey
+                  ? 1_000_000 - (processedRecipients.find((x) => x.stakeKey === warn.stakeKey)?.payout || 0)
+                  : processedRecipients.reduce((prev, curr) => (curr.payout < 1_000_000 ? prev + curr.payout : prev), 0),
+                ADA['DECIMALS'],
+                false
+              )}!`
+            : '',
         }}
         approveButton={{
           text: `Yes (${String.fromCodePoint(0x21b5)})`,
