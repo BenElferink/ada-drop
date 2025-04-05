@@ -1,6 +1,5 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import Theme from '@odigos/ui-kit/theme'
-import { ADA, MIN_ADA_PER_WALLET, MIN_LOVELACES_PER_WALLET, WALLETS } from '@/constants'
 import { ProgressBar } from '@/components'
 import { useWallet } from '@meshsdk/react'
 import { Transaction } from '@meshsdk/core'
@@ -13,6 +12,7 @@ import { DownloadIcon, TransactionIcon } from '@/icons'
 import { deepClone, getStatusIcon } from '@odigos/ui-kit/functions'
 import { verifyMinRequiredAda } from '../helpers/verify-min-required-ada'
 import { verifyMinRequiredBalance } from '../helpers/verify-min-required-balance'
+import { ADA, MIN_ADA_PER_WALLET, MIN_LOVELACES_PER_WALLET, WALLETS } from '@/constants'
 import type { Airdrop, AirdropSettings, FormRef, PayoutProgressCounts, PayoutRecipient, StakeKey } from '@/@types'
 import { formatTokenAmountFromChain, formatTokenAmountToChain, getTokenName, prettyNumber, truncateStringInMiddle, txConfirmation } from '@/functions'
 import {
@@ -145,132 +145,129 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
     }
   }, [allowPreFlightChecks, lovelaces, tokens, devFee, processedRecipients, defaultData])
 
-  const runPayout = useCallback(
-    async (difference: number): Promise<void> => {
-      setAllowPreFlightChecks(false)
-      setStarted(true)
-      setStatus({ type: StatusType.Info, title: '', message: '' })
+  const runPayout = async (difference: number): Promise<void> => {
+    setAllowPreFlightChecks(false)
+    setStarted(true)
+    setStatus({ type: StatusType.Info, title: '', message: '' })
 
-      const unpayedWallets = processedRecipients.filter(({ txHash }) => !txHash)
-      if (!devPayed.current)
-        unpayedWallets.unshift({
-          stakeKey: WALLETS['STAKE_KEYS']['DEV'],
-          address: WALLETS['ADDRESSES']['DEV'],
-          payout: devFee,
-          isDev: true,
-        })
+    const unpayedWallets = processedRecipients.filter(({ txHash }) => !txHash)
+    if (!devPayed.current)
+      unpayedWallets.unshift({
+        stakeKey: WALLETS['STAKE_KEYS']['DEV'],
+        address: WALLETS['ADDRESSES']['DEV'],
+        payout: devFee,
+        isDev: true,
+      })
 
-      const batchSize = !!difference ? Math.floor(difference * unpayedWallets.length) : unpayedWallets.length
-      const batches: PayoutRecipient[][] = []
+    const batchSize = !!difference ? Math.floor(difference * unpayedWallets.length) : unpayedWallets.length
+    const batches: PayoutRecipient[][] = []
 
-      for (let i = 0; i < unpayedWallets.length; i += batchSize) {
-        batches.push(unpayedWallets.slice(i, (i / batchSize + 1) * batchSize))
-      }
+    for (let i = 0; i < unpayedWallets.length; i += batchSize) {
+      batches.push(unpayedWallets.slice(i, (i / batchSize + 1) * batchSize))
+    }
 
-      setStatus({ type: StatusType.Info, title: 'Batching transactions', message: `Trying difference: ${difference}` })
-      setProgress({ batch: { current: 0, max: batches.length } })
+    setStatus({ type: StatusType.Info, title: 'Batching transactions', message: `Trying difference: ${difference}` })
+    setProgress({ batch: { current: 0, max: batches.length } })
 
-      const dbRecipients: {
-        stakeKey: StakeKey
-        txHash: string
-        quantity: number
-      }[] = []
+    const dbRecipients: {
+      stakeKey: StakeKey
+      txHash: string
+      quantity: number
+    }[] = []
 
-      try {
-        for await (const batch of batches) {
-          const tx = new Transaction({ initiator: wallet })
+    try {
+      for await (const batch of batches) {
+        const tx = new Transaction({ initiator: wallet })
 
-          for (const { address, payout, isDev } of batch) {
-            if (defaultData.tokenId === 'lovelace' || isDev) {
-              if (payout > MIN_LOVELACES_PER_WALLET) {
-                tx.sendLovelace({ address }, String(payout))
-              } else {
-                // !! skip because the user did not approve adding this amount
-              }
+        for (const { address, payout, isDev } of batch) {
+          if (defaultData.tokenId === 'lovelace' || isDev) {
+            if (payout > MIN_LOVELACES_PER_WALLET) {
+              tx.sendLovelace({ address }, String(payout))
             } else {
-              tx.sendAssets({ address }, [
-                {
-                  unit: defaultData.tokenId,
-                  quantity: String(payout),
-                },
-              ])
+              // !! skip because the user did not approve adding this amount
             }
+          } else {
+            tx.sendAssets({ address }, [
+              {
+                unit: defaultData.tokenId,
+                quantity: String(payout),
+              },
+            ])
           }
+        }
 
-          // this may throw an error if TX size is over the limit
-          const unsignedTx = await tx.build()
-          const signedTx = await wallet.signTx(unsignedTx)
-          const txHash = await wallet.submitTx(signedTx)
+        // this may throw an error if TX size is over the limit
+        const unsignedTx = await tx.build()
+        const signedTx = await wallet.signTx(unsignedTx)
+        const txHash = await wallet.submitTx(signedTx)
 
-          if (!devPayed.current) devPayed.current = true
+        if (!devPayed.current) devPayed.current = true
 
-          setStatus({ type: StatusType.Info, title: 'Awaiting network confirmation', message: txHash })
-          await txConfirmation(txHash)
-          setProgress((prev) => ({ batch: { current: (prev.batch?.current || 0) + 1, max: batches.length } }))
+        setStatus({ type: StatusType.Info, title: 'Awaiting network confirmation', message: txHash })
+        await txConfirmation(txHash)
+        setProgress((prev) => ({ batch: { current: (prev.batch?.current || 0) + 1, max: batches.length } }))
 
-          dbRecipients.push(...batch.filter(({ isDev }) => !isDev).map(({ stakeKey, payout }) => ({ stakeKey, txHash, quantity: payout })))
+        dbRecipients.push(...batch.filter(({ isDev }) => !isDev).map(({ stakeKey, payout }) => ({ stakeKey, txHash, quantity: payout })))
 
-          setProcessedRecipients((prev) =>
-            prev.map((item) =>
-              batch.some(({ stakeKey }) => stakeKey === item.stakeKey)
-                ? {
-                    ...item,
-                    txHash,
-                  }
-                : item
-            )
+        setProcessedRecipients((prev) =>
+          prev.map((item) =>
+            batch.some(({ stakeKey }) => stakeKey === item.stakeKey)
+              ? {
+                  ...item,
+                  txHash,
+                }
+              : item
           )
-        }
-
-        // done
-
-        setStatus({ type: StatusType.Info, title: '', message: '' })
-        setStarted(false)
-        setEnded(true)
-
-        // save to db
-
-        const totalPayout = dbRecipients.reduce((prev, curr) => prev + curr.quantity, 0)
-        const airdrop: Airdrop = {
-          stakeKey,
-          timestamp: Date.now(),
-
-          tokenId: defaultData.tokenId,
-          tokenName: defaultData.tokenName,
-          tokenAmount: {
-            decimals: defaultData.tokenAmount.decimals,
-            onChain: totalPayout,
-            display: formatTokenAmountFromChain(totalPayout, defaultData.tokenAmount.decimals),
-          },
-          thumb: defaultData.thumb,
-
-          recipients: dbRecipients,
-        }
-
-        firestore
-          .collection('airdrops')
-          .add(airdrop)
-          .then((doc) => console.log('Airdrop saved to Firestore', doc.id))
-          .catch((error) => console.error('Error saving airdrop to Firestore:', error))
-      } catch (error: any) {
-        const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
-
-        if (!!errMsg && errMsg.indexOf('Maximum transaction size') !== -1) {
-          // errMsg === `txBuildResult error: JsValue("Maximum transaction size of 16384 exceeded. Found: 19226")`
-          const splitMessage: string[] = errMsg.split(' ')
-          const [max, curr] = splitMessage.map((str) => Number(str.replace(/[^\d]/g, ''))).filter((num) => num && !isNaN(num))
-          const newDifference = (difference || 1) * (max / curr)
-
-          return await runPayout(newDifference)
-        } else {
-          setStatus({ type: StatusType.Error, title: '', message: errMsg })
-          setProgress({ batch: { current: 0, max: 0 } })
-          setStarted(false)
-        }
+        )
       }
-    },
-    [defaultData, processedRecipients, devFee, wallet, stakeKey]
-  )
+
+      // done
+
+      setStatus({ type: StatusType.Info, title: '', message: '' })
+      setStarted(false)
+      setEnded(true)
+
+      // save to db
+
+      const totalPayout = dbRecipients.reduce((prev, curr) => prev + curr.quantity, 0)
+      const airdrop: Airdrop = {
+        stakeKey,
+        timestamp: Date.now(),
+
+        tokenId: defaultData.tokenId,
+        tokenName: defaultData.tokenName,
+        tokenAmount: {
+          decimals: defaultData.tokenAmount.decimals,
+          onChain: totalPayout,
+          display: formatTokenAmountFromChain(totalPayout, defaultData.tokenAmount.decimals),
+        },
+        thumb: defaultData.thumb,
+
+        recipients: dbRecipients,
+      }
+
+      firestore
+        .collection('airdrops')
+        .add(airdrop)
+        .then((doc) => console.log('Airdrop saved to Firestore', doc.id))
+        .catch((error) => console.error('Error saving airdrop to Firestore:', error))
+    } catch (error: any) {
+      const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
+
+      if (!!errMsg && errMsg.indexOf('Maximum transaction size') !== -1) {
+        // errMsg === `txBuildResult error: JsValue("Maximum transaction size of 16384 exceeded. Found: 19226")`
+        const splitMessage: string[] = errMsg.split(' ')
+        const [max, curr] = splitMessage.map((str) => Number(str.replace(/[^\d]/g, ''))).filter((num) => num && !isNaN(num))
+        const newDifference = (difference || 1) * (max / curr)
+
+        return await runPayout(newDifference)
+      } else {
+        setStatus({ type: StatusType.Error, title: '', message: errMsg })
+        setProgress({ batch: { current: 0, max: 0 } })
+        setStarted(false)
+      }
+    }
+  }
 
   const downloadReceipt = useCallback(() => {
     try {
