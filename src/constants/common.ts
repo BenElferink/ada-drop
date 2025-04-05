@@ -3,8 +3,8 @@ export const ADA = {
   DECIMALS: 6,
 }
 
-export const MIN_LOVELACES_PER_WALLET = 1200000
-export const MIN_ADA_PER_WALLET = 1.2
+export const MIN_LOVELACES_PER_WALLET = 1500000
+export const MIN_ADA_PER_WALLET = 1.5
 
 export const TITLE = `${ADA.SYMBOL}D${ADA.SYMBOL} Drop`
 export const LIGHT_ADA_COLOR = '#3cc8c8'
