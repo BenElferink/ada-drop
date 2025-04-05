@@ -61,6 +61,10 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
     validate: () => {
       let isOk = status.type !== StatusType.Error
 
+      if (isOk && !started && !ended) {
+        isOk = false
+        setStatus({ type: StatusType.Warning, title: '', message: 'Payout not started, please click "Batch TXs"' })
+      }
       if (isOk && !ended) {
         isOk = false
         setStatus({ type: StatusType.Warning, title: '', message: 'Payout is still running, please wait until it ends' })

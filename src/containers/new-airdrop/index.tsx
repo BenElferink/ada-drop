@@ -1,5 +1,6 @@
 import React, { Fragment, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
+import { useAirdrops } from '@/hooks'
 import styled from 'styled-components'
 import Theme from '@odigos/ui-kit/theme'
 import { useWallet } from '@meshsdk/react'
@@ -32,6 +33,7 @@ const SideMenuWrapper = styled.div`
 export const NewAirdrop = () => {
   const theme = Theme.useTheme()
   const { connected } = useWallet()
+  const { refetch } = useAirdrops()
 
   const [isOpen, setIsOpen] = useState(false)
   const toggleIsOpen = () => setIsOpen((prev) => !prev)
@@ -113,7 +115,9 @@ export const NewAirdrop = () => {
     (settings.airdropMethod === AirdropMethodType.DelegatorSnapshot && [5, 6].includes(step)) ||
     (settings.airdropMethod === AirdropMethodType.CustomList && [4].includes(step))
 
-  const nextDisabled =
+  const nextDisabled = false
+
+  const nextIsComplete =
     (settings.airdropMethod === AirdropMethodType.HolderSnapshot && step === 6) ||
     (settings.airdropMethod === AirdropMethodType.DelegatorSnapshot && step === 6) ||
     (settings.airdropMethod === AirdropMethodType.CustomList && step === 4)
@@ -127,6 +131,9 @@ export const NewAirdrop = () => {
           // reset when swithching methods
           setSettings({ ...deepClone<AirdropSettings>(INIT_AIRDROP_SETTINGS), ...formRef.current.getData() })
           setPayoutRecipients([])
+        } else if (nextIsComplete) {
+          handleClose()
+          refetch()
         } else {
           setSettings((prev) => ({ ...prev, ...formRef.current.getData() }))
         }
@@ -169,7 +176,7 @@ export const NewAirdrop = () => {
               },
               {
                 variant: 'primary',
-                label: `Next (${String.fromCodePoint(0x21b5)})`,
+                label: `${nextIsComplete ? 'Finish' : 'Next'} (${String.fromCodePoint(0x21b5)})`,
                 disabled: nextDisabled,
                 onClick: onNext,
               },
