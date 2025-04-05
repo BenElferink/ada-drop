@@ -415,7 +415,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
               <Button
                 variant='tertiary'
                 disabled={!ranPreFlightChecks || started || ended}
-                onClick={() => runPayout(0)}
+                onClick={async () => await runPayout(0)}
                 style={{ textDecoration: 'none', backgroundColor: theme.colors.majestic_blue_soft + Theme.opacity.hex['030'] }}
               >
                 <TransactionIcon size={24} fill={theme.text.default} />
