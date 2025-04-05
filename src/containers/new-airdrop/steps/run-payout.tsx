@@ -373,7 +373,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           title: '',
           message: `This will increase the total pool size by ${ADA['SYMBOL']}${formatTokenAmountFromChain(
             warn.stakeKey
-              ? (processedRecipients.find((x) => x.stakeKey === warn.stakeKey)?.payout || 0) - 1_000_000
+              ? 1_000_000 - (processedRecipients.find((x) => x.stakeKey === warn.stakeKey)?.payout || 0)
               : processedRecipients.reduce((prev, curr) => (curr.payout < 1_000_000 ? prev + curr.payout : prev), 0),
             ADA['DECIMALS'],
             false
