@@ -1,6 +1,6 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import Theme from '@odigos/ui-kit/theme'
-import { ADA, WALLETS } from '@/constants'
+import { ADA, MIN_ADA_PER_WALLET, MIN_LOVELACES_PER_WALLET, WALLETS } from '@/constants'
 import { ProgressBar } from '@/components'
 import { useWallet } from '@meshsdk/react'
 import { Transaction } from '@meshsdk/core'
@@ -49,7 +49,10 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
   const [progress, setProgress] = useState<PayoutProgressCounts>({ batch: { current: 0, max: 0 } })
 
   const [processedRecipients, setProcessedRecipients] = useState(deepClone(payoutRecipients))
-  const devFee = useMemo(() => formatTokenAmountToChain(Math.max(1, payoutRecipients.length * 0.5), ADA['DECIMALS']), [payoutRecipients])
+  const devFee = useMemo(
+    () => formatTokenAmountToChain(Math.max(MIN_ADA_PER_WALLET, payoutRecipients.length * 0.5), ADA['DECIMALS']),
+    [payoutRecipients]
+  )
   const devPayed = useRef(false)
   const ticker = useMemo(() => defaultData.tokenName.ticker || defaultData.tokenName.display || defaultData.tokenName.onChain, [defaultData])
 
@@ -93,17 +96,9 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
               )} ${getTokenName(defaultData.tokenName)} and try again`,
             })
           } else {
-            const isLovelaces = defaultData.tokenId === 'lovelace'
             const devFeeAda = formatTokenAmountFromChain(devFee, ADA['DECIMALS'])
 
-            const {
-              isError: adaErr,
-              neededAda,
-              ownedAda,
-              missingAda,
-              minAdaPerWallet,
-              minLovelacesPerWallet,
-            } = verifyMinRequiredAda(processedRecipients, lovelaces, isLovelaces)
+            const { isError: adaErr, neededAda, ownedAda, missingAda } = verifyMinRequiredAda(processedRecipients, lovelaces)
 
             // not enough ada for cardano + fees
             if (adaErr) {
@@ -121,19 +116,18 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
                 message: `Please acquire another ${ADA['SYMBOL']}${prettyNumber(neededAda + devFeeAda - ownedAda)} and try again`,
               })
             } else {
-              const hasRecipientsWithLessThanMinimumLovelaces = isLovelaces
-                ? processedRecipients.some((recipient) => recipient.payout < minLovelacesPerWallet)
-                : false
+              const hasRecipientsWithLessThanMinimumLovelaces =
+                defaultData.tokenId === 'lovelace' && processedRecipients.some((recipient) => recipient.payout < MIN_LOVELACES_PER_WALLET)
 
               if (hasRecipientsWithLessThanMinimumLovelaces) {
                 setStatus({
                   type: StatusType.Warning,
                   title: 'Insufficient recipients',
-                  message: `Some wallets have less than ${ADA['SYMBOL']}${minAdaPerWallet} assigned to them, please check the list below or they will be excluded from the airdrop`,
+                  message: `Some wallets have less than ${ADA['SYMBOL']}${MIN_ADA_PER_WALLET} assigned to them, please check the list below or they will be excluded from the airdrop`,
                 })
               } else {
                 setStatus((prev) =>
-                  prev.title?.includes('Insufficient') || prev.message?.includes('Preflight')
+                  prev.title?.includes('Insufficient') || prev.title?.includes('Preflight')
                     ? {
                         type: StatusType.Info,
                         title: '',
@@ -188,7 +182,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
 
           for (const { address, payout, isDev } of batch) {
             if (defaultData.tokenId === 'lovelace' || isDev) {
-              if (payout > 1_000_000) {
+              if (payout > MIN_LOVELACES_PER_WALLET) {
                 tx.sendLovelace({ address }, String(payout))
               } else {
                 // !! skip because the user did not approve adding this amount
@@ -322,11 +316,15 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           return b.payout - a.payout
         })
         .map((item) => {
-          const isUnderMin = defaultData.tokenId === 'lovelace' && item.payout < 1_000_000
+          const isUnderMin = defaultData.tokenId === 'lovelace' && item.payout < MIN_LOVELACES_PER_WALLET
           const isPayed = !!item.txHash
 
           const status = isUnderMin ? StatusType.Error : isPayed ? StatusType.Success : StatusType.Info
-          const statusText = isUnderMin ? `Below minim required amount (of ${ADA['SYMBOL']}1)` : isPayed ? 'Payment Success' : 'Pending Payment'
+          const statusText = isUnderMin
+            ? `Below minim required amount (of ${ADA['SYMBOL']}${MIN_ADA_PER_WALLET})`
+            : isPayed
+            ? 'Payment Success'
+            : 'Pending Payment'
 
           return {
             status,
@@ -391,8 +389,8 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
   const totalUnderMin = useMemo(() => {
     if (defaultData.tokenId !== 'lovelace') return { wallets: 0, amount: 0 }
 
-    const filtered = processedRecipients.filter((item) => item.payout < 1_000_000)
-    const reduced = filtered.reduce((prev, curr) => prev + (1_000_000 - curr.payout), 0)
+    const filtered = processedRecipients.filter((item) => item.payout < MIN_LOVELACES_PER_WALLET)
+    const reduced = filtered.reduce((prev, curr) => prev + (MIN_LOVELACES_PER_WALLET - curr.payout), 0)
 
     return { wallets: filtered.length, amount: reduced }
   }, [processedRecipients, defaultData])
@@ -440,7 +438,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           <Button onClick={() => setWarn({ isOpen: true, stakeKey: '' })} variant='secondary' style={{ width: '100%', textDecoration: 'none' }}>
             <PlusIcon fill={theme.text.secondary} />
             <Text color={theme.text.secondary} family='secondary'>
-              {`Round up to ${ADA['SYMBOL']}1 for ${totalUnderMin.wallets} recipients`}
+              {`Round up to ${ADA['SYMBOL']}${MIN_ADA_PER_WALLET} for ${totalUnderMin.wallets} recipients`}
             </Text>
           </Button>
         )}
@@ -463,7 +461,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
       <WarningModal
         isOpen={warn.isOpen}
         noOverlay
-        title={`Round up to ${ADA['SYMBOL']}1 ${warn.stakeKey ? 'for this wallet' : `for all ${totalUnderMin.wallets} wallets`}?`}
+        title={`Round up to ${ADA['SYMBOL']}${MIN_ADA_PER_WALLET} ${warn.stakeKey ? 'for this wallet' : `for all ${totalUnderMin.wallets} wallets`}?`}
         description={warn.stakeKey}
         note={
           warn.isOpen
@@ -471,7 +469,9 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
                 type: StatusType.Warning,
                 title: '',
                 message: `This will increase the total pool size by ${ADA['SYMBOL']}${formatTokenAmountFromChain(
-                  warn.stakeKey ? 1_000_000 - (processedRecipients.find((x) => x.stakeKey === warn.stakeKey)?.payout || 0) : totalUnderMin.amount,
+                  warn.stakeKey
+                    ? MIN_LOVELACES_PER_WALLET - (processedRecipients.find((x) => x.stakeKey === warn.stakeKey)?.payout || 0)
+                    : totalUnderMin.amount,
                   ADA['DECIMALS'],
                   false
                 )}!`,
@@ -484,10 +484,10 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           onClick: () => {
             setProcessedRecipients((prev) =>
               prev.map((item) =>
-                (!!warn.stakeKey && item.stakeKey === warn.stakeKey) || (!warn.stakeKey && item.payout < 1_000_000)
+                (!!warn.stakeKey && item.stakeKey === warn.stakeKey) || (!warn.stakeKey && item.payout < MIN_LOVELACES_PER_WALLET)
                   ? {
                       ...item,
-                      payout: formatTokenAmountToChain(1, ADA['DECIMALS']),
+                      payout: MIN_LOVELACES_PER_WALLET,
                     }
                   : item
               )
