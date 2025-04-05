@@ -338,14 +338,12 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           </div>
         )}
         {status.title === 'Insufficient recipients' && (
-          <div style={{ width: '100%' }}>
-            <Button onClick={() => setWarn({ isOpen: true, stakeKey: '' })} variant='tertiary' style={{ textDecoration: 'none' }}>
-              <PlusIcon size={24} fill={theme.text.default} />
-              <Text color={theme.text.default} family='secondary'>
-                {`Round up to ${ADA['SYMBOL']}1 for all recipients`}
-              </Text>
-            </Button>
-          </div>
+          <Button onClick={() => setWarn({ isOpen: true, stakeKey: '' })} variant='secondary' style={{ width: '100%', textDecoration: 'none' }}>
+            <PlusIcon fill={theme.text.secondary} />
+            <Text color={theme.text.secondary} family='secondary'>
+              {`Round up to ${ADA['SYMBOL']}1 for all recipients`}
+            </Text>
+          </Button>
         )}
       </FlexColumn>
 
