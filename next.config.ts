@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
       asyncWebAssembly: true,
       layers: true,
     }
+
     return config
   },
 }
