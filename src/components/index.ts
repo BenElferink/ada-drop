@@ -1,5 +1,5 @@
-export * from './header'
 export * from './header-mobile'
+export * from './header'
 export * from './known-wallet'
 export * from './progress-bar'
 export * from './selected'

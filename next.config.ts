@@ -9,12 +9,10 @@ const nextConfig: NextConfig = {
     styledComponents: true,
   },
   webpack: (config) => {
-    // Enable support for async WebAssembly and layers
     config.experiments = {
       asyncWebAssembly: true,
       layers: true,
     }
-
     return config
   },
 }
