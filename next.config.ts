@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next'
 import transpileModules from 'next-transpile-modules'
 
-const withTM = transpileModules(['@odigos/ui-kit', '@xyflow/react', '@sidan-lab/sidan-csl-rs-nodejs'])
+const withTM = transpileModules(['@odigos/ui-kit', '@xyflow/react'])
 
 const nextConfig: NextConfig = withTM({
   reactStrictMode: true,
