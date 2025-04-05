@@ -182,11 +182,10 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
 
           for (const { address, payout, isDev } of batch) {
             if (defaultData.tokenId === 'lovelace' || isDev) {
-              if (payout > MIN_LOVELACES_PER_WALLET) {
-                tx.sendLovelace({ address }, String(payout))
-              } else {
+              if (payout < MIN_LOVELACES_PER_WALLET) {
                 // !! skip because the user did not approve adding this amount
-                console.log('skipped', address, payout)
+              } else {
+                tx.sendLovelace({ address }, String(payout))
               }
             } else {
               tx.sendAssets({ address }, [
