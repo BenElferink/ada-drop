@@ -96,9 +96,10 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
               )} ${getTokenName(defaultData.tokenName)} and try again`,
             })
           } else {
+            const isLovelaces = defaultData.tokenId === 'lovelace'
             const devFeeAda = formatTokenAmountFromChain(devFee, ADA['DECIMALS'])
 
-            const { isError: adaErr, neededAda, ownedAda, missingAda } = verifyMinRequiredAda(processedRecipients, lovelaces)
+            const { isError: adaErr, neededAda, ownedAda, missingAda } = verifyMinRequiredAda(processedRecipients, lovelaces, isLovelaces)
 
             // not enough ada for cardano + fees
             if (adaErr) {
