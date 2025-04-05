@@ -20,8 +20,8 @@
   },
   "dependencies": {
     "@blockfrost/blockfrost-js": "^6.0.0",
-    "@meshsdk/core": "^1.9.0-beta.28",
-    "@meshsdk/react": "^1.9.0-beta.28",
+    "@meshsdk/core": "^1.9.0-beta.27",
+    "@meshsdk/react": "^1.9.0-beta.27",
     "@odigos/ui-kit": "^0.0.21",
     "@xyflow/react": "^12.5.4",
     "axios": "^1.8.4",
