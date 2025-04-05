@@ -42,6 +42,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
   const { stakeKey, lovelaces, tokens } = useConnectedWallet()
 
   const [status, setStatus] = useState({ type: StatusType.Info, title: '', message: '' })
+  const [allowPreFilghtChecks, setAllowPreFilghtChecks] = useState(true)
   const [started, setStarted] = useState(false)
   const [ended, setEnded] = useState(false)
   const [progress, setProgress] = useState<PayoutProgressCounts>({ batch: { current: 0, max: 0 } })
@@ -70,7 +71,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
   }))
 
   useEffect(() => {
-    if (!started && !ended && !!lovelaces && !!devFee) {
+    if (allowPreFilghtChecks && !!lovelaces && !!devFee) {
       const { isError: balanceErr, missingBalance } = verifyMinRequiredBalance(processedRecipients, tokens, defaultData.tokenId)
 
       // not enough funds to airdrop
@@ -97,51 +98,48 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
 
         // not enough ada for cardano + fees
         if (adaErr) {
-          setStatus((prev) =>
-            prev.title.includes('Insufficient') || !prev.title
-              ? {
-                  type: StatusType.Error,
-                  title: 'Insufficient ADA for Cardano',
-                  message: `Please acquire another ${ADA['SYMBOL']}${prettyNumber(missingAda + devFeeAda)} and try again`,
-                }
-              : prev
-          )
+          setStatus({
+            type: StatusType.Error,
+            title: 'Insufficient ADA for Cardano',
+            message: `Please acquire another ${ADA['SYMBOL']}${prettyNumber(missingAda + devFeeAda)} and try again`,
+          })
         }
         // not enough ada for fees
         else if (neededAda + devFeeAda > ownedAda) {
-          setStatus((prev) =>
-            prev.title.includes('Insufficient') || !prev.title
-              ? {
-                  type: StatusType.Error,
-                  title: 'Insufficient ADA for fees',
-                  message: `Please acquire another ${ADA['SYMBOL']}${prettyNumber(devFeeAda)} and try again`,
-                }
-              : prev
-          )
+          setStatus({
+            type: StatusType.Error,
+            title: 'Insufficient ADA for fees',
+            message: `Please acquire another ${ADA['SYMBOL']}${prettyNumber(devFeeAda)} and try again`,
+          })
         } else {
           const hasRecipientsWithLessThanMinimumLovelaces = isLovelaces
             ? processedRecipients.some((recipient) => recipient.payout < minLovelacesPerWallet)
             : false
 
           if (hasRecipientsWithLessThanMinimumLovelaces) {
+            setStatus({
+              type: StatusType.Warning,
+              title: 'Insufficient recipients',
+              message: `Some wallets have less than ${ADA['SYMBOL']}${minAdaPerWallet} assigned to them, please check the list below or they will be excluded from the airdrop`,
+            })
+          } else {
             setStatus((prev) =>
-              prev.title.includes('Insufficient') || !prev.title
+              prev.title?.includes('Insufficient')
                 ? {
-                    type: StatusType.Warning,
-                    title: 'Insufficient recipients',
-                    message: `Some wallets have less than ${ADA['SYMBOL']}${minAdaPerWallet} assigned to them, please check the list below or they will be excluded from the airdrop`,
+                    type: StatusType.Info,
+                    title: '',
+                    message: '',
                   }
                 : prev
             )
-          } else {
-            setStatus((prev) => (prev.title.includes('Insufficient') ? { type: StatusType.Info, title: '', message: '' } : prev))
           }
         }
       }
     }
-  }, [started, ended, lovelaces, tokens, devFee, processedRecipients, defaultData])
+  }, [allowPreFilghtChecks, lovelaces, tokens, devFee, processedRecipients, defaultData])
 
   const runPayout = (): void => {
+    setAllowPreFilghtChecks(false)
     setStarted(true)
     setStatus({ type: StatusType.Info, title: '', message: '' })
     batchTxs(0, wallet, defaultData.tokenId, devFee, deepClone(processedRecipients), setProcessedRecipients, (msg, prgrs) => {
@@ -254,7 +252,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           return b.payout - a.payout
         })
         .map((item) => {
-          const isUnderMin = defaultData.tokenId === 'lovelace' && item.payout < 1000000
+          const isUnderMin = defaultData.tokenId === 'lovelace' && item.payout < 1_000_000
           const isPayed = !!item.txHash
 
           const status = isUnderMin ? StatusType.Error : isPayed ? StatusType.Success : StatusType.Info
@@ -339,6 +337,16 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
             <NotificationNote type={status.type} title={status.title} message={status.message} />
           </div>
         )}
+        {status.title === 'Insufficient recipients' && (
+          <div style={{ width: '100%' }}>
+            <Button onClick={() => setWarn({ isOpen: true, stakeKey: '' })} variant='tertiary' style={{ textDecoration: 'none' }}>
+              <PlusIcon size={24} fill={theme.text.default} />
+              <Text color={theme.text.default} family='secondary'>
+                {`Round up to ${ADA['SYMBOL']}1 for all recipients`}
+              </Text>
+            </Button>
+          </div>
+        )}
       </FlexColumn>
 
       {progress.batch?.max ? <ProgressBar label='TX Batches' max={progress.batch.max} current={progress.batch.current} /> : null}
@@ -358,12 +366,18 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
       <WarningModal
         isOpen={warn.isOpen}
         noOverlay
-        title={`Round up to ${ADA['SYMBOL']}1?`}
+        title={`Round up to ${ADA['SYMBOL']}1 ${warn.stakeKey ? 'for this wallet' : 'for all wallets'}?`}
         description={warn.stakeKey}
         note={{
           type: StatusType.Warning,
           title: '',
-          message: `This will increase the total pool size!`,
+          message: `This will increase the total pool size by ${ADA['SYMBOL']}${formatTokenAmountFromChain(
+            warn.stakeKey
+              ? (processedRecipients.find((x) => x.stakeKey === warn.stakeKey)?.payout || 0) - 1_000_000
+              : processedRecipients.reduce((prev, curr) => (curr.payout < 1_000_000 ? prev + curr.payout : prev), 0),
+            ADA['DECIMALS'],
+            false
+          )}!`,
         }}
         approveButton={{
           text: `Yes (${String.fromCodePoint(0x21b5)})`,
@@ -371,7 +385,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           onClick: () => {
             setProcessedRecipients((prev) =>
               prev.map((item) =>
-                item.stakeKey === warn.stakeKey
+                (!!warn.stakeKey && item.stakeKey === warn.stakeKey) || (!warn.stakeKey && item.payout < 1_000_000)
                   ? {
                       ...item,
                       payout: formatTokenAmountToChain(1, ADA['DECIMALS']),
