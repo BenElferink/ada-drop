@@ -49,12 +49,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
 
   const [processedRecipients, setProcessedRecipients] = useState(deepClone(payoutRecipients))
   const devFee = useMemo(() => formatTokenAmountToChain(Math.max(1, payoutRecipients.length * 0.5), ADA['DECIMALS']), [payoutRecipients])
-
   const ticker = useMemo(() => defaultData.tokenName.ticker || defaultData.tokenName.display || defaultData.tokenName.onChain, [defaultData])
-  const serviceFee = useMemo(
-    () => `${ADA['SYMBOL']}${prettyNumber(formatTokenAmountFromChain(devFee, ADA['DECIMALS'], false))} service fee`,
-    [devFee]
-  )
 
   useImperativeHandle(ref, () => ({
     getData: () => defaultData,
@@ -219,19 +214,6 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
     }
   }, [processedRecipients, defaultData, ticker])
 
-  const totalAmount = useMemo(() => {
-    const count = prettyNumber(
-      formatTokenAmountFromChain(
-        processedRecipients.reduce((prev, curr) => prev + curr.payout, 0),
-        defaultData.tokenAmount.decimals,
-        false
-      )
-    )
-
-    if (ticker === 'ADA') return `${ADA['SYMBOL']}${count}`
-    return `${count} ${ticker}`
-  }, [processedRecipients, defaultData, ticker])
-
   const [warn, setWarn] = useState({
     isOpen: false,
     stakeKey: '',
@@ -300,6 +282,33 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
     [processedRecipients, defaultData, theme]
   )
 
+  const serviceFee = useMemo(
+    () => `${ADA['SYMBOL']}${prettyNumber(formatTokenAmountFromChain(devFee, ADA['DECIMALS'], false))} service fee`,
+    [devFee]
+  )
+
+  const totalAmount = useMemo(() => {
+    const count = prettyNumber(
+      formatTokenAmountFromChain(
+        processedRecipients.reduce((prev, curr) => prev + curr.payout, 0),
+        defaultData.tokenAmount.decimals,
+        false
+      )
+    )
+
+    if (ticker === 'ADA') return `${ADA['SYMBOL']}${count}`
+    return `${count} ${ticker}`
+  }, [processedRecipients, defaultData, ticker])
+
+  const totalUnderMin = useMemo(() => {
+    if (defaultData.tokenId !== 'lovelace') return { wallets: 0, amount: 0 }
+
+    const filtered = processedRecipients.filter((item) => item.payout < 1_000_000)
+    const reduced = filtered.reduce((prev, curr) => prev + curr.payout, 0)
+
+    return { wallets: filtered.length, amount: reduced }
+  }, [processedRecipients, defaultData])
+
   return (
     <>
       <FlexColumn $gap={16} style={{ width: '100%', alignItems: 'unset' }}>
@@ -341,7 +350,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           <Button onClick={() => setWarn({ isOpen: true, stakeKey: '' })} variant='secondary' style={{ width: '100%', textDecoration: 'none' }}>
             <PlusIcon fill={theme.text.secondary} />
             <Text color={theme.text.secondary} family='secondary'>
-              {`Round up to ${ADA['SYMBOL']}1 for all (${processedRecipients.filter((r) => r.payout < 1_000_000)}) recipients`}
+              {`Round up to ${ADA['SYMBOL']}1 for ${totalUnderMin.wallets} recipients`}
             </Text>
           </Button>
         )}
@@ -364,7 +373,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
       <WarningModal
         isOpen={warn.isOpen}
         noOverlay
-        title={`Round up to ${ADA['SYMBOL']}1 ${warn.stakeKey ? 'for this wallet' : 'for all wallets'}?`}
+        title={`Round up to ${ADA['SYMBOL']}1 ${warn.stakeKey ? 'for this wallet' : `for all ${totalUnderMin.wallets} wallets`}?`}
         description={warn.stakeKey}
         note={
           warn.isOpen
@@ -372,9 +381,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
                 type: StatusType.Warning,
                 title: '',
                 message: `This will increase the total pool size by ${ADA['SYMBOL']}${formatTokenAmountFromChain(
-                  warn.stakeKey
-                    ? 1_000_000 - (processedRecipients.find((x) => x.stakeKey === warn.stakeKey)?.payout || 0)
-                    : processedRecipients.reduce((prev, curr) => (curr.payout < 1_000_000 ? prev + curr.payout : prev), 0),
+                  warn.stakeKey ? 1_000_000 - (processedRecipients.find((x) => x.stakeKey === warn.stakeKey)?.payout || 0) : totalUnderMin.amount,
                   ADA['DECIMALS'],
                   false
                 )}!`,
