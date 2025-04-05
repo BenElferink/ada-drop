@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction<T = any> = (...args: any[]) => T
 
 export const debounce = <T extends AnyFunction>(func: T, wait: number): ((...args: Parameters<T>) => Promise<Awaited<ReturnType<T>>>) => {

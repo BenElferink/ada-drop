@@ -5,7 +5,6 @@ export interface ExtractedError {
   message: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const extractError = (error: any): ExtractedError => {
   if (error?.response) {
     return {

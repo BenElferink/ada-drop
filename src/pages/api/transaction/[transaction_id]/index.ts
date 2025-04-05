@@ -76,7 +76,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<Transaction>) =
         return res.status(405).end()
       }
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(error)
 

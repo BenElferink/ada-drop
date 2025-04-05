@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GetQueryStringFromQueryOptions = (options?: Record<string, any>) => string
 
 export const getQueryStringFromQueryOptions: GetQueryStringFromQueryOptions = (options = {}) => {

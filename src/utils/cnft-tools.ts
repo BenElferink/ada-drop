@@ -10,7 +10,6 @@ interface FetchedExternal {
   ownerStakeKey: string // 'stake1...'
   onSale: boolean
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [lowercasedTraitCategory: string]: any // eyewear: '(U) 3D Glasses'
 }
 
@@ -45,7 +44,6 @@ class CnftTools {
         })
 
         return resolve(data)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         if (error?.response?.data?.error === 'Policy ID not found') {
           return resolve(null)
@@ -88,7 +86,6 @@ class CnftTools {
           .sort((a, b) => a.rank - b.rank)
 
         return resolve(payload)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         if (error?.response?.data?.error === 'Policy ID not found') {
           return resolve(null)

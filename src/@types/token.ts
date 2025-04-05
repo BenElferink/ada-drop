@@ -39,7 +39,6 @@ export interface PopulatedToken extends RankedToken {
     name: string
   }[]
   attributes: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
   }
 }

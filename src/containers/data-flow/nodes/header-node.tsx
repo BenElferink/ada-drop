@@ -28,10 +28,7 @@ const Container = styled(FlexRow)`
   gap: 16px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid
-    ${({ theme }) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (theme as any).colors.border};
+  border-bottom: 1px solid ${({ theme }) => (theme as any).colors.border};
   justify-content: space-between;
 `
 

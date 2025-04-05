@@ -96,8 +96,6 @@ export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaul
 
       writeFileXLSX(wb, `ADA Drop - snapshot (${new Date().toLocaleDateString()}).xlsx`)
       setStatus({ type: StatusType.Info, title: '', message: '' })
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
       setStatus({ type: StatusType.Error, title: 'Error downloading snapshot', message: errMsg })

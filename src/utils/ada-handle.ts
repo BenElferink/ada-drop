@@ -69,7 +69,6 @@ class AdaHandle {
         }
 
         return resolve(payload)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         if (error?.response?.status === 404) {
           return resolve({
@@ -109,7 +108,6 @@ class AdaHandle {
         }
 
         return resolve(handle)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         if (error?.response?.status === 404) {
           return resolve('')

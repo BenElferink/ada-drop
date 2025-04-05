@@ -258,8 +258,6 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           .add(airdrop)
           .then((doc) => console.log('Airdrop saved to Firestore', doc.id))
           .catch((error) => console.error('Error saving airdrop to Firestore:', error))
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
 
@@ -299,8 +297,6 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
 
       writeFileXLSX(wb, `ADA Drop - receipt (${new Date().toLocaleDateString()}).xlsx`)
       setStatus({ type: StatusType.Info, title: '', message: '' })
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
       setStatus({ type: StatusType.Error, title: 'Error downloading receipt', message: errMsg })

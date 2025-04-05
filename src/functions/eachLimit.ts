@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export const eachLimit = async <T = any>(collection: T[], limit: number, iteratee: (items: T) => Promise<void>) => {
   const results: any = []
 

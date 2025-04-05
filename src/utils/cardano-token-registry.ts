@@ -1,7 +1,6 @@
 import axios from 'axios'
 
 interface FetchedTokenMetadataValueObject {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any
   sequenceNumber: number
   signatures: {

@@ -66,7 +66,6 @@ export const LoadFile = forwardRef<FormRef<Data>, LoadFileProps>(({ defaultData,
       const buffer = await file.arrayBuffer()
       const wb = read(buffer, { type: 'buffer' })
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rows: Record<string, any>[] = utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])
       const payload: PayoutRecipient[] = []
 
@@ -125,8 +124,6 @@ export const LoadFile = forwardRef<FormRef<Data>, LoadFileProps>(({ defaultData,
                   payoutWallet['address'] = addresses[0].address
                   payoutWallet['stakeKey'] = stakeKey
                 }
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
               } catch (error: any) {
                 const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
                 setFileErrors((prev) => [
@@ -169,8 +166,6 @@ export const LoadFile = forwardRef<FormRef<Data>, LoadFileProps>(({ defaultData,
       setStarted(false)
       setEnded(true)
       setStatus({ type: StatusType.Info, title: '', message: '' })
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
       setStarted(false)

@@ -12,8 +12,6 @@ export const txConfirmation = async (_txHash: string): Promise<Transaction> => {
       await sleep(1000)
       return await txConfirmation(_txHash)
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
 

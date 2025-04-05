@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RetryAsync = (err: any, retry: () => Promise<any>, reject: (msg: string) => void) => Promise<any>
 
 export const retryAsync: RetryAsync = async (err, retry, reject) => {
