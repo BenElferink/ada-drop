@@ -151,7 +151,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
   }, [allowPreFlightChecks, lovelaces, tokens, devFee, processedRecipients, defaultData])
 
   const runPayout = useCallback(
-    async (difference: number): Promise<void> => {
+    async (batchSize: number = 0, prevDifference?: number): Promise<void> => {
       setAllowPreFlightChecks(false)
       setStarted(true)
       setStatus({ type: StatusType.Info, title: '', message: '' })
@@ -165,14 +165,14 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           isDev: true,
         })
 
-      const batchSize = !!difference ? Math.floor(difference * unpayedWallets.length) : unpayedWallets.length
+      if (!batchSize) batchSize = unpayedWallets.length
       const batches: PayoutRecipient[][] = []
 
       for (let i = 0; i < unpayedWallets.length; i += batchSize) {
         batches.push(unpayedWallets.slice(i, (i / batchSize + 1) * batchSize))
       }
 
-      setStatus({ type: StatusType.Info, title: 'Batching transactions', message: `Trying difference: ${difference}` })
+      setStatus({ type: StatusType.Info, title: 'Batching transactions', message: `Trying batch size: ${batchSize}` })
       setProgress({ batch: { current: 0, max: batches.length } })
 
       const dbRecipients: {
@@ -260,13 +260,20 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
       } catch (error: any) {
         const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
 
-        if (!!errMsg && errMsg.indexOf('Maximum transaction size') !== -1) {
+        if (errMsg?.indexOf('Maximum transaction size of') !== -1) {
+          // Versions 1.7.0 - 1.8.14 of the Mesh SDK throw this error:
           // errMsg === `txBuildResult error: JsValue("Maximum transaction size of 16384 exceeded. Found: 19226")`
+
+          // Older versions of the Mesh SDK throw this error:
+          // errMsg === `[Transaction] An error occurred during build: Maximum transaction size of 16384 exceeded. Found: 21861.`
+
           const splitMessage: string[] = errMsg.split(' ')
           const [max, curr] = splitMessage.map((str) => Number(str.replace(/[^\d]/g, ''))).filter((num) => num && !isNaN(num))
-          const newDifference = (difference || 1) * (max / curr)
+          const newDifference = (prevDifference || 1) * (max / curr)
+          batchSize = Math.floor(newDifference * unpayedWallets.length)
 
-          return await runPayout(newDifference)
+          return await runPayout(batchSize, newDifference)
+          // return await runPayout(batchSize - 1)
         } else {
           setStatus({ type: StatusType.Error, title: '', message: errMsg })
           setProgress({ batch: { current: 0, max: 0 } })
