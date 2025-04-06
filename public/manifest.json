@@ -4,7 +4,7 @@
   "description": "Airdrop tool for the Cardano Blockchain",
   "icons": [
     {
-      "src": "/cardano.svg",
+      "src": "/assets/cardano.svg",
       "sizes": "16x16 24x24 32x32 64x64 192x192 512x512",
       "type": "image/x-icon"
     }

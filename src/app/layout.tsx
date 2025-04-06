@@ -11,7 +11,7 @@ function Layout({ children }: PropsWithChildren) {
   return (
     <html lang='en'>
       <head>
-        <link rel='icon' href='/cardano.svg' />
+        <link rel='icon' href='/assets/cardano.svg' />
         <link rel='manifest' href='/manifest.json' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <meta name='author' content='Ben Elferink' />
