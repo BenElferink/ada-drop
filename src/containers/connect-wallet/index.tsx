@@ -4,6 +4,7 @@ import { LINKS } from '@/constants'
 import { WalletIcon } from '@/icons'
 import styled from 'styled-components'
 import Theme from '@odigos/ui-kit/theme'
+import { logId } from '@/utils/logrocket'
 import { StatusType } from '@odigos/ui-kit/types'
 import { useNotificationStore } from '@odigos/ui-kit/store'
 import { extractError, truncateStringInMiddle } from '@/functions'
@@ -61,6 +62,8 @@ const ErrorNoWallets = () => {
 export const ConnectWallet = () => {
   const { addNotification } = useNotificationStore()
   const { connect, disconnect, connecting, connected, error } = useWallet()
+
+  const address = useAddress()
   const installedWallets = useWalletList()
 
   const [isOpen, setIsOpen] = useState(false)
@@ -80,11 +83,12 @@ export const ConnectWallet = () => {
   }
 
   useEffect(() => {
-    if (connected) {
+    if (connected && address) {
       addNotification({ type: StatusType.Success, title: 'Wallet connected' })
       toggleIsOpen(false)
+      logId(address)
     }
-  }, [connected, addNotification])
+  }, [connected, address, addNotification])
 
   useEffect(() => {
     if (error) addNotification({ type: StatusType.Error, title: 'Failed to connect wallet', message: extractError(error).message })
