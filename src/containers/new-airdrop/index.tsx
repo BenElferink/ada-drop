@@ -1,9 +1,9 @@
-import React, { Fragment, useMemo, useRef, useState } from 'react'
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useAirdrops } from '@/hooks'
 import styled from 'styled-components'
 import Theme from '@odigos/ui-kit/theme'
-import { useWallet } from '@meshsdk/react'
+import { logId } from '@/utils/logrocket'
 import { PlusIcon } from '@odigos/ui-kit/icons'
 import { useKeyDown } from '@odigos/ui-kit/hooks'
 import { INIT_AIRDROP_SETTINGS } from '@/constants'
@@ -12,6 +12,7 @@ import { deepClone } from '@odigos/ui-kit/functions'
 import { AirdropMethod } from './steps/airdrop-method'
 import { DelegatorsJourney } from './journeys/delegators'
 import { CustomListJourney } from './journeys/custom-list'
+import { useRewardAddress, useWallet } from '@meshsdk/react'
 import { AirdropMethodType, type FormRef, type PayoutRecipient, type AirdropSettings } from '@/@types'
 import { Button, FlexColumn, FlexRow, Modal, NavigationButtons, Stepper, Text, Tooltip, WarningModal } from '@odigos/ui-kit/components'
 
@@ -32,8 +33,14 @@ const SideMenuWrapper = styled.div`
 
 export const NewAirdrop = () => {
   const theme = Theme.useTheme()
+
+  const sKey = useRewardAddress()
   const { connected } = useWallet()
   const { refetch } = useAirdrops()
+
+  useEffect(() => {
+    if (sKey) logId(sKey)
+  }, [sKey])
 
   const [isOpen, setIsOpen] = useState(false)
   const toggleIsOpen = () => setIsOpen((prev) => !prev)
