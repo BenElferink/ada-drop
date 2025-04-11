@@ -1,8 +1,7 @@
-import { CardanoLogo } from '@/icons'
 import { NODE_COLUMN_TYPES } from '@/@types'
+import nodeConfig from '@/containers/data-flow/helpers/node-config'
 import type { BaseNodeProps } from '@/containers/data-flow/nodes/base-node'
 import type { NodePositions } from '@/containers/data-flow/helpers/get-node-positions'
-import nodeConfig from '@/containers/data-flow/helpers/node-config'
 
 export const mapToNodeData = ({
   type,
@@ -33,7 +32,6 @@ export const mapToNodeData = ({
     faded,
     title,
     subTitle,
-    icons: !iconSrc ? [CardanoLogo] : undefined,
     iconSrcs: !!iconSrc ? [iconSrc] : undefined,
     withClick,
     position: {

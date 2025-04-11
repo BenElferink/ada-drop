@@ -1,8 +1,8 @@
-import { CardanoLogo, TransactionIcon, WalletInIcon, WalletOutIcon } from '@/icons'
 import { StatusType } from '@odigos/ui-kit/types'
 import { NODE_COLUMN_TYPES, NODE_TYPES } from '@/@types'
 import type { NodePositions } from './get-node-positions'
 import type { HeaderNodeProps } from '../nodes/header-node'
+import { NftIcon, TransactionIcon, WalletInIcon, WalletOutIcon } from '@/icons'
 
 export const resolveHeaderNode = (positions: NodePositions, type: NODE_COLUMN_TYPES, badge: number) => {
   return {
@@ -20,7 +20,7 @@ export const resolveHeaderNode = (positions: NodePositions, type: NODE_COLUMN_TY
           ? TransactionIcon
           : type === NODE_COLUMN_TYPES.AIRDROPS
           ? WalletOutIcon
-          : CardanoLogo,
+          : NftIcon,
       title: type,
       badge,
       isFetching: !badge,
