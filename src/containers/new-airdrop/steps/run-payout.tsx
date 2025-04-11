@@ -166,7 +166,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           isDev: true,
         })
 
-      if (!batchSize) batchSize = Math.min(unpayedWallets.length, defaultData.tokenId === 'lovelace' ? 240 : 140)
+      if (!batchSize) batchSize = Math.min(unpayedWallets.length, defaultData.tokenId === 'lovelace' ? 230 : 130)
       const batches: PayoutRecipient[][] = []
 
       for (let i = 0; i < unpayedWallets.length; i += batchSize) {
