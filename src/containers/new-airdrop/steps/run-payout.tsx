@@ -262,7 +262,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           .catch((error) => console.error('Error saving airdrop to Firestore:', error))
 
         api
-          .notify('✅ Payout ended', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
+          .notify('✅ Payout ended', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}`)
           .then()
           .catch()
       } catch (error: any) {
@@ -290,7 +290,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           api
             .notify(
               '❌ Payout failed',
-              `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}\n\n${errMsg}`
+              `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}\n\n${errMsg}`
             )
             .then()
             .catch()
@@ -426,7 +426,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
   useEffect(() => {
     if (stakeKey) {
       api
-        .notify('💡 Payout viewed', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
+        .notify('💡 Payout viewed', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}`)
         .then()
         .catch()
     }
@@ -456,7 +456,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
                   api
                     .notify(
                       '⏳ Payout started',
-                      `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`
+                      `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}`
                     )
                     .then()
                     .catch()

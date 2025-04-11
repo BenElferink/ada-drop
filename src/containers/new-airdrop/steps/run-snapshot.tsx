@@ -68,7 +68,7 @@ export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaul
     runRef.current = true
 
     api
-      .notify('⏳ Snapshot started', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
+      .notify('⏳ Snapshot started', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}`)
       .then()
       .catch()
     runSnapshot(defaultData, setProgress)
@@ -77,7 +77,7 @@ export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaul
         setEnded(true)
         setStatus({ type: StatusType.Info, title: '', message: '' })
         api
-          .notify('✅ Snapshot ended', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
+          .notify('✅ Snapshot ended', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}`)
           .then()
           .catch()
       })
@@ -87,7 +87,7 @@ export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaul
         api
           .notify(
             '❌ Snapshot failed',
-            `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}\n\n${errMsg}`
+            `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}\n\n${errMsg}`
           )
           .then()
           .catch()
