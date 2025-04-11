@@ -4,10 +4,11 @@ import { LINKS } from '@/constants'
 import { WalletIcon } from '@/icons'
 import styled from 'styled-components'
 import Theme from '@odigos/ui-kit/theme'
+import { logId } from '@/utils/logrocket'
 import { StatusType } from '@odigos/ui-kit/types'
 import { useNotificationStore } from '@odigos/ui-kit/store'
 import { extractError, truncateStringInMiddle } from '@/functions'
-import { useAddress, useWallet, useWalletList } from '@meshsdk/react'
+import { useAddress, useRewardAddress, useWallet, useWalletList } from '@meshsdk/react'
 import { Button, DataTab, Drawer, FlexColumn, NotificationNote, Text } from '@odigos/ui-kit/components'
 
 const DRAWER_WIDTH = '600px'
@@ -61,6 +62,8 @@ const ErrorNoWallets = () => {
 export const ConnectWallet = () => {
   const { addNotification } = useNotificationStore()
   const { connect, disconnect, connecting, connected, error } = useWallet()
+
+  const sKey = useRewardAddress()
   const installedWallets = useWalletList()
 
   const [isOpen, setIsOpen] = useState(false)
@@ -80,11 +83,12 @@ export const ConnectWallet = () => {
   }
 
   useEffect(() => {
-    if (connected) {
+    if (connected && sKey) {
       addNotification({ type: StatusType.Success, title: 'Wallet connected' })
       toggleIsOpen(false)
+      logId(sKey)
     }
-  }, [connected, addNotification])
+  }, [connected, sKey, addNotification])
 
   useEffect(() => {
     if (error) addNotification({ type: StatusType.Error, title: 'Failed to connect wallet', message: extractError(error).message })
