@@ -1,6 +1,7 @@
 export const ADA = {
   SYMBOL: '₳',
   DECIMALS: 6,
+  THUMB: 'https://adadrop.app/assets/ada.png',
 }
 
 export const MIN_LOVELACES_PER_WALLET = 1000000
@@ -22,7 +23,7 @@ export const HISTORIC_DATA_MESSAGES = {
 }
 
 export const LINKS = {
-  GET_WALLET: 'https://builtoncardano.com/ecosystem/wallets',
+  GET_WALLET: 'https://www.cardanocube.com/categories/wallets',
 }
 
 export const ERROR_TYPES = {

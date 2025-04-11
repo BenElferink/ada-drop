@@ -20,7 +20,7 @@ export const POPULATED_LOVELACE: PopulatedToken = {
   },
   image: {
     ipfs: '',
-    url: 'https://labs.badfoxmc.com/media/ada.png',
+    url: ADA['THUMB'],
   },
   files: [],
   attributes: {},
