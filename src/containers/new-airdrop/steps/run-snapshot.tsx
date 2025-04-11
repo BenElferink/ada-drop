@@ -1,11 +1,13 @@
 import { type Dispatch, forwardRef, type SetStateAction, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import api from '@/utils/api'
 import { DownloadIcon } from '@/icons'
 import Theme from '@odigos/ui-kit/theme'
 import { ProgressBar } from '@/components'
 import { utils, writeFileXLSX } from 'xlsx'
 import { StatusType } from '@odigos/ui-kit/types'
+import { useRewardAddress } from '@meshsdk/react'
 import { runSnapshot } from '../helpers/run-snapshot'
-import { formatTokenAmountFromChain } from '@/functions'
+import { formatTokenAmountFromChain, getTokenName, prettyNumber } from '@/functions'
 import { Button, Divider, FlexColumn, NotificationNote, SectionTitle, Text, Tooltip } from '@odigos/ui-kit/components'
 import { AirdropMethodType, type AirdropSettings, type FormRef, type PayoutRecipient, type SnapshotProgressCounts } from '@/@types'
 
@@ -19,6 +21,7 @@ interface RunSnapshotProps {
 
 export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaultData, payoutRecipients, setPayoutRecipients }, ref) => {
   const theme = Theme.useTheme()
+  const sKey = useRewardAddress()
 
   const [status, setStatus] = useState({ type: StatusType.Info, title: '', message: '' })
   const [ended, setEnded] = useState(!!payoutRecipients.length)
@@ -64,19 +67,34 @@ export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaul
     if (runRef.current) return
     runRef.current = true
 
+    api
+      .notify('⏳ Snapshot started', `${sKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
+      .then()
+      .catch()
     runSnapshot(defaultData, setProgress)
       .then((recipients) => {
         setPayoutRecipients(recipients)
         setEnded(true)
         setStatus({ type: StatusType.Info, title: '', message: '' })
+        api
+          .notify('✅ Snapshot ended', `${sKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
+          .then()
+          .catch()
       })
       .catch((error) => {
         const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
         setStatus({ type: StatusType.Error, title: 'Error running snapshot', message: errMsg })
+        api
+          .notify(
+            '❌ Snapshot failed',
+            `${sKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}\n\n${errMsg}`
+          )
+          .then()
+          .catch()
       })
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultData])
+  }, [sKey, defaultData])
 
   const downloadSnapshot = useCallback(() => {
     try {

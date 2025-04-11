@@ -1,7 +1,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import api from '@/utils/api'
 import Theme from '@odigos/ui-kit/theme'
 import { ProgressBar } from '@/components'
-import { useWallet } from '@meshsdk/react'
 import { Transaction } from '@meshsdk/core'
 import { utils, writeFileXLSX } from 'xlsx'
 import { useConnectedWallet } from '@/hooks'
@@ -9,6 +9,7 @@ import { firestore } from '@/utils/firebase'
 import { PlusIcon } from '@odigos/ui-kit/icons'
 import { StatusType } from '@odigos/ui-kit/types'
 import { DownloadIcon, TransactionIcon } from '@/icons'
+import { useRewardAddress, useWallet } from '@meshsdk/react'
 import { deepClone, getStatusIcon } from '@odigos/ui-kit/functions'
 import { verifyMinRequiredAda } from '../helpers/verify-min-required-ada'
 import { verifyMinRequiredBalance } from '../helpers/verify-min-required-balance'
@@ -38,6 +39,7 @@ interface RunPayoutProps {
 
 export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultData, payoutRecipients }, ref) => {
   const theme = Theme.useTheme()
+  const sKey = useRewardAddress()
   const { wallet } = useWallet()
   const { stakeKey, lovelaces, tokens } = useConnectedWallet()
 
@@ -259,6 +261,11 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           .add(airdrop)
           .then((doc) => console.log('Airdrop saved to Firestore', doc.id))
           .catch((error) => console.error('Error saving airdrop to Firestore:', error))
+
+        api
+          .notify('✅ Payout ended', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
+          .then()
+          .catch()
       } catch (error: any) {
         const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
 
@@ -281,6 +288,13 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           setStatus({ type: StatusType.Error, title: '', message: errMsg })
           setProgress({ batch: { current: 0, max: 0 } })
           setStarted(false)
+          api
+            .notify(
+              '❌ Payout failed',
+              `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}\n\n${errMsg}`
+            )
+            .then()
+            .catch()
         }
       }
     },
@@ -430,7 +444,14 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
               <Button
                 variant='tertiary'
                 disabled={!ranPreFlightChecks || started || ended}
-                onClick={() => runPayout(0)}
+                onClick={() => {
+                  api
+                    .notify('⏳ Payout started', `${sKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
+                    .then()
+                    .catch()
+
+                  runPayout(0)
+                }}
                 style={{ textDecoration: 'none', backgroundColor: theme.colors.majestic_blue_soft + Theme.opacity.hex['030'] }}
               >
                 <TransactionIcon size={24} fill={theme.text.default} />

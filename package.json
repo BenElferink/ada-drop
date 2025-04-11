@@ -24,6 +24,7 @@
     "@meshsdk/core-csl": "^1.9.0-beta.32",
     "@meshsdk/react": "^1.9.0-beta.32",
     "@odigos/ui-kit": "^0.0.22",
+    "@slack/webhook": "^7.0.5",
     "@xyflow/react": "^12.5.5",
     "axios": "^1.8.4",
     "firebase": "^11.6.0",

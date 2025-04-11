@@ -9,6 +9,20 @@ class Api {
     this.baseUrl = '/api'
   }
 
+  notify = (message: string, embed: string): Promise<void> => {
+    const uri = `${this.baseUrl}/notify`
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        await axios.post(uri, { message, embed })
+
+        return resolve()
+      } catch (error) {
+        return await retryAsync(error, async () => await this.epoch.getData(), reject)
+      }
+    })
+  }
+
   epoch = {
     getData: (): Promise<EpochInfo> => {
       const uri = `${this.baseUrl}/epoch`
