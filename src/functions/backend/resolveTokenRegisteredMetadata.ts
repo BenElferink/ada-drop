@@ -20,8 +20,7 @@ const resolveTokenRegisteredMetadata = async (tokenId: string, metadata?: compon
 
       ticker = ctrToken.ticker?.value
       decimals = ctrToken.decimals?.value
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch (_) {
       const bfToken = await blockfrost.assetsById(tokenId)
 
       ticker = bfToken?.metadata?.ticker

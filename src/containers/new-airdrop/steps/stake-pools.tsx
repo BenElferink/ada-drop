@@ -28,9 +28,7 @@ const resolvePoolIds = async (pools: string[]) => {
       } else {
         payload.push('')
       }
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch (_) {
       hasError = true
       payload.push(str)
     }

@@ -32,9 +32,7 @@ const resolveStakeKeys = async (wallets: string[]) => {
       } else {
         payload.push('')
       }
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch (_) {
       hasError = true
       payload.push(str)
     }
@@ -59,9 +57,7 @@ const resolveTokenIds = async (tokens: string[]) => {
       } else {
         payload.push('')
       }
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch (_) {
       hasError = true
       payload.push(str)
     }

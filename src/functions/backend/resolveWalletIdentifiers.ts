@@ -25,8 +25,7 @@ const resolveWalletIdentifiers = async (
           ? Buffer.from(walletIdentifier, 'hex')
           : Buffer.from(walletIdentifier, 'utf-8')
       ).to_bech32()
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {}
+    } catch (_) {}
 
     stakeKey = stringFromCbor.indexOf('stake1') === 0 ? stringFromCbor : ''
     walletAddress = stringFromCbor.indexOf('addr1') === 0 ? stringFromCbor : ''
