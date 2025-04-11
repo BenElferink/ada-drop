@@ -18,14 +18,14 @@ const Container = styled.div`
   gap: 16px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid ${({ theme }) => (theme as any).colors.border};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `
 
 const Bar = styled.div<{ $percent: number; $isDone: boolean }>`
   position: absolute;
   bottom: -2px;
   left: 0;
-  background-color: ${({ theme, $isDone }) => ($isDone ? (theme as any).text.success : (theme as any).colors.majestic_blue_soft)};
+  background-color: ${({ theme, $isDone }) => ($isDone ? theme.text.success : theme.colors.majestic_blue_soft)};
   border-radius: 32px;
   height: 4px;
   width: ${({ $percent }) => `${$percent}%`};

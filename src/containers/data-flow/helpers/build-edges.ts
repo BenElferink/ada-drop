@@ -25,7 +25,7 @@ const createEdge = (
     target: targetNodeId,
     animated,
     data: { label, isMultiTarget, isError },
-    style: { stroke: isError ? (theme as any)?.colors.dark_red : (theme as any)?.colors.border },
+    style: { stroke: isError ? theme?.colors.dark_red : theme?.colors.border },
   }
 }
 

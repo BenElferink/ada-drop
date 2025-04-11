@@ -17,7 +17,7 @@ const Container = styled.div<{ $numberOfNodes: FrameNodeProps['data']['numberOfN
   width: ${nodeConfig.nodeWidth + 2 * nodeConfig.nodePadding}px;
   height: ${({ $numberOfNodes }) => nodeConfig.nodeHeight * $numberOfNodes + nodeConfig.nodePadding}px;
   background: transparent;
-  border: 1px dashed ${({ theme }) => (theme as any).colors.border};
+  border: 1px dashed ${({ theme }) => theme.colors.border};
   border-radius: 24px;
 `
 

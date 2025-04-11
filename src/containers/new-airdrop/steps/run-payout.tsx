@@ -8,6 +8,7 @@ import { useConnectedWallet } from '@/hooks'
 import { firestore } from '@/utils/firebase'
 import { PlusIcon } from '@odigos/ui-kit/icons'
 import { StatusType } from '@odigos/ui-kit/types'
+import { CSLSerializer } from '@meshsdk/core-csl'
 import { DownloadIcon, TransactionIcon } from '@/icons'
 import { deepClone, getStatusIcon } from '@odigos/ui-kit/functions'
 import { verifyMinRequiredAda } from '../helpers/verify-min-required-ada'
@@ -183,7 +184,10 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
 
       try {
         for await (const batch of batches) {
-          const tx = new Transaction({ initiator: wallet })
+          const tx = new Transaction({
+            serializer: new CSLSerializer(),
+            initiator: wallet,
+          })
 
           for (const { address, payout, isDev } of batch) {
             if (defaultData.tokenId === 'lovelace' || isDev) {

@@ -31,13 +31,13 @@ const ControllerWrapper = styled.div`
     padding: 8px;
     margin: 8px;
     border-radius: 8px;
-    border: 1px solid ${({ theme }) => (theme as any).colors.border} !important;
-    background-color: ${({ theme }) => (theme as any).colors.dropdown_bg};
+    border: 1px solid ${({ theme }) => theme.colors.border} !important;
+    background-color: ${({ theme }) => theme.colors.dropdown_bg};
     path {
-      fill: ${({ theme }) => (theme as any).text.secondary};
+      fill: ${({ theme }) => theme.text.secondary};
     }
     &:hover {
-      background-color: ${({ theme }) => (theme as any).colors.dropdown_bg_2};
+      background-color: ${({ theme }) => theme.colors.dropdown_bg_2};
     }
   }
 `

@@ -22,7 +22,7 @@ export const ModalBody = styled.div`
 `
 
 const SideMenuWrapper = styled.div`
-  border-right: 1px solid ${({ theme }) => (theme as any).colors.border};
+  border-right: 1px solid ${({ theme }) => theme.colors.border};
   padding: 32px;
   width: 200px;
   @media (max-width: 1050px) {
