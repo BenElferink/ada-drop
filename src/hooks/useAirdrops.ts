@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react'
 import type { Airdrop } from '@/@types'
 import { useAirdropStore } from '@/store'
 import { firestore } from '@/utils/firebase'
+import { formatIpfsReference } from '@/functions'
 
 interface UseAirdrops {
   airdrops: Airdrop[]
@@ -20,6 +21,7 @@ const fetchAirdrops = async (): Promise<Airdrop[]> => {
         return {
           ...data,
           id: doc.id,
+          thumb: formatIpfsReference(data.thumb).url,
         }
       })
       .filter((x) => x.tokenAmount.onChain)

@@ -5,7 +5,7 @@ import { resolveHeaderNode } from './resolve-header-node'
 import { resolveScrollNode } from './resolve-scroll-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
 import { getNodePositions, isInPosition } from './get-node-positions'
-import { formatIpfsReference, getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
+import { getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
 import { type AirdropRicipent, NODE_COLUMN_TYPES, type OnScroll, type OnScrollParams } from '@/@types'
 
 interface Params {
@@ -37,7 +37,7 @@ export const buildRecipientNodes = ({ dataFlowHeight, dataFlowWidth, recipients,
           txHash,
           stakeKey,
           // status: timestamp < DATA_START_TIME ? StatusType.Warning : undefined,
-          iconSrc: formatIpfsReference(thumb).url,
+          iconSrc: thumb,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           subTitle: truncateStringInMiddle(stakeKey, 15),
           withClick: true,

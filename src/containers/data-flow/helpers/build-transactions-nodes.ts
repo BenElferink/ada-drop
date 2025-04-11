@@ -1,11 +1,11 @@
 import type { Node } from '@xyflow/react'
 import { mapToNodeData } from './map-to-node-data'
+import { truncateStringInMiddle } from '@/functions'
 import { resolveEdgedNode } from './resolve-edged-node'
 import { resolveHeaderNode } from './resolve-header-node'
 import { resolveScrollNode } from './resolve-scroll-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
 import { getNodePositions, isInPosition } from './get-node-positions'
-import { formatIpfsReference, truncateStringInMiddle } from '@/functions'
 import { type AirdropTransaction, NODE_COLUMN_TYPES, type OnScroll, type OnScrollParams } from '@/@types'
 
 interface Params {
@@ -36,7 +36,7 @@ export const buildTransactionNodes = ({ dataFlowHeight, dataFlowWidth, transacti
           airdropId,
           txHash,
           // status: timestamp < DATA_START_TIME ? StatusType.Warning : undefined,
-          iconSrc: formatIpfsReference(thumb).url,
+          iconSrc: thumb,
           // title: `${recipientCount} Recipients, ${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           title: `${recipientCount} Recipients`,
           subTitle: truncateStringInMiddle(txHash, 15),

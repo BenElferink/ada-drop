@@ -7,7 +7,7 @@ import { resolveScrollNode } from './resolve-scroll-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
 import { getNodePositions, isInPosition } from './get-node-positions'
 import { type Airdrop, NODE_COLUMN_TYPES, type OnScroll, type OnScrollParams } from '@/@types'
-import { formatIpfsReference, getTimestampLabel, getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
+import { getTimestampLabel, getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
 
 interface Params {
   isMobile?: boolean
@@ -38,7 +38,7 @@ export const buildAirdropNodes = ({ isMobile, dataFlowHeight, dataFlowWidth, air
           airdropId: id,
           stakeKey,
           status: !recipients?.length ? StatusType.Warning : undefined,
-          iconSrc: formatIpfsReference(thumb).url,
+          iconSrc: thumb,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           subTitle: isMobile ? `${recipients?.length || 0} Recipients • ${getTimestampLabel(timestamp).label}` : truncateStringInMiddle(stakeKey, 15),
           withClick: !isMobile,
