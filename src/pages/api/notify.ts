@@ -10,7 +10,6 @@ export const config = {
 
 const handler = async (req: NextApiRequest, res: NextApiResponse<void>) => {
   const { method, body } = req
-
   const { message, embed } = body
 
   try {

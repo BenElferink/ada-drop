@@ -3,13 +3,13 @@ import api from '@/utils/api'
 import Theme from '@odigos/ui-kit/theme'
 import { ProgressBar } from '@/components'
 import { Transaction } from '@meshsdk/core'
+import { useWallet } from '@meshsdk/react'
 import { utils, writeFileXLSX } from 'xlsx'
 import { useConnectedWallet } from '@/hooks'
 import { firestore } from '@/utils/firebase'
 import { PlusIcon } from '@odigos/ui-kit/icons'
 import { StatusType } from '@odigos/ui-kit/types'
 import { DownloadIcon, TransactionIcon } from '@/icons'
-import { useRewardAddress, useWallet } from '@meshsdk/react'
 import { deepClone, getStatusIcon } from '@odigos/ui-kit/functions'
 import { verifyMinRequiredAda } from '../helpers/verify-min-required-ada'
 import { verifyMinRequiredBalance } from '../helpers/verify-min-required-balance'
@@ -39,7 +39,6 @@ interface RunPayoutProps {
 
 export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultData, payoutRecipients }, ref) => {
   const theme = Theme.useTheme()
-  const sKey = useRewardAddress()
   const { wallet } = useWallet()
   const { stakeKey, lovelaces, tokens } = useConnectedWallet()
 
@@ -446,7 +445,10 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
                 disabled={!ranPreFlightChecks || started || ended}
                 onClick={() => {
                   api
-                    .notify('⏳ Payout started', `${sKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
+                    .notify(
+                      '⏳ Payout started',
+                      `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`
+                    )
                     .then()
                     .catch()
 

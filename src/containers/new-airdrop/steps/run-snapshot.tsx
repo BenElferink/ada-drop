@@ -4,8 +4,8 @@ import { DownloadIcon } from '@/icons'
 import Theme from '@odigos/ui-kit/theme'
 import { ProgressBar } from '@/components'
 import { utils, writeFileXLSX } from 'xlsx'
+import { useConnectedWallet } from '@/hooks'
 import { StatusType } from '@odigos/ui-kit/types'
-import { useRewardAddress } from '@meshsdk/react'
 import { runSnapshot } from '../helpers/run-snapshot'
 import { formatTokenAmountFromChain, getTokenName, prettyNumber } from '@/functions'
 import { Button, Divider, FlexColumn, NotificationNote, SectionTitle, Text, Tooltip } from '@odigos/ui-kit/components'
@@ -21,7 +21,7 @@ interface RunSnapshotProps {
 
 export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaultData, payoutRecipients, setPayoutRecipients }, ref) => {
   const theme = Theme.useTheme()
-  const sKey = useRewardAddress()
+  const { stakeKey } = useConnectedWallet()
 
   const [status, setStatus] = useState({ type: StatusType.Info, title: '', message: '' })
   const [ended, setEnded] = useState(!!payoutRecipients.length)
@@ -64,11 +64,11 @@ export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaul
 
   const runRef = useRef(false)
   useEffect(() => {
-    if (runRef.current) return
+    if (runRef.current || !stakeKey) return
     runRef.current = true
 
     api
-      .notify('⏳ Snapshot started', `${sKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
+      .notify('⏳ Snapshot started', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
       .then()
       .catch()
     runSnapshot(defaultData, setProgress)
@@ -77,7 +77,7 @@ export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaul
         setEnded(true)
         setStatus({ type: StatusType.Info, title: '', message: '' })
         api
-          .notify('✅ Snapshot ended', `${sKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
+          .notify('✅ Snapshot ended', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
           .then()
           .catch()
       })
@@ -87,14 +87,14 @@ export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaul
         api
           .notify(
             '❌ Snapshot failed',
-            `${sKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}\n\n${errMsg}`
+            `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}\n\n${errMsg}`
           )
           .then()
           .catch()
       })
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sKey, defaultData])
+  }, [stakeKey, defaultData])
 
   const downloadSnapshot = useCallback(() => {
     try {
