@@ -5,7 +5,6 @@ import { LINKS } from '@/constants'
 import { WalletIcon } from '@/icons'
 import styled from 'styled-components'
 import Theme from '@odigos/ui-kit/theme'
-import { logId } from '@/utils/logrocket'
 import { useConnectedWallet } from '@/hooks'
 import { StatusType } from '@odigos/ui-kit/types'
 import { useNotificationStore } from '@odigos/ui-kit/store'
@@ -87,8 +86,6 @@ export const ConnectWallet = () => {
     if (connected && stakeKey) {
       addNotification({ type: StatusType.Success, title: 'Wallet connected' })
       toggleIsOpen(false)
-
-      logId(stakeKey)
       api.notify('👀 Wallet connected', stakeKey).then().catch()
     }
   }, [connected, stakeKey, addNotification])

@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import slackWebhook from '@/utils/slack'
+import type { AnyBlock } from '@slack/types'
 
 export const config = {
   maxDuration: 300,
@@ -15,26 +16,29 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<void>) => {
   try {
     switch (method) {
       case 'POST': {
-        await slackWebhook.send({
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: `${message}\n\`\`\`${embed}\`\`\``,
-              },
+        const blocks: AnyBlock[] = [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `${message}\n\`\`\`${embed}\`\`\``,
             },
-            // {
-            //   type: 'section',
-            //   fields: [
-            //     {
-            //       type: 'mrkdwn',
-            //       text: `*Links:*\n<${'https://vercel.com/yulegent/ada-drop/logs'}|Vercel Logs>\n<${`https://app.logrocket.com/${LOG_ROCKET_PROJECT_ID}`}|LogRocket>`,
-            //     },
-            //   ],
-            // },
-          ],
-        })
+          },
+        ]
+
+        if (message.includes('failed')) {
+          blocks.push({
+            type: 'section',
+            fields: [
+              {
+                type: 'mrkdwn',
+                text: `*Links:*\n<${'https://vercel.com/yulegent/ada-drop/logs'}|Vercel Logs>`,
+              },
+            ],
+          })
+        }
+
+        await slackWebhook.send({ blocks })
 
         return res.status(204).end()
       }
