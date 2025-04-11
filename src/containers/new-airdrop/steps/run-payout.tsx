@@ -8,7 +8,6 @@ import { useConnectedWallet } from '@/hooks'
 import { firestore } from '@/utils/firebase'
 import { PlusIcon } from '@odigos/ui-kit/icons'
 import { StatusType } from '@odigos/ui-kit/types'
-import { CSLSerializer } from '@meshsdk/core-csl'
 import { DownloadIcon, TransactionIcon } from '@/icons'
 import { deepClone, getStatusIcon } from '@odigos/ui-kit/functions'
 import { verifyMinRequiredAda } from '../helpers/verify-min-required-ada'
@@ -166,7 +165,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           isDev: true,
         })
 
-      if (!batchSize) batchSize = unpayedWallets.length
+      if (!batchSize) batchSize = Math.min(unpayedWallets.length, defaultData.tokenId === 'lovelace' ? 240 : 140)
       const batches: PayoutRecipient[][] = []
 
       for (let i = 0; i < unpayedWallets.length; i += batchSize) {
@@ -185,7 +184,6 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
       try {
         for await (const batch of batches) {
           const tx = new Transaction({
-            serializer: new CSLSerializer(),
             initiator: wallet,
           })
 
@@ -277,7 +275,8 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           batchSize = Math.floor(newDifference * unpayedWallets.length)
 
           return await runPayout(batchSize, newDifference)
-          // return await runPayout(batchSize - 1)
+        } else if (batchSize > 1) {
+          return await runPayout(batchSize - 1)
         } else {
           setStatus({ type: StatusType.Error, title: '', message: errMsg })
           setProgress({ batch: { current: 0, max: 0 } })
