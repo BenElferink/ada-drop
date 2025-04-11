@@ -423,6 +423,15 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
     return { wallets: filtered.length, amount: reduced }
   }, [processedRecipients, defaultData])
 
+  useEffect(() => {
+    if (stakeKey) {
+      api
+        .notify('💡 Payout viewed', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)}${getTokenName(defaultData.tokenName)}`)
+        .then()
+        .catch()
+    }
+  }, [stakeKey, defaultData])
+
   return (
     <>
       <FlexColumn $gap={16} style={{ width: '100%', alignItems: 'unset' }}>
