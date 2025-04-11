@@ -1,4 +1,5 @@
 export const BLOCKFROST_API_KEY = process.env.BLOCKFROST_API_KEY || ''
+export const BLOCKFROST_IPFS_API_KEY = process.env.BLOCKFROST_IPFS_API_KEY || ''
 
 export const FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY
 export const FIREBASE_APP_ID = process.env.NEXT_PUBLIC_FIREBASE_APP_ID

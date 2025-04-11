@@ -6,11 +6,23 @@ export const formatIpfsReference = (str: string) => {
     }
   }
 
-  const strIsUrl = str.indexOf('data:') === 0 || str.indexOf('https://') === 0 || str.indexOf('/') === 0
-  const strHasIpfsPrefix = str.indexOf('ipfs://') === 0
+  const strIsIpfs = str.startsWith('ipfs:')
+  const strIsUrl = str.startsWith('data:') || str.startsWith('https:') || str.startsWith('/')
 
-  const ipfs = strIsUrl ? '' : strHasIpfsPrefix ? str : `ipfs://${str}`
-  const url = strIsUrl ? str : ipfs.replace('ipfs://', 'https://ipfs5.jpgstoreapis.com/ipfs/') + '?s=400'
+  let ipfs = ''
+  if (strIsIpfs) {
+    ipfs = str
+  } else if (!strIsUrl) {
+    ipfs = `ipfs://${str}`
+  }
+
+  let url = ''
+  if (strIsUrl) {
+    url = str
+  } else {
+    // url = ipfs.replace('ipfs://', 'https://ipfs5.jpgstoreapis.com/ipfs/') + '?s=400'
+    url = ipfs.replace('ipfs://', 'https://ipfs.blockfrost.dev/ipfs/')
+  }
 
   return {
     ipfs,

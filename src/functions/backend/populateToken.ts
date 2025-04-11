@@ -59,7 +59,7 @@ const populateToken = async (tokenId: TokenId, options?: { populateMintTx?: bool
     : ''
 
   const image =
-    thumb.indexOf('data:') === 0 || thumb.indexOf('https:') === 0
+    thumb.startsWith('data:') || thumb.startsWith('https:')
       ? {
           ipfs: '',
           url: thumb,

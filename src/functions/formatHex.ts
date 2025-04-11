@@ -1,7 +1,9 @@
-export const fromHex = (hex: string) => {
+export const fromHex = (hex: string, stopRetry?: boolean): string => {
   try {
     return decodeURIComponent('%' + hex.match(/.{1,2}/g)?.join('%'))
   } catch (error: any) {
+    if (!stopRetry) return fromHex(hex.substring(8), true)
+
     console.error('ERROR decoding hex:', hex, '\n', error?.stack)
     return hex
   }
