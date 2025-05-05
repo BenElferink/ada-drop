@@ -166,7 +166,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           isDev: true,
         })
 
-      if (!batchSize) batchSize = Math.min(unpayedWallets.length, defaultData.tokenId === 'lovelace' ? 200 : 30)
+      if (!batchSize) batchSize = Math.min(unpayedWallets.length, defaultData.tokenId === 'lovelace' ? 200 : 100)
       const batches: PayoutRecipient[][] = []
 
       for (let i = 0; i < unpayedWallets.length; i += batchSize) {
@@ -473,9 +473,24 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
             )
           }
         />
-        <div style={{ width: '100%' }}>
-          {ended && <NotificationNote type={StatusType.Success} title='Airdrop complete' message='You can download a copy of the receipt' />}
-        </div>
+        {progress.batch?.max && !progress.batch?.current ? (
+          <div style={{ width: '100%' }}>
+            <NotificationNote
+              type={StatusType.Warning}
+              title='Having issues?'
+              message="ADA Drop isn't stable yet, you can use Bad Labs"
+              action={{
+                label: 'Go to Bad Labs',
+                onClick: () => window.open('https://bad-labs.vercel.app/airdrops', '_blank', 'noopener,noreferrer'),
+              }}
+            />
+          </div>
+        ) : null}
+        {ended && (
+          <div style={{ width: '100%' }}>
+            <NotificationNote type={StatusType.Success} title='Airdrop complete' message='You can download a copy of the receipt' />
+          </div>
+        )}
         {(!!status.title || !!status.message) && (
           <div style={{ width: '100%' }}>
             <NotificationNote type={status.type} title={status.title} message={status.message} />
