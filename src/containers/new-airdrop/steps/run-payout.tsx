@@ -473,7 +473,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
             )
           }
         />
-        {progress.batch?.max && !progress.batch?.current ? (
+        {started && !ended ? (
           <div style={{ width: '100%' }}>
             <NotificationNote
               type={StatusType.Warning}
