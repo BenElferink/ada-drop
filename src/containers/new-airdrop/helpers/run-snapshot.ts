@@ -1,36 +1,92 @@
 import { type Dispatch, type SetStateAction } from 'react'
 import api from '@/utils/api'
+import cswap from '@/utils/cswap'
 import { ADA } from '@/constants'
+import { knownWallets } from '@/components'
 import { chunk, eachLimit, formatTokenAmountFromChain, formatTokenAmountToChain } from '@/functions'
 import type {
   AirdropSettings,
   Delegator,
   PayoutRecipient,
+  PolicyId,
   PolicyInfo,
   PopulatedToken,
   RankedToken,
   SnapshotHolder,
   SnapshotProgressCounts,
+  StakeKey,
   TokenOwners,
 } from '@/@types'
 
 // !! must handle catch outside
 export const runSnapshot = async (
+  stakeKey: StakeKey,
   settings: AirdropSettings,
   setProgress: Dispatch<SetStateAction<SnapshotProgressCounts>>
 ): Promise<PayoutRecipient[]> => {
   if (!settings) return []
 
   const { tokenAmount, policies, stakePools, blacklistWallets, blacklistTokens } = settings
+  const knownWallet = knownWallets.find((w) => w.wallets.includes(stakeKey))
 
   const holders: SnapshotHolder[] = []
   const fetchedTokens: Record<string, PopulatedToken[]> = {}
   const fetchedRankedTokens: Record<string, PolicyInfo['tokens']> = {}
   const includedTokenCounts: Record<string, number> = {}
 
+  if (
+    !!knownWallet &&
+    !!knownWallet.lpTokens &&
+    !!knownWallet.lpTokens.cswap &&
+    policies.find((p) => p.policyId === knownWallet.lpTokens?.forPolicyId)
+  ) {
+    const pId = knownWallet.lpTokens?.forPolicyId as PolicyId
+    if (!includedTokenCounts[pId]) includedTokenCounts[pId] = 0
+
+    const farmers = await cswap.getFarmers(knownWallet.lpTokens.cswap)
+
+    // TODO: re-use this
+    farmers.forEach(({ stakeAddress, walletAddress, tokensB }) => {
+      const isBlacklisted = !!blacklistWallets.find((str) => str === stakeAddress)
+
+      if (!isBlacklisted) {
+        const humanAmount = tokensB
+        const holderItem = {
+          tokenId: pId,
+          isFungible: true,
+          humanAmount,
+        }
+
+        const foundHolderIndex = holders.findIndex((item) => item.stakeKey === stakeAddress)
+
+        if (foundHolderIndex === -1) {
+          holders.push({
+            stakeKey: stakeAddress,
+            addresses: [walletAddress],
+            assets: {
+              [pId]: [holderItem],
+            },
+          })
+        } else {
+          if (!holders[foundHolderIndex].addresses.includes(walletAddress)) {
+            holders[foundHolderIndex].addresses.push(walletAddress)
+          }
+
+          if (Array.isArray(holders[foundHolderIndex].assets[pId])) {
+            holders[foundHolderIndex].assets[pId].push(holderItem)
+          } else {
+            holders[foundHolderIndex].assets[pId] = [holderItem]
+          }
+        }
+
+        includedTokenCounts[pId] += humanAmount
+      }
+    })
+  }
+
   for (let pIdx = 0; pIdx < policies.length; pIdx++) {
     const { policyId, withRanks } = policies[pIdx]
-    includedTokenCounts[policyId] = 0
+    if (!includedTokenCounts[policyId]) includedTokenCounts[policyId] = 0
 
     setProgress((prev) => ({
       ...prev,
@@ -101,8 +157,8 @@ export const runSnapshot = async (
                 fetchedTokens[policyId] = [fetchedToken]
               }
 
+              // TODO: re-use this
               const humanAmount = formatTokenAmountFromChain(quantity, fetchedToken.tokenAmount.decimals)
-
               const holderItem = {
                 tokenId,
                 isFungible,
@@ -120,7 +176,7 @@ export const runSnapshot = async (
                   },
                 })
               } else {
-                if (!holders.find((item) => item.addresses.includes(address))) {
+                if (!holders[foundHolderIndex].addresses.includes(address)) {
                   holders[foundHolderIndex].addresses.push(address)
                 }
 

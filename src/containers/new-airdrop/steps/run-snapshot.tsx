@@ -71,7 +71,7 @@ export const RunSnapshot = forwardRef<FormRef<Data>, RunSnapshotProps>(({ defaul
       .notify('⏳ Snapshot started', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}`)
       .then()
       .catch()
-    runSnapshot(defaultData, setProgress)
+    runSnapshot(stakeKey, defaultData, setProgress)
       .then((recipients) => {
         setPayoutRecipients(recipients)
         setEnded(true)
