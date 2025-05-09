@@ -1,11 +1,11 @@
 import type { Node } from '@xyflow/react'
 import { mapToNodeData } from './map-to-node-data'
 import { resolveEdgedNode } from './resolve-edged-node'
+import { getTokenName, prettyNumber } from '@/functions'
 import { resolveHeaderNode } from './resolve-header-node'
 import { resolveScrollNode } from './resolve-scroll-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
 import { getNodePositions, isInPosition } from './get-node-positions'
-import { getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
 import { type AirdropRicipent, NODE_COLUMN_TYPES, type OnScroll, type OnScrollParams } from '@/@types'
 
 interface Params {
@@ -39,7 +39,7 @@ export const buildRecipientNodes = ({ dataFlowHeight, dataFlowWidth, recipients,
           // status: timestamp < DATA_START_TIME ? StatusType.Warning : undefined,
           iconSrc: thumb,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
-          subTitle: truncateStringInMiddle(stakeKey, 15),
+          subTitle: stakeKey,
           withClick: true,
           positions,
           idx,

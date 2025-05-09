@@ -6,8 +6,8 @@ import { resolveHeaderNode } from './resolve-header-node'
 import { resolveScrollNode } from './resolve-scroll-node'
 import { resolveSkeletonNode } from './resolve-skeleton-node'
 import { getNodePositions, isInPosition } from './get-node-positions'
+import { getTimestampLabel, getTokenName, prettyNumber } from '@/functions'
 import { type Airdrop, NODE_COLUMN_TYPES, type OnScroll, type OnScrollParams } from '@/@types'
-import { getTimestampLabel, getTokenName, prettyNumber, truncateStringInMiddle } from '@/functions'
 
 interface Params {
   isMobile?: boolean
@@ -40,7 +40,7 @@ export const buildAirdropNodes = ({ isMobile, dataFlowHeight, dataFlowWidth, air
           status: !recipients?.length ? StatusType.Warning : undefined,
           iconSrc: thumb,
           title: `${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
-          subTitle: isMobile ? `${recipients?.length || 0} Recipients • ${getTimestampLabel(timestamp).label}` : truncateStringInMiddle(stakeKey, 15),
+          subTitle: isMobile ? `${recipients?.length || 0} Recipients • ${getTimestampLabel(timestamp).label}` : stakeKey,
           withClick: !isMobile,
           positions,
           idx,

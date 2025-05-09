@@ -1,6 +1,5 @@
 import type { Node } from '@xyflow/react'
 import { mapToNodeData } from './map-to-node-data'
-import { truncateStringInMiddle } from '@/functions'
 import { resolveEdgedNode } from './resolve-edged-node'
 import { resolveHeaderNode } from './resolve-header-node'
 import { resolveScrollNode } from './resolve-scroll-node'
@@ -39,7 +38,7 @@ export const buildTransactionNodes = ({ dataFlowHeight, dataFlowWidth, transacti
           iconSrc: thumb,
           // title: `${recipientCount} Recipients, ${prettyNumber(tokenAmount.display)} ${getTokenName(tokenName)}`,
           title: `${recipientCount} Recipients`,
-          subTitle: truncateStringInMiddle(txHash, 15),
+          subTitle: txHash,
           withClick: true,
           positions,
           idx,
