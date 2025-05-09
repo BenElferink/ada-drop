@@ -50,7 +50,7 @@ export const runSnapshot = async (
       const isBlacklisted = !!blacklistWallets.find((str) => str === stakeAddress)
 
       if (!isBlacklisted) {
-        const humanAmount = tokensB
+        const humanAmount = Math.floor(tokensB)
         const holderItem = {
           tokenId: pId,
           isFungible: true,
