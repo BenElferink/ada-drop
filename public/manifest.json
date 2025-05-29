@@ -3,11 +3,12 @@
   "name": "₳D₳ Drop",
   "description": "Airdrop tool for the Cardano Blockchain",
   "icons": [
-    {
-      "src": "/assets/cardano.svg",
-      "sizes": "16x16 24x24 32x32 64x64 192x192 512x512",
-      "type": "image/x-icon"
-    }
+    { "src": "/assets/cardano.svg", "type": "image/svg", "sizes": "16x16" },
+    { "src": "/assets/cardano.svg", "type": "image/svg", "sizes": "24x24" },
+    { "src": "/assets/cardano.svg", "type": "image/svg", "sizes": "32x32" },
+    { "src": "/assets/cardano.svg", "type": "image/svg", "sizes": "64x64" },
+    { "src": "/assets/cardano.svg", "type": "image/svg", "sizes": "192x192" },
+    { "src": "/assets/cardano.svg", "type": "image/svg", "sizes": "512x512" }
   ],
   "theme_color": "#FFFFFF",
   "background_color": "#000000",

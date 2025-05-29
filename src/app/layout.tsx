@@ -11,8 +11,8 @@ function Layout({ children }: PropsWithChildren) {
   return (
     <html lang='en'>
       <head>
-        <link rel='icon' href='/assets/cardano.svg' />
         <link rel='manifest' href='/manifest.json' />
+        <link rel='icon' href='/assets/cardano.svg' type='image/svg' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <meta name='author' content='Ben Elferink' />
         <meta name='keywords' content='cardano, ada, blockchain, airdrop, tool, coin, token, nft, web3' />
