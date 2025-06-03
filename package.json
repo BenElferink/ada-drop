@@ -20,20 +20,20 @@
   },
   "dependencies": {
     "@blockfrost/blockfrost-js": "^6.0.0",
-    "@meshsdk/core": "^1.9.0-beta-39",
-    "@meshsdk/core-csl": "^1.9.0-beta-39",
-    "@meshsdk/react": "^1.9.0-beta-39",
-    "@odigos/ui-kit": "^0.0.24",
+    "@meshsdk/core": "^1.9.0-beta.54",
+    "@meshsdk/core-csl": "^1.9.0-beta.54",
+    "@meshsdk/react": "^1.9.0-beta.54",
+    "@odigos/ui-kit": "^0.0.34",
     "@slack/webhook": "^7.0.5",
-    "@xyflow/react": "^12.6.0",
+    "@xyflow/react": "^12.6.4",
     "axios": "^1.9.0",
-    "firebase": "^11.6.1",
-    "next": "15.3.1",
+    "firebase": "^11.8.1",
+    "next": "15.3.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "styled-components": "6.1.15",
     "xlsx": "^0.18.5",
-    "zustand": "^5.0.4"
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -42,7 +42,7 @@
     "@types/react-dom": "^19",
     "css-loader": "^7.1.2",
     "eslint": "^9",
-    "eslint-config-next": "15.3.1",
+    "eslint-config-next": "15.3.3",
     "next-transpile-modules": "^10.0.1",
     "style-loader": "^4.0.0",
     "typescript": "^5"
