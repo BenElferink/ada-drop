@@ -158,19 +158,21 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
       setStatus({ type: StatusType.Info, title: '', message: '' })
 
       const unpayedWallets = processedRecipients.filter(({ txHash }) => !txHash)
-      if (!devPayed.current)
-        unpayedWallets.unshift({
+
+      if (!batchSize) batchSize = Math.min(unpayedWallets.length, defaultData.tokenId === 'lovelace' ? 200 : 50)
+      const batches: PayoutRecipient[][] = []
+
+      for (let i = 0; i < unpayedWallets.length; i += batchSize) {
+        batches.push(unpayedWallets.slice(i, (i / batchSize + 1) * batchSize))
+      }
+
+      if (!devPayed.current && !!batches.length) {
+        batches[0].unshift({
           stakeKey: WALLETS['STAKE_KEYS']['DEV'],
           address: WALLETS['ADDRESSES']['DEV'],
           payout: devFee,
           isDev: true,
         })
-
-      if (!batchSize) batchSize = Math.min(unpayedWallets.length, defaultData.tokenId === 'lovelace' ? 200 : 100)
-      const batches: PayoutRecipient[][] = []
-
-      for (let i = 0; i < unpayedWallets.length; i += batchSize) {
-        batches.push(unpayedWallets.slice(i, (i / batchSize + 1) * batchSize))
       }
 
       setStatus({ type: StatusType.Info, title: 'Batching transactions', message: `Trying batch size: ${batchSize}` })
