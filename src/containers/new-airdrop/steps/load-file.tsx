@@ -184,6 +184,7 @@ export const LoadFile = forwardRef<FormRef<Data>, LoadFileProps>(({ defaultData,
       setEnded(false)
       setStatus({ type: StatusType.Error, title: 'Error loading file', message: errMsg })
       setProgress({ row: { current: 0, max: 0 } })
+
       api
         .notify(
           '❌ File scan failed',
