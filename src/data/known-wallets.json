@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Levvy Lending",
+    "description": "This airdrop was part of Levvy Lending monthly rewards program.",
+    "icon": "/assets/levvy.png",
+    "wallets": ["stake1uyu5665h73ly62ashkm88u3sexkjqg736ktndzvn7ufy2usyw6crz"],
+    "lpTokens": {
+      "forPolicyId": "8fe8039d057c71fdfb1095e260f153f18a5834d85d9c868ddf7307bc",
+      "cswap": "6f1073916b3a51446ab380304ca42215c8df032c63af66a07cda086a432d4c503a20414441207820414e47454c53"
+    }
+  }
+]

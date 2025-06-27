@@ -2,7 +2,7 @@ import { type Dispatch, type SetStateAction } from 'react'
 import api from '@/utils/api'
 import cswap from '@/utils/cswap'
 import { ADA } from '@/constants'
-import { knownWallets } from '@/components'
+import knownWallets from '@/data/known-wallets.json'
 import { chunk, eachLimit, formatTokenAmountFromChain, formatTokenAmountToChain } from '@/functions'
 import type {
   AirdropSettings,
