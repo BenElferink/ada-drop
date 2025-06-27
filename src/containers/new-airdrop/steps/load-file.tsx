@@ -4,9 +4,10 @@ import { read, utils } from 'xlsx'
 import { UploadIcon } from '@/icons'
 import Theme from '@odigos/ui-kit/theme'
 import { ProgressBar } from '@/components'
+import { useConnectedWallet } from '@/hooks'
 import { StatusType } from '@odigos/ui-kit/types'
-import { formatTokenAmountToChain } from '@/functions'
 import { getStatusIcon } from '@odigos/ui-kit/functions'
+import { formatTokenAmountToChain, getTokenName, prettyNumber } from '@/functions'
 import type { AirdropSettings, FormRef, PayoutRecipient } from '@/@types'
 import { Button, Divider, FlexColumn, InteractiveTable, NotificationNote, SectionTitle, Text } from '@odigos/ui-kit/components'
 
@@ -20,6 +21,7 @@ interface LoadFileProps {
 
 export const LoadFile = forwardRef<FormRef<Data>, LoadFileProps>(({ defaultData, payoutRecipients, setPayoutRecipients }, ref) => {
   const theme = Theme.useTheme()
+  const { stakeKey } = useConnectedWallet()
 
   const [fileErrors, setFileErrors] = useState<{ row: number; type: StatusType; message: string; origin: string }[]>([])
   const [status, setStatus] = useState({ type: StatusType.Info, title: '', message: '' })
@@ -61,6 +63,11 @@ export const LoadFile = forwardRef<FormRef<Data>, LoadFileProps>(({ defaultData,
     setEnded(false)
     setStatus({ type: StatusType.Info, title: '', message: '' })
     setProgress({ row: { current: 0, max: 0 } })
+
+    api
+      .notify('⏳ File scan started', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}`)
+      .then()
+      .catch()
 
     try {
       const buffer = await file.arrayBuffer()
@@ -166,12 +173,24 @@ export const LoadFile = forwardRef<FormRef<Data>, LoadFileProps>(({ defaultData,
       setStarted(false)
       setEnded(true)
       setStatus({ type: StatusType.Info, title: '', message: '' })
+
+      api
+        .notify('✅ File scan ended', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}`)
+        .then()
+        .catch()
     } catch (error: any) {
       const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
       setStarted(false)
       setEnded(false)
       setStatus({ type: StatusType.Error, title: 'Error loading file', message: errMsg })
       setProgress({ row: { current: 0, max: 0 } })
+      api
+        .notify(
+          '❌ File scan failed',
+          `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}\n\n${errMsg}`
+        )
+        .then()
+        .catch()
     }
   }
 

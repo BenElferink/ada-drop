@@ -264,7 +264,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           .catch((error) => console.error('Error saving airdrop to Firestore:', error))
 
         api
-          .notify('✅ Payout ended', `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}`)
+          .notify('✅ Payout ended', `${stakeKey}\n${prettyNumber(airdrop.tokenAmount.display)} ${getTokenName(airdrop.tokenName)}`)
           .then()
           .catch()
       } catch (error: any) {
