@@ -12,9 +12,9 @@
   },
   "scripts": {
     "predev": "rm -rf .next",
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start --webpack",
     "lint": "next lint",
     "lint-fix": "next lint --fix"
   },
