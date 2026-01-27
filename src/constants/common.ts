@@ -37,10 +37,10 @@ export const POLICY_IDS = {
 
 export const WALLETS = {
   STAKE_KEYS: {
-    DEV: 'stake1u80fcwkvn0cdy2zn8hlw7vf4v4sq4q23khj4z39wtvflr5cmyn8n7',
+    DEV: 'stake1u9ew2ha4cs9v9eaqq6g2j2w0hyhut0qshafcum0cm4p4qdgh5ce76',
   },
   ADDRESSES: {
-    DEV: 'addr1q9knw3lmvlpsvemjpgmkqkwtkzv8wueggf9aavvzyt2akpw7nsavexls6g59x007aucn2etqp2q4rd0929z2ukcn78fslm56p9',
+    DEV: 'addr1q9ew2ha4cs9v9eaqq6g2j2w0hyhut0qshafcum0cm4p4qdtju40mt3q2ctn6qp5s4y5ulwf0ck7pp06n3ekl3h2r2q6sljmdts',
   },
   KEYS: {
     // MNEMONIC: Array.isArray(process.env.MNEMONIC) ? process.env.MNEMONIC : process.env.MNEMONIC?.split(',') || [],
