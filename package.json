@@ -24,16 +24,16 @@
     "@meshsdk/core-csl": "^1.9.0-beta.102",
     "@meshsdk/react": "^1.9.0-beta.102",
     "@odigos/ui-kit": "^0.0.48",
-    "@slack/webhook": "^7.0.8",
+    "@slack/webhook": "^7.0.9",
     "@xyflow/react": "^12.10.2",
-    "axios": "^1.15.2",
-    "firebase": "^12.12.0",
-    "next": "16.2.3",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
+    "axios": "^1.16.0",
+    "firebase": "^12.13.0",
+    "next": "16.2.6",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
     "styled-components": "6.1.19",
     "xlsx": "^0.18.5",
-    "zustand": "^5.0.12"
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -42,7 +42,7 @@
     "@types/react-dom": "^19",
     "css-loader": "^7.1.4",
     "eslint": "^9",
-    "eslint-config-next": "16.2.3",
+    "eslint-config-next": "16.2.6",
     "next-transpile-modules": "^10.0.1",
     "style-loader": "^4.0.0",
     "typescript": "^5"
