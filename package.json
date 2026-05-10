@@ -22,7 +22,7 @@
     "@blockfrost/blockfrost-js": "^6.1.1",
     "@meshsdk/core": "^1.9.0-beta.102",
     "@meshsdk/core-csl": "^1.9.0-beta.102",
-    "@meshsdk/react": "^2.0.0-beta.2",
+    "@meshsdk/react": "^1.9.0-beta.102",
     "@odigos/ui-kit": "^0.0.48",
     "@slack/webhook": "^7.0.9",
     "@xyflow/react": "^12.10.2",
