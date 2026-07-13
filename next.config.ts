@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
+import path from "path";
 import transpileModules from "next-transpile-modules";
 
-const withTM = transpileModules(["@odigos/ui-kit", "@xyflow/react"]);
+const withTM = transpileModules(["@xyflow/react"]);
 
 const nextConfig: NextConfig = withTM({
   reactStrictMode: true,
@@ -12,6 +13,11 @@ const nextConfig: NextConfig = withTM({
     styledComponents: true,
   },
   webpack: (config, { isServer }) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@odigos/ui-kit": path.resolve(__dirname, "src/odigos-ui-kit"),
+    };
+
     config.experiments = {
       asyncWebAssembly: true,
       layers: true,
@@ -41,10 +47,13 @@ const nextConfig: NextConfig = withTM({
       );
     }
 
-    // Ensure CSS from transpiled node_modules works
+    // Custom CSS loaders disable Next's built-in CSS support, so cover all needed paths here
     config.module.rules.push({
       test: /\.css$/,
-      include: /node_modules[\\/](@odigos\/ui-kit|@xyflow\/react)/,
+      include: [
+        /node_modules[\\/]@xyflow\/react/,
+        path.resolve(__dirname, "src/odigos-ui-kit"),
+      ],
       use: ["style-loader", "css-loader"],
     });
 
