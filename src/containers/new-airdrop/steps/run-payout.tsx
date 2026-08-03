@@ -16,6 +16,7 @@ import { useConnectedWallet } from "@/hooks";
 import { firestore } from "@/utils/firebase";
 import { PlusIcon } from "@odigos/ui-kit/icons";
 import { StatusType } from "@odigos/ui-kit/types";
+import { runBatchedPayout } from "@/functions/payout";
 import { DownloadIcon, TransactionIcon } from "@/icons";
 import { deepClone, getStatusIcon } from "@odigos/ui-kit/functions";
 import { verifyMinRequiredAda } from "../helpers/verify-min-required-ada";
@@ -39,7 +40,6 @@ import {
   formatTokenAmountToChain,
   getTokenName,
   prettyNumber,
-  runBatchedPayout,
   truncateStringInMiddle,
   txConfirmation,
 } from "@/functions";
