@@ -55,6 +55,14 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
     [payoutRecipients]
   )
   const devPayed = useRef(false)
+  /** Stake keys successfully submitted on-chain this run — survives recursive retries (unlike React state). */
+  const paidStakeKeysRef = useRef<Set<StakeKey>>(new Set())
+  /** Accumulators for Firestore — must persist across size-retry calls. */
+  const dbRecipientsRef = useRef<{ stakeKey: StakeKey; txHash: string; quantity: number }[]>([])
+  /** Single airdrop doc for this run — created once, then updated on later saves. */
+  const airdropDocIdRef = useRef<string | null>(null)
+  /** Keep the first write's timestamp so updates don't reshuffle time-sorted lists. */
+  const airdropTimestampRef = useRef<number | null>(null)
   const ticker = useMemo(() => defaultData.tokenName.ticker || defaultData.tokenName.display || defaultData.tokenName.onChain, [defaultData])
 
   useImperativeHandle(ref, () => ({
@@ -151,15 +159,106 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
     }
   }, [allowPreFlightChecks, lovelaces, tokens, devFee, processedRecipients, defaultData])
 
+  const saveAirdrop = useCallback(
+    async (recipients: { stakeKey: StakeKey; txHash: string; quantity: number }[], notifySuccess: boolean) => {
+      if (!recipients.length) return
+
+      const totalPayout = recipients.reduce((prev, curr) => prev + curr.quantity, 0)
+      if (!airdropTimestampRef.current) airdropTimestampRef.current = Date.now()
+
+      const airdrop: Airdrop = {
+        stakeKey,
+        timestamp: airdropTimestampRef.current,
+
+        tokenId: defaultData.tokenId,
+        tokenName: defaultData.tokenName,
+        tokenAmount: {
+          decimals: defaultData.tokenAmount.decimals,
+          onChain: totalPayout,
+          display: formatTokenAmountFromChain(totalPayout, defaultData.tokenAmount.decimals),
+        },
+        thumb: defaultData.thumb,
+
+        recipients,
+      }
+
+      try {
+        const collection = firestore.collection('airdrops')
+
+        if (airdropDocIdRef.current) {
+          await collection.doc(airdropDocIdRef.current).set(airdrop)
+          console.log('Airdrop updated in Firestore', airdropDocIdRef.current)
+        } else {
+          const doc = await collection.add(airdrop)
+          airdropDocIdRef.current = doc.id
+          console.log('Airdrop saved to Firestore', doc.id)
+        }
+      } catch (error) {
+        console.error('Error saving airdrop to Firestore:', error)
+      }
+
+      if (notifySuccess) {
+        api
+          .notify('✅ Payout ended', `${stakeKey}\n${prettyNumber(airdrop.tokenAmount.display)} ${getTokenName(airdrop.tokenName)}`)
+          .then()
+          .catch()
+      }
+    },
+    [defaultData, stakeKey]
+  )
+
+  const seedPaidStateFromRecipients = useCallback((recipients: PayoutRecipient[]) => {
+    const alreadyPaid = recipients.filter(({ txHash }) => !!txHash)
+    paidStakeKeysRef.current = new Set(alreadyPaid.map(({ stakeKey: sk }) => sk))
+    dbRecipientsRef.current = alreadyPaid.map(({ stakeKey: sk, txHash, payout }) => ({
+      stakeKey: sk,
+      txHash: txHash as string,
+      quantity: payout,
+    }))
+  }, [])
+
   const runPayout = useCallback(
-    async (batchSize: number = 0, prevDifference?: number): Promise<void> => {
+    async (batchSize: number = 0, prevDifference?: number, isRetry: boolean = false): Promise<void> => {
       setAllowPreFlightChecks(false)
       setStarted(true)
       setStatus({ type: StatusType.Info, title: '', message: '' })
 
-      const unpayedWallets = processedRecipients.filter(({ txHash }) => !txHash)
+      // Fresh click: seed from any wallets already marked paid (resume after partial failure).
+      // Size/build retries must not reset paid tracking or the Firestore doc id.
+      if (!isRetry) {
+        seedPaidStateFromRecipients(processedRecipients)
+        if (!paidStakeKeysRef.current.size) {
+          airdropDocIdRef.current = null
+          airdropTimestampRef.current = null
+        }
+      }
 
-      if (!batchSize) batchSize = Math.min(unpayedWallets.length, defaultData.tokenId === 'lovelace' ? 200 : 50)
+      const unpayedWallets = processedRecipients.filter(({ txHash, stakeKey: sk, payout }) => {
+        if (txHash || paidStakeKeysRef.current.has(sk)) return false
+        // Excluded from the airdrop unless the user rounded them up
+        if (defaultData.tokenId === 'lovelace' && payout < MIN_LOVELACES_PER_WALLET) return false
+        return true
+      })
+
+      if (!unpayedWallets.length) {
+        setStatus({ type: StatusType.Info, title: '', message: '' })
+        setStarted(false)
+        setEnded(true)
+        await saveAirdrop(dbRecipientsRef.current, true)
+        return
+      }
+
+      // batchSize 0 = derive from optional fractional difference (0.decimals), else default cap.
+      // Always multiply the fraction by the *current* unpaid count so mid-run size retries stay correct.
+      if (!batchSize) {
+        if (prevDifference) {
+          batchSize = Math.floor(prevDifference * unpayedWallets.length)
+        }
+        if (!batchSize) {
+          batchSize = Math.min(unpayedWallets.length, defaultData.tokenId === 'lovelace' ? 200 : 50)
+        }
+      }
+
       const batches: PayoutRecipient[][] = []
 
       for (let i = 0; i < unpayedWallets.length; i += batchSize) {
@@ -178,25 +277,18 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
       setStatus({ type: StatusType.Info, title: 'Batching transactions', message: `Trying batch size: ${batchSize}` })
       setProgress({ batch: { current: 0, max: batches.length } })
 
-      const dbRecipients: {
-        stakeKey: StakeKey
-        txHash: string
-        quantity: number
-      }[] = []
-
       try {
         for await (const batch of batches) {
+          const pendingBatch = batch.filter(({ isDev, stakeKey: sk }) => isDev || !paidStakeKeysRef.current.has(sk))
+          if (!pendingBatch.length) continue
+
           const tx = new Transaction({
             initiator: wallet,
           })
 
-          for (const { address, payout, isDev } of batch) {
+          for (const { address, payout, isDev } of pendingBatch) {
             if (defaultData.tokenId === 'lovelace' || isDev) {
-              if (payout < MIN_LOVELACES_PER_WALLET) {
-                // !! skip because the user did not approve adding this amount
-              } else {
-                tx.sendLovelace({ address }, String(payout))
-              }
+              tx.sendLovelace({ address }, String(payout))
             } else {
               tx.sendAssets({ address }, [
                 {
@@ -212,17 +304,18 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           const signedTx = await wallet.signTx(unsignedTx)
           const txHash = await wallet.submitTx(signedTx)
 
+          // Record as paid immediately after submit — before confirmation — so a later
+          // confirmation/UTXO error cannot restart payouts to these wallets.
           if (!devPayed.current) devPayed.current = true
-
-          setStatus({ type: StatusType.Info, title: 'Awaiting network confirmation', message: txHash })
-          await txConfirmation(txHash)
-          setProgress((prev) => ({ batch: { current: (prev.batch?.current || 0) + 1, max: batches.length } }))
-
-          dbRecipients.push(...batch.filter(({ isDev }) => !isDev).map(({ stakeKey, payout }) => ({ stakeKey, txHash, quantity: payout })))
+          for (const { stakeKey: sk, payout, isDev } of pendingBatch) {
+            if (isDev) continue
+            paidStakeKeysRef.current.add(sk)
+            dbRecipientsRef.current.push({ stakeKey: sk, txHash, quantity: payout })
+          }
 
           setProcessedRecipients((prev) =>
             prev.map((item) =>
-              batch.some(({ stakeKey }) => stakeKey === item.stakeKey)
+              pendingBatch.some(({ stakeKey: sk }) => sk === item.stakeKey)
                 ? {
                     ...item,
                     txHash,
@@ -230,6 +323,13 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
                 : item
             )
           )
+
+          // Upsert after submit so an on-chain batch is not lost if confirmation/next steps fail
+          await saveAirdrop(dbRecipientsRef.current, false)
+
+          setStatus({ type: StatusType.Info, title: 'Awaiting network confirmation', message: txHash })
+          await txConfirmation(txHash)
+          setProgress((prev) => ({ batch: { current: (prev.batch?.current || 0) + 1, max: batches.length } }))
         }
 
         // done
@@ -238,37 +338,10 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
         setStarted(false)
         setEnded(true)
 
-        // save to db
-
-        const totalPayout = dbRecipients.reduce((prev, curr) => prev + curr.quantity, 0)
-        const airdrop: Airdrop = {
-          stakeKey,
-          timestamp: Date.now(),
-
-          tokenId: defaultData.tokenId,
-          tokenName: defaultData.tokenName,
-          tokenAmount: {
-            decimals: defaultData.tokenAmount.decimals,
-            onChain: totalPayout,
-            display: formatTokenAmountFromChain(totalPayout, defaultData.tokenAmount.decimals),
-          },
-          thumb: defaultData.thumb,
-
-          recipients: dbRecipients,
-        }
-
-        firestore
-          .collection('airdrops')
-          .add(airdrop)
-          .then((doc) => console.log('Airdrop saved to Firestore', doc.id))
-          .catch((error) => console.error('Error saving airdrop to Firestore:', error))
-
-        api
-          .notify('✅ Payout ended', `${stakeKey}\n${prettyNumber(airdrop.tokenAmount.display)} ${getTokenName(airdrop.tokenName)}`)
-          .then()
-          .catch()
+        await saveAirdrop(dbRecipientsRef.current, true)
       } catch (error: any) {
         const errMsg = error?.response?.data || error?.message || error?.toString() || 'UNKNOWN ERROR'
+        const nothingSubmittedYet = dbRecipientsRef.current.length === 0
 
         if (errMsg?.indexOf('Maximum transaction size of') !== -1) {
           // Versions 1.7.0 - 1.8.14 of the Mesh SDK throw this error:
@@ -277,21 +350,46 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
           // Older versions of the Mesh SDK throw this error:
           // errMsg === `[Transaction] An error occurred during build: Maximum transaction size of 16384 exceeded. Found: 21861.`
 
+          // Pass difference (0.decimals) with batchSize 0 so the next call recomputes
+          // floor(difference * currentUnpaid) — never reuse a stale absolute batch size.
           const splitMessage: string[] = errMsg.split(' ')
           const [max, curr] = splitMessage.map((str) => Number(str.replace(/[^\d]/g, ''))).filter((num) => num && !isNaN(num))
           const newDifference = (prevDifference || 1) * (max / curr)
-          batchSize = Math.floor(newDifference * unpayedWallets.length)
 
-          return await runPayout(batchSize, newDifference)
-        } else if (batchSize > 1) {
-          return await runPayout(batchSize - 1)
+          return await runPayout(0, newDifference, true)
+        } else if (batchSize > 1 && nothingSubmittedYet) {
+          // Only shrink-and-retry when no TX has been submitted yet. After any on-chain
+          // submit, never rebuild from scratch — that caused duplicate payouts.
+          return await runPayout(batchSize - 1, prevDifference, true)
         } else {
-          setStatus({ type: StatusType.Error, title: '', message: errMsg })
+          const partial = dbRecipientsRef.current
+          const stillUnpaid = processedRecipients.filter(({ txHash, stakeKey: sk, payout }) => {
+            if (txHash || paidStakeKeysRef.current.has(sk)) return false
+            if (defaultData.tokenId === 'lovelace' && payout < MIN_LOVELACES_PER_WALLET) return false
+            return true
+          }).length
+          const partialNote = partial.length
+            ? stillUnpaid
+              ? ` (${partial.length} recipients paid, ${stillUnpaid} remaining — click Build TXs to continue)`
+              : ` (${partial.length} recipients paid — progress saved)`
+            : ''
+
+          setStatus({ type: StatusType.Error, title: '', message: `${errMsg}${partialNote}` })
           setProgress({ batch: { current: 0, max: 0 } })
           setStarted(false)
+
+          if (partial.length) {
+            await saveAirdrop(partial, false)
+          }
+
+          // Only mark complete when nothing unpaid remains; otherwise allow resume via Build TXs
+          if (!stillUnpaid) {
+            setEnded(true)
+          }
+
           api
             .notify(
-              '❌ Payout failed',
+              partial.length ? '⚠️ Payout partially failed' : '❌ Payout failed',
               `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}\n\n${errMsg}`
             )
             .then()
@@ -299,7 +397,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
         }
       }
     },
-    [defaultData, processedRecipients, devFee, wallet, stakeKey]
+    [defaultData, processedRecipients, devFee, wallet, stakeKey, saveAirdrop, seedPaidStateFromRecipients]
   )
 
   const downloadReceipt = useCallback(() => {
@@ -488,7 +586,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(({ defaultDat
             />
           </div>
         ) : null}
-        {ended && (
+        {ended && status.type !== StatusType.Error && (
           <div style={{ width: '100%' }}>
             <NotificationNote type={StatusType.Success} title='Airdrop complete' message='You can download a copy of the receipt' />
           </div>
