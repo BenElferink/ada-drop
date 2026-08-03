@@ -1,0 +1,31 @@
+name: Payout testnet
+
+on:
+  schedule:
+    # Monthly on the 1st at 06:00 UTC
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+
+jobs:
+  chained-payout:
+    name: Chained batched payout on preprod
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Live preprod payout test
+        env:
+          REQUIRE_TESTNET_SECRETS: "1"
+          BLOCKFROST_API_KEY_PREPROD: ${{ secrets.BLOCKFROST_API_KEY_PREPROD }}
+          # Optional override if the public community faucet key rotates
+          CARDANO_PREPROD_FAUCET_API_KEY: ${{ secrets.CARDANO_PREPROD_FAUCET_API_KEY }}
+        run: npm run test:payout:testnet
