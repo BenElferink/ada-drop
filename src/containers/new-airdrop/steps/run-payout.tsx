@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
 } from "react";
-import api from "@/utils/api";
 import Theme from "@odigos/ui-kit/theme";
 import { ProgressBar } from "@/components";
 import { useWallet } from "@meshsdk/react";
@@ -249,7 +248,6 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(
     const saveAirdrop = useCallback(
       async (
         recipients: { stakeKey: StakeKey; txHash: string; quantity: number }[],
-        notifySuccess: boolean,
       ) => {
         if (!recipients.length) return;
 
@@ -295,16 +293,6 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(
           }
         } catch (error) {
           console.error("Error saving airdrop to Firestore:", error);
-        }
-
-        if (notifySuccess) {
-          api
-            .notify(
-              "✅ Payout ended",
-              `${stakeKey}\n${prettyNumber(airdrop.tokenAmount.display)} ${getTokenName(airdrop.tokenName)}`,
-            )
-            .then()
-            .catch();
         }
       },
       [defaultData, stakeKey],
@@ -388,7 +376,7 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(
             }),
           );
 
-          await saveAirdrop(allPaidRecipients, false);
+          await saveAirdrop(allPaidRecipients);
           setProgress({ batch: { current: batchIndex + 1, max: batchCount } });
         },
       });
@@ -424,24 +412,16 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(
         setStarted(false);
 
         if (partial.length) {
-          await saveAirdrop(partial, false);
+          await saveAirdrop(partial);
         }
         if (result.ended) setEnded(true);
-
-        api
-          .notify(
-            partial.length ? "⚠️ Payout partially failed" : "❌ Payout failed",
-            `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}\n\n${result.error}`,
-          )
-          .then()
-          .catch();
         return;
       }
 
       setStatus({ type: StatusType.Info, title: "", message: "" });
       setStarted(false);
       setEnded(true);
-      await saveAirdrop(result.paidRecipients, true);
+      await saveAirdrop(result.paidRecipients);
     }, [
       defaultData,
       processedRecipients,
@@ -615,18 +595,6 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(
       return { wallets: filtered.length, amount: reduced };
     }, [processedRecipients, defaultData]);
 
-    useEffect(() => {
-      if (stakeKey) {
-        api
-          .notify(
-            "💡 Payout viewed",
-            `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}`,
-          )
-          .then()
-          .catch();
-      }
-    }, [stakeKey, defaultData]);
-
     return (
       <>
         <FlexColumn $gap={16} style={{ width: "100%", alignItems: "unset" }}>
@@ -652,14 +620,6 @@ export const RunPayout = forwardRef<FormRef<Data>, RunPayoutProps>(
                   variant="tertiary"
                   disabled={!ranPreFlightChecks || started || ended}
                   onClick={() => {
-                    api
-                      .notify(
-                        "⏳ Payout started",
-                        `${stakeKey}\n${prettyNumber(defaultData.tokenAmount.display)} ${getTokenName(defaultData.tokenName)}`,
-                      )
-                      .then()
-                      .catch();
-
                     runPayout();
                   }}
                   style={{

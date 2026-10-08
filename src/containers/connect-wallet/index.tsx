@@ -1,5 +1,4 @@
 import React, { FC, Fragment, useEffect, useMemo, useState } from 'react'
-import api from '@/utils/api'
 import Image from 'next/image'
 import { LINKS } from '@/constants'
 import { WalletIcon } from '@/icons'
@@ -86,7 +85,6 @@ export const ConnectWallet = () => {
     if (connected && stakeKey) {
       addNotification({ type: StatusType.Success, title: 'Wallet connected' })
       toggleIsOpen(false)
-      api.notify('👀 Wallet connected', stakeKey).then().catch()
     }
   }, [connected, stakeKey, addNotification])
 

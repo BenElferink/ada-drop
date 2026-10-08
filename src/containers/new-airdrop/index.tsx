@@ -1,11 +1,9 @@
-import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react'
-import api from '@/utils/api'
+import React, { Fragment, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useAirdrops } from '@/hooks'
 import styled from 'styled-components'
 import Theme from '@odigos/ui-kit/theme'
 import { useWallet } from '@meshsdk/react'
-import { useConnectedWallet } from '@/hooks'
 import { PlusIcon } from '@odigos/ui-kit/icons'
 import { useKeyDown } from '@odigos/ui-kit/hooks'
 import { INIT_AIRDROP_SETTINGS } from '@/constants'
@@ -36,7 +34,6 @@ const SideMenuWrapper = styled.div`
 export const NewAirdrop = () => {
   const theme = Theme.useTheme()
   const { connected } = useWallet()
-  const { stakeKey } = useConnectedWallet()
   const { refetch } = useAirdrops()
 
   const [isOpen, setIsOpen] = useState(false)
@@ -146,17 +143,6 @@ export const NewAirdrop = () => {
       }
     })
   }
-
-  const methodRef = useRef('')
-
-  useEffect(() => {
-    if (stakeKey && settings.airdropMethod) {
-      if (methodRef.current !== settings.airdropMethod) {
-        methodRef.current = settings.airdropMethod
-        api.notify('🧪 Airdrop method selected', `${stakeKey}\n${settings.airdropMethod}`).then().catch()
-      }
-    }
-  }, [stakeKey, step, settings.airdropMethod])
 
   useKeyDown({ active: isOpen, key: 'Enter' }, onNext)
 
